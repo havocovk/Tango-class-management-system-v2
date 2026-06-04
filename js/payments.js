@@ -6,7 +6,7 @@ let currentClassId = null;
 let currentClassName = null;
 let students = [];
 let courseDates = [];
-let payments = [];  // { student_id, start_date_id, amount, weeks_covered }
+let payments = [];
 
 export async function showPaymentsView(classId, className) {
     currentClassId = classId;
@@ -53,14 +53,14 @@ function renderPaymentsView() {
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
     });
-    // Tıklama ile ödeme ekle/sil
+    
     document.querySelectorAll('#payRows td').forEach(cell => {
-        if (cell.classList.contains('paid-period') || cell.innerText !== '-') {
+        const studentId = parseInt(cell.dataset.studentId);
+        const dateId = parseInt(cell.dataset.dateId);
+        if (!isNaN(studentId) && !isNaN(dateId)) {
             cell.style.cursor = 'pointer';
             cell.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const studentId = parseInt(cell.dataset.studentId);
-                const dateId = parseInt(cell.dataset.dateId);
                 const existing = payments.find(p => p.student_id === studentId && p.start_date_id === dateId);
                 if (existing) {
                     if (confirm('Bu ödemeyi silmek istediğinize emin misiniz?')) {
@@ -87,6 +87,7 @@ function renderPaymentsView() {
             });
         }
     });
+    
     document.getElementById('backToAttendanceBtn').onclick = () => showAttendanceView(currentClassId, currentClassName);
     refreshIcons();
 }
@@ -96,8 +97,6 @@ function checkIsPaid(studentId, dateIndex) {
     if (!dateObj) return false;
     for (const p of payments) {
         if (p.student_id !== studentId) continue;
-        const startDateObj = courseDates.find(d => d.id === p.start_date_id);
-        if (!startDateObj) continue;
         const startIdx = courseDates.findIndex(d => d.id === p.start_date_id);
         if (startIdx === -1) continue;
         if (dateIndex >= startIdx && dateIndex < startIdx + p.weeks_covered) return true;
@@ -114,5 +113,3 @@ function escapeHtml(str) {
         return m;
     });
 }
-
-export { showPaymentsView };

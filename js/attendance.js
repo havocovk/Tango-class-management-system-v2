@@ -259,5 +259,3 @@ function escapeHtml(str) {
         return m;
     });
 }
-
-export { renderAttendanceView };
