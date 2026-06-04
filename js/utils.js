@@ -20,7 +20,6 @@ export function closeModal(id) {
     if (modal) modal.style.display = 'none';
 }
 
-// Tarih karşılaştırma (bugünden küçük mü)
 export function isPastDate(dateStr) {
     const target = new Date(dateStr);
     target.setHours(0,0,0,0);
@@ -29,33 +28,90 @@ export function isPastDate(dateStr) {
     return target < today;
 }
 
-// Dinamik modal oluşturma (basit)
-export function createModal(title, inputPlaceholder, callback) {
-    const modalDiv = document.createElement('div');
-    modalDiv.className = 'modal';
-    modalDiv.id = 'dynamicModal';
-    modalDiv.innerHTML = `
-        <div class="modal-content">
-            <h3>${title}</h3>
-            <input type="text" id="dynamicInput" placeholder="${inputPlaceholder}" autocomplete="off">
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-success" id="modalConfirm">Tamam</button>
-                <button class="btn-secondary" id="modalCancel">İptal</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modalDiv);
-    modalDiv.style.display = 'flex';
-    const input = modalDiv.querySelector('#dynamicInput');
+// Tek girdili modal (prompt yerine)
+export function openPromptModal(title, placeholder, callback) {
+    const modal = document.getElementById('dynamicModal');
+    const titleEl = document.getElementById('dynamicModalTitle');
+    const input = document.getElementById('dynamicInput');
+    titleEl.innerText = title;
+    input.placeholder = placeholder || '';
+    input.value = '';
+    modal.style.display = 'flex';
     input.focus();
-    const confirm = () => {
+    const confirmHandler = () => {
         const val = input.value.trim();
         if (val) callback(val);
-        modalDiv.remove();
+        modal.style.display = 'none';
+        cleanup();
     };
-    modalDiv.querySelector('#modalConfirm').onclick = confirm;
-    modalDiv.querySelector('#modalCancel').onclick = () => modalDiv.remove();
-    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') confirm(); });
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cleanup = () => {
+        document.getElementById('dynamicModalConfirm').removeEventListener('click', confirmHandler);
+        document.getElementById('dynamicModalCancel').removeEventListener('click', cancelHandler);
+        input.removeEventListener('keypress', keyHandler);
+    };
+    const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
+    document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
+    document.getElementById('dynamicModalCancel').onclick = cancelHandler;
+    input.addEventListener('keypress', keyHandler);
+}
+
+// İki girdili modal (miktar + hafta)
+export function openDoubleInputModal(title, placeholder1, placeholder2, callback) {
+    const modal = document.getElementById('doubleInputModal');
+    const titleEl = document.getElementById('doubleModalTitle');
+    const input1 = document.getElementById('doubleInput1');
+    const input2 = document.getElementById('doubleInput2');
+    titleEl.innerText = title;
+    input1.placeholder = placeholder1 || '';
+    input2.placeholder = placeholder2 || '';
+    input1.value = '';
+    input2.value = '';
+    modal.style.display = 'flex';
+    input1.focus();
+    const confirmHandler = () => {
+        const val1 = input1.value.trim();
+        const val2 = input2.value.trim();
+        if (val1 && val2) callback(val1, val2);
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cleanup = () => {
+        document.getElementById('doubleModalConfirm').removeEventListener('click', confirmHandler);
+        document.getElementById('doubleModalCancel').removeEventListener('click', cancelHandler);
+    };
+    document.getElementById('doubleModalConfirm').onclick = confirmHandler;
+    document.getElementById('doubleModalCancel').onclick = cancelHandler;
+}
+
+// Onay modalı (silme)
+export function openConfirmModal(message, onConfirm) {
+    const modal = document.getElementById('confirmModal');
+    const msgSpan = document.getElementById('confirmMessage');
+    msgSpan.innerText = message;
+    modal.style.display = 'flex';
+    const confirmHandler = () => {
+        modal.style.display = 'none';
+        onConfirm();
+        cleanup();
+    };
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cleanup = () => {
+        document.getElementById('confirmModalYes').removeEventListener('click', confirmHandler);
+        document.getElementById('confirmModalNo').removeEventListener('click', cancelHandler);
+    };
+    document.getElementById('confirmModalYes').onclick = confirmHandler;
+    document.getElementById('confirmModalNo').onclick = cancelHandler;
 }
 
 // Lucide ikonlarını yenile

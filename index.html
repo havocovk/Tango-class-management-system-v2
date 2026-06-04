@@ -6,17 +6,66 @@
     <title>Tango Class Management v8 - Supabase</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Uygulama Modülleri (ES Modules) -->
     <script type="module" src="js/app.js"></script>
 </head>
 <body>
 <div class="container" id="appContainer">
-    <!-- Dinamik içerik burada değişecek -->
     <div id="dynamicView"></div>
+</div>
+
+<!-- ========== MODALLAR ========== -->
+<!-- Tek girişli dinamik modal -->
+<div id="dynamicModal" class="modal">
+    <div class="modal-content">
+        <h3 id="dynamicModalTitle">Başlık</h3>
+        <input type="text" id="dynamicInput" placeholder="" autocomplete="off">
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-success" id="dynamicModalConfirm">Tamam</button>
+            <button class="btn-secondary" id="dynamicModalCancel">İptal</button>
+        </div>
+    </div>
+</div>
+
+<!-- İki girişli modal (miktar+hafta) -->
+<div id="doubleInputModal" class="modal">
+    <div class="modal-content">
+        <h3 id="doubleModalTitle">Başlık</h3>
+        <input type="text" id="doubleInput1" placeholder="" autocomplete="off">
+        <input type="text" id="doubleInput2" placeholder="" autocomplete="off">
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-success" id="doubleModalConfirm">Tamam</button>
+            <button class="btn-secondary" id="doubleModalCancel">İptal</button>
+        </div>
+    </div>
+</div>
+
+<!-- Onay modalı (silme) -->
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h3>Emin misiniz?</h3>
+        <p id="confirmMessage">Bu işlem geri alınamaz.</p>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="btn-danger" id="confirmModalYes">Evet, sil</button>
+            <button class="btn-secondary" id="confirmModalNo">İptal</button>
+        </div>
+    </div>
+</div>
+
+<!-- Öğrenci düzenleme/silme modalı -->
+<div id="studentActionModal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;">Öğrenci</h3>
+            <div style="display:flex; gap:12px;">
+                <span id="studentEditIcon" style="cursor:pointer; color:var(--primary);"><i data-lucide="pencil" size="22"></i></span>
+                <span id="studentDeleteIcon" style="cursor:pointer; color:var(--danger);"><i data-lucide="trash-2" size="22"></i></span>
+            </div>
+        </div>
+        <input type="text" id="studentEditName" style="width:100%; margin-top:20px;" autocomplete="off">
+        <button class="btn-secondary" id="studentModalClose" style="width:100%; margin-top:20px;">Kapat</button>
+    </div>
 </div>
 </body>
 </html>

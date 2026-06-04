@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { refreshIcons } from './utils.js';
+import { refreshIcons, openPromptModal, openConfirmModal } from './utils.js';
 
 let currentSchools = [];
 
@@ -67,26 +67,27 @@ function escapeHtml(str) {
 }
 
 async function addSchool() {
-    const name = prompt('Okul adını girin:', '');
-    if (!name) return;
-    const { data, error } = await supabase.from('schools').insert({ name }).select().single();
-    if (error) alert('Hata: ' + error.message);
-    else {
-        await loadSchools();
-    }
+    openPromptModal('Okul Adı', 'Örn: Tango Mia', async (name) => {
+        if (!name) return;
+        const { error } = await supabase.from('schools').insert({ name });
+        if (error) alert('Hata: ' + error.message);
+        else await loadSchools();
+    });
 }
 
 async function editSchool(id, oldName) {
-    const newName = prompt('Okul adını düzenle:', oldName);
-    if (!newName || newName === oldName) return;
-    const { error } = await supabase.from('schools').update({ name: newName }).eq('id', id);
-    if (error) alert('Hata: ' + error.message);
-    else await loadSchools();
+    openPromptModal('Okul Adını Düzenle', oldName, async (newName) => {
+        if (!newName || newName === oldName) return;
+        const { error } = await supabase.from('schools').update({ name: newName }).eq('id', id);
+        if (error) alert('Hata: ' + error.message);
+        else await loadSchools();
+    });
 }
 
 async function deleteSchool(id) {
-    if (!confirm('Okul silinecek. İçindeki tüm sınıflar ve veriler de silinir. Emin misiniz?')) return;
-    const { error } = await supabase.from('schools').delete().eq('id', id);
-    if (error) alert('Hata: ' + error.message);
-    else await loadSchools();
+    openConfirmModal('Okul silinecek. İçindeki tüm sınıflar ve veriler de silinir. Emin misiniz?', async () => {
+        const { error } = await supabase.from('schools').delete().eq('id', id);
+        if (error) alert('Hata: ' + error.message);
+        else await loadSchools();
+    });
 }

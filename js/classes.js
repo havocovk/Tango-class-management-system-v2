@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, formatDate } from './utils.js';
+import { refreshIcons, formatDate, openPromptModal, openConfirmModal } from './utils.js';
 import { showAttendanceView } from './attendance.js';
 
 let currentSchoolId = null;
@@ -14,11 +14,7 @@ export async function showClassesView(schoolId, schoolName) {
 }
 
 async function loadClasses() {
-    const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .eq('school_id', currentSchoolId)
-        .order('id');
+    const { data, error } = await supabase.from('classes').select('*').eq('school_id', currentSchoolId).order('id');
     if (error) console.error(error);
     else classesList = data;
 }
@@ -83,39 +79,38 @@ function escapeHtml(str) {
 }
 
 async function addClass() {
-    const className = prompt('Sınıf adı:', '');
-    if (!className) return;
-    const startDate = prompt('Başlangıç tarihi (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-    if (!startDate) return;
-    const { data: newClass, error: classError } = await supabase
-        .from('classes')
-        .insert({ school_id: currentSchoolId, name: className })
-        .select()
-        .single();
-    if (classError) { alert('Sınıf eklenemedi: ' + classError.message); return; }
-    const { error: dateError } = await supabase
-        .from('course_dates')
-        .insert({ class_id: newClass.id, date: startDate, teacher_partner: null });
-    if (dateError) console.error(dateError);
-    await loadClasses();
-    renderClassesView();
+    openPromptModal('Sınıf Adı', 'Örn: Pazartesi 19:30', async (className) => {
+        if (!className) return;
+        const defaultDate = new Date().toISOString().split('T')[0];
+        openPromptModal('Başlangıç Tarihi', 'YYYY-MM-DD (örn: 2025-06-01)', async (startDate) => {
+            if (!startDate) return;
+            const { data: newClass, error: classError } = await supabase.from('classes').insert({ school_id: currentSchoolId, name: className }).select().single();
+            if (classError) { alert('Sınıf eklenemedi: ' + classError.message); return; }
+            const { error: dateError } = await supabase.from('course_dates').insert({ class_id: newClass.id, date: startDate, teacher_partner: null });
+            if (dateError) console.error(dateError);
+            await loadClasses();
+            renderClassesView();
+        });
+    });
 }
 
 async function editClass(classId, oldName) {
-    const newName = prompt('Sınıf adını düzenle:', oldName);
-    if (!newName || newName === oldName) return;
-    const { error } = await supabase.from('classes').update({ name: newName }).eq('id', classId);
-    if (error) alert('Hata: ' + error.message);
-    else await loadClasses();
-    renderClassesView();
+    openPromptModal('Sınıf Adını Düzenle', oldName, async (newName) => {
+        if (!newName || newName === oldName) return;
+        const { error } = await supabase.from('classes').update({ name: newName }).eq('id', classId);
+        if (error) alert('Hata: ' + error.message);
+        else await loadClasses();
+        renderClassesView();
+    });
 }
 
 async function deleteClass(classId) {
-    if (!confirm('Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?')) return;
-    const { error } = await supabase.from('classes').delete().eq('id', classId);
-    if (error) alert('Hata: ' + error.message);
-    else await loadClasses();
-    renderClassesView();
+    openConfirmModal('Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?', async () => {
+        const { error } = await supabase.from('classes').delete().eq('id', classId);
+        if (error) alert('Hata: ' + error.message);
+        else await loadClasses();
+        renderClassesView();
+    });
 }
 
 async function showWeeklyStats() {
@@ -123,12 +118,7 @@ async function showWeeklyStats() {
     if (!allClasses) return;
     const classLastDate = {};
     for (const cls of allClasses) {
-        const { data: dates } = await supabase
-            .from('course_dates')
-            .select('date')
-            .eq('class_id', cls.id)
-            .order('date', { ascending: false })
-            .limit(1);
+        const { data: dates } = await supabase.from('course_dates').select('date').eq('class_id', cls.id).order('date', { ascending: false }).limit(1);
         if (dates && dates.length) classLastDate[cls.id] = dates[0].date;
     }
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -162,21 +152,13 @@ async function showWeeklyStats() {
 }
 
 async function drawChartForClass(classId) {
-    const { data: dates } = await supabase
-        .from('course_dates')
-        .select('id, date')
-        .eq('class_id', classId)
-        .order('date');
+    const { data: dates } = await supabase.from('course_dates').select('id, date').eq('class_id', classId).order('date');
     if (!dates || dates.length === 0) return;
     const { data: students } = await supabase.from('students').select('id').eq('class_id', classId);
     const studentIds = students.map(s => s.id);
     const attendanceCounts = [];
     for (const date of dates) {
-        const { data: atts } = await supabase
-            .from('attendance')
-            .select('status')
-            .eq('course_date_id', date.id)
-            .in('student_id', studentIds);
+        const { data: atts } = await supabase.from('attendance').select('status').eq('course_date_id', date.id).in('student_id', studentIds);
         let count = 0;
         if (atts) count = atts.filter(a => a.status === '+' || a.status === '-').length;
         attendanceCounts.push({ date: date.date, count });

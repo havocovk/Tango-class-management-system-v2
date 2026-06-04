@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, refreshIcons } from './utils.js';
+import { formatDate, refreshIcons, openPromptModal, openDoubleInputModal, openConfirmModal } from './utils.js';
 import { showAttendanceView } from './attendance.js';
 
 let currentClassId = null;
@@ -53,7 +53,6 @@ function renderPaymentsView() {
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
     });
-    
     document.querySelectorAll('#payRows td').forEach(cell => {
         const studentId = parseInt(cell.dataset.studentId);
         const dateId = parseInt(cell.dataset.dateId);
@@ -63,31 +62,29 @@ function renderPaymentsView() {
                 e.stopPropagation();
                 const existing = payments.find(p => p.student_id === studentId && p.start_date_id === dateId);
                 if (existing) {
-                    if (confirm('Bu ödemeyi silmek istediğinize emin misiniz?')) {
+                    openConfirmModal('Bu ödemeyi silmek istediğinize emin misiniz?', async () => {
                         await supabase.from('payments').delete().eq('id', existing.id);
                         await loadPaymentsData();
                         renderPaymentsView();
-                    }
-                } else {
-                    const amount = prompt('Ödeme miktarı (TL):', '');
-                    if (!amount) return;
-                    const weeks = prompt('Kaç hafta geçerli?', '4');
-                    if (!weeks) return;
-                    const { error } = await supabase.from('payments').insert({
-                        student_id: studentId,
-                        start_date_id: dateId,
-                        amount: parseInt(amount),
-                        weeks_covered: parseInt(weeks)
                     });
-                    if (!error) {
-                        await loadPaymentsData();
-                        renderPaymentsView();
-                    } else alert('Hata: ' + error.message);
+                } else {
+                    openDoubleInputModal('Ödeme Ekle', 'Miktar (₺)', 'Kaç hafta geçerli?', async (amount, weeks) => {
+                        if (!amount || !weeks) return;
+                        const { error } = await supabase.from('payments').insert({
+                            student_id: studentId,
+                            start_date_id: dateId,
+                            amount: parseInt(amount),
+                            weeks_covered: parseInt(weeks)
+                        });
+                        if (!error) {
+                            await loadPaymentsData();
+                            renderPaymentsView();
+                        } else alert('Hata: ' + error.message);
+                    });
                 }
             });
         }
     });
-    
     document.getElementById('backToAttendanceBtn').onclick = () => showAttendanceView(currentClassId, currentClassName);
     refreshIcons();
 }
