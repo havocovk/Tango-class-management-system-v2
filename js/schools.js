@@ -1,6 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { showModal, closeModal, refreshIcons } from './utils.js';
-import { showClassesView } from './classes.js';
+import { refreshIcons } from './utils.js';
 
 let currentSchools = [];
 
@@ -39,7 +38,9 @@ function renderSchoolsView() {
                     <span class="btn-icon-delete" data-id="${school.id}"><i data-lucide="trash-2" size="20"></i></span>
                 </div>
             `;
-            card.querySelector('[style*="flex:1"]').addEventListener('click', () => showClassesView(school.id, school.name));
+            card.querySelector('[style*="flex:1"]').addEventListener('click', () => {
+                import('./classes.js').then(m => m.showClassesView(school.id, school.name));
+            });
             card.querySelector('.btn-icon-edit').addEventListener('click', (e) => {
                 e.stopPropagation();
                 editSchool(school.id, school.name);
@@ -89,5 +90,3 @@ async function deleteSchool(id) {
     if (error) alert('Hata: ' + error.message);
     else await loadSchools();
 }
-
-export { renderSchoolsView };

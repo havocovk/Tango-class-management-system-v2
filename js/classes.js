@@ -1,8 +1,6 @@
 import { supabase } from './supabaseClient.js';
-import { showModal, closeModal, refreshIcons, formatDate, createModal, isPastDate } from './utils.js';
+import { refreshIcons, formatDate } from './utils.js';
 import { showAttendanceView } from './attendance.js';
-import { showPaymentsView } from './payments.js';
-import { loadSchools } from './schools.js';
 
 let currentSchoolId = null;
 let currentSchoolName = null;
@@ -39,7 +37,9 @@ function renderClassesView() {
             </div>
         </div>
     `;
-    document.getElementById('backToSchoolsBtn').onclick = () => loadSchools();
+    document.getElementById('backToSchoolsBtn').onclick = () => {
+        import('./schools.js').then(m => m.loadSchools());
+    };
     const listDiv = document.getElementById('classesListContainer');
     listDiv.innerHTML = '';
     if (classesList.length === 0) {
@@ -87,14 +87,12 @@ async function addClass() {
     if (!className) return;
     const startDate = prompt('Başlangıç tarihi (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
     if (!startDate) return;
-    // Sınıfı oluştur
     const { data: newClass, error: classError } = await supabase
         .from('classes')
         .insert({ school_id: currentSchoolId, name: className })
         .select()
         .single();
     if (classError) { alert('Sınıf eklenemedi: ' + classError.message); return; }
-    // İlk ders gününü ekle
     const { error: dateError } = await supabase
         .from('course_dates')
         .insert({ class_id: newClass.id, date: startDate, teacher_partner: null });
@@ -120,11 +118,9 @@ async function deleteClass(classId) {
     renderClassesView();
 }
 
-// Haftalık İstatistikler (okuldaki tüm sınıfların son ders gününe göre haftalık takvim)
 async function showWeeklyStats() {
     const { data: allClasses } = await supabase.from('classes').select('id, name').eq('school_id', currentSchoolId);
     if (!allClasses) return;
-    // Her sınıfın son ders tarihini al
     const classLastDate = {};
     for (const cls of allClasses) {
         const { data: dates } = await supabase
@@ -199,5 +195,3 @@ async function drawChartForClass(classId) {
         chartContainer.appendChild(div);
     });
 }
-
-export { renderClassesView };
