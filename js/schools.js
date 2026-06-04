@@ -1,7 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { showModal, closeModal, refreshIcons } from './utils.js';
 import { showClassesView } from './classes.js';
-import { app } from './app.js';
 
 let currentSchools = [];
 
