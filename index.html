@@ -53,18 +53,30 @@
     </div>
 </div>
 
-<!-- Öğrenci düzenleme/silme modalı -->
+<!-- Öğrenci düzenleme/silme modalı (çift modlu) -->
 <div id="studentActionModal" class="modal">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0;">Öğrenci</h3>
-            <div style="display:flex; gap:12px;">
-                <span id="studentEditIcon" style="cursor:pointer; color:var(--primary);"><i data-lucide="pencil" size="22"></i></span>
-                <span id="studentDeleteIcon" style="cursor:pointer; color:var(--danger);"><i data-lucide="trash-2" size="22"></i></span>
+        <!-- Görüntüleme modu -->
+        <div id="studentViewMode">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="studentNameDisplay" style="font-size:18px; font-weight:600;"></span>
+                <div style="display:flex; gap:12px;">
+                    <span id="studentEditBtn" style="cursor:pointer; color:var(--primary);"><i data-lucide="pencil" size="22"></i></span>
+                    <span id="studentDeleteBtn" style="cursor:pointer; color:var(--danger);"><i data-lucide="trash-2" size="22"></i></span>
+                </div>
+            </div>
+            <button class="btn-secondary" id="studentModalCloseView" style="width:100%; margin-top:25px;">Kapat</button>
+        </div>
+
+        <!-- Düzenleme modu (başlangıçta gizli) -->
+        <div id="studentEditMode" style="display:none;">
+            <h3 style="margin-top:0;">Öğrenci Adını Düzenle</h3>
+            <input type="text" id="studentEditInput" style="width:100%; margin:15px 0;" autocomplete="off">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-success" id="studentSaveBtn">Kaydet</button>
+                <button class="btn-secondary" id="studentCancelEditBtn">İptal</button>
             </div>
         </div>
-        <input type="text" id="studentEditName" style="width:100%; margin-top:20px;" autocomplete="off">
-        <button class="btn-secondary" id="studentModalClose" style="width:100%; margin-top:20px;">Kapat</button>
     </div>
 </div>
 </body>

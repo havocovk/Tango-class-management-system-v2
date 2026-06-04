@@ -139,35 +139,84 @@ async function goBackToClasses() {
 
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
-    const input = document.getElementById('studentEditName');
-    input.value = currentName;
+    const viewMode = document.getElementById('studentViewMode');
+    const editMode = document.getElementById('studentEditMode');
+    const nameDisplay = document.getElementById('studentNameDisplay');
+    const editInput = document.getElementById('studentEditInput');
+    
+    // Görüntüleme modunu ayarla
+    nameDisplay.innerText = currentName;
+    viewMode.style.display = 'block';
+    editMode.style.display = 'none';
     modal.style.display = 'flex';
-    const editIcon = document.getElementById('studentEditIcon');
-    const deleteIcon = document.getElementById('studentDeleteIcon');
-    const closeBtn = document.getElementById('studentModalClose');
-    const cleanup = () => {
-        editIcon.removeEventListener('click', editHandler);
-        deleteIcon.removeEventListener('click', deleteHandler);
-        closeBtn.removeEventListener('click', closeHandler);
+    
+    // Buton referansları
+    const editBtn = document.getElementById('studentEditBtn');
+    const deleteBtn = document.getElementById('studentDeleteBtn');
+    const closeBtn = document.getElementById('studentModalCloseView');
+    const saveBtn = document.getElementById('studentSaveBtn');
+    const cancelEditBtn = document.getElementById('studentCancelEditBtn');
+    
+    // Temizlik için önceki event'leri kaldır (basitçe yeni atama)
+    const newEditBtn = editBtn.cloneNode(true);
+    const newDeleteBtn = deleteBtn.cloneNode(true);
+    const newCloseBtn = closeBtn.cloneNode(true);
+    const newSaveBtn = saveBtn.cloneNode(true);
+    const newCancelBtn = cancelEditBtn.cloneNode(true);
+    editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+    deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    cancelEditBtn.parentNode.replaceChild(newCancelBtn, cancelEditBtn);
+    
+    // Düzenleme butonu
+    newEditBtn.addEventListener('click', () => {
+        // Düzenleme moduna geç
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        editInput.value = currentName;
+        editInput.focus();
+    });
+    
+    // Silme butonu
+    newDeleteBtn.addEventListener('click', () => {
         modal.style.display = 'none';
-    };
-    const editHandler = async () => {
-        const newName = input.value.trim();
+        // Onay modalını kullan (utils'teki openConfirmModal)
+        import('./utils.js').then(({ openConfirmModal }) => {
+            openConfirmModal('Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.', async () => {
+                await deleteStudent(studentId);
+                // Silme işlemi sonrası tablo yenilenecek, ayrıca modal kapatıldı
+            });
+        });
+    });
+    
+    // Kapat butonu
+    newCloseBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    // Kaydet butonu (düzenleme modunda)
+    newSaveBtn.addEventListener('click', async () => {
+        const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
             await updateStudentName(studentId, newName);
         }
-        cleanup();
-    };
-    const deleteHandler = () => {
-        cleanup();
-        openConfirmModal('Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.', async () => {
-            await deleteStudent(studentId);
-        });
-    };
-    const closeHandler = () => cleanup();
-    editIcon.addEventListener('click', editHandler);
-    deleteIcon.addEventListener('click', deleteHandler);
-    closeBtn.addEventListener('click', closeHandler);
+        // Görüntüleme moduna dön
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        nameDisplay.innerText = newName || currentName;
+        currentName = newName || currentName; // güncelle
+        modal.style.display = 'flex'; // modal açık kalsın, ama aslında kapatmıyoruz
+        // İsteğe bağlı: Değişiklik sonrası modal'ı kapatmak isterseniz:
+        // modal.style.display = 'none';
+        // Ama siz "bir önceki popup penceresine dön" dediniz, yani aynı modal görüntüleme modunda kalsın. O yüzden kapatmıyoruz.
+    });
+    
+    // İptal butonu (düzenleme modunda)
+    newCancelBtn.addEventListener('click', () => {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    });
 }
 
 async function updateStudentName(studentId, newName) {
