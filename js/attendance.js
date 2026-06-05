@@ -137,12 +137,18 @@ async function goBackToClasses() {
     }
 }
 
+// Öğrenci düzenleme/silme modalı - düzeltilmiş versiyon
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
     const editMode = document.getElementById('studentEditMode');
     const nameDisplay = document.getElementById('studentNameDisplay');
     const editInput = document.getElementById('studentEditInput');
+    
+    if (!modal) {
+        console.error('studentActionModal bulunamadı');
+        return;
+    }
     
     // Görüntüleme modunu ayarla
     nameDisplay.innerText = currentName;
@@ -157,12 +163,13 @@ function openStudentActionModal(studentId, currentName) {
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Temizlik için önceki event'leri kaldır (basitçe yeni atama)
+    // Eski event'leri temizlemek için yeni elementler oluştur (clone)
     const newEditBtn = editBtn.cloneNode(true);
     const newDeleteBtn = deleteBtn.cloneNode(true);
     const newCloseBtn = closeBtn.cloneNode(true);
     const newSaveBtn = saveBtn.cloneNode(true);
     const newCancelBtn = cancelEditBtn.cloneNode(true);
+    
     editBtn.parentNode.replaceChild(newEditBtn, editBtn);
     deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
     closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
@@ -171,7 +178,6 @@ function openStudentActionModal(studentId, currentName) {
     
     // Düzenleme butonu
     newEditBtn.addEventListener('click', () => {
-        // Düzenleme moduna geç
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editInput.value = currentName;
@@ -179,26 +185,26 @@ function openStudentActionModal(studentId, currentName) {
     });
     
     // Silme butonu
-    newDeleteBtn.addEventListener('click', () => {
-        // Modal'ı kapatmıyoruz, sadece confirm modalını açıyoruz
+    newDeleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Onay modalını aç
         import('./utils.js').then(({ openConfirmModal }) => {
             openConfirmModal(
                 'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
                 async () => {
-                // Silme işlemini yap
+                    // Silme işlemi
                     await deleteStudent(studentId);
-                // Silme başarılı olursa ana modalı kapat
-                    modal.style.display = 'none';
+                    modal.style.display = 'none'; // Ana modalı kapat
                 },
                 () => {
-                    // İptal edildiğinde hiçbir şey yapma, ana modal açık kalsın
-                    console.log('Silme iptal edildi, modal kapanmadı');
+                    // İptal durumunda sadece onay modalı kapanır, ana modal açık kalır
+                    console.log('Silme iptal edildi');
                 }
             );
         });
     });
     
-    // Kapat butonu
+    // Kapat butonu (sadece ana modalı kapatır)
     newCloseBtn.addEventListener('click', () => {
         modal.style.display = 'none';
     });
@@ -208,16 +214,12 @@ function openStudentActionModal(studentId, currentName) {
         const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
             await updateStudentName(studentId, newName);
+            currentName = newName;
+            nameDisplay.innerText = newName;
         }
         // Görüntüleme moduna dön
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
-        nameDisplay.innerText = newName || currentName;
-        currentName = newName || currentName; // güncelle
-        modal.style.display = 'flex'; // modal açık kalsın, ama aslında kapatmıyoruz
-        // İsteğe bağlı: Değişiklik sonrası modal'ı kapatmak isterseniz:
-        // modal.style.display = 'none';
-        // Ama siz "bir önceki popup penceresine dön" dediniz, yani aynı modal görüntüleme modunda kalsın. O yüzden kapatmıyoruz.
     });
     
     // İptal butonu (düzenleme modunda)
@@ -237,10 +239,13 @@ async function updateStudentName(studentId, newName) {
 
 async function deleteStudent(studentId) {
     const { error } = await supabase.from('students').delete().eq('id', studentId);
-    if (!error) {
-        await loadAttendanceData();
-        renderAttendanceView();
-    } else alert('Hata: ' + error.message);
+    if (error) {
+        alert('Hata: ' + error.message);
+        return false;
+    }
+    await loadAttendanceData();
+    renderAttendanceView();
+    return true;
 }
 
 async function toggleAttendance(studentId, courseDateId) {

@@ -91,28 +91,44 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - iptal callback'i eklendi
+// Onay modalı (silme) - garantili çalışan versiyon
 export function openConfirmModal(message, onConfirm, onCancel = null) {
     const modal = document.getElementById('confirmModal');
+    if (!modal) {
+        console.error('confirmModal bulunamadı');
+        return;
+    }
     const msgSpan = document.getElementById('confirmMessage');
+    const yesBtn = document.getElementById('confirmModalYes');
+    const noBtn = document.getElementById('confirmModalNo');
+    
+    if (!yesBtn || !noBtn) {
+        console.error('confirmModal butonları bulunamadı');
+        return;
+    }
+    
     msgSpan.innerText = message;
     modal.style.display = 'flex';
-    const confirmHandler = () => {
+    
+    // Önceki event'leri temizle (clone ile değil, doğrudan atama)
+    // Bunun için yeni event handler'lar tanımla
+    const handleYes = () => {
         modal.style.display = 'none';
-        onConfirm();
-        cleanup();
+        if (onConfirm) onConfirm();
+        // Event'leri temizle
+        yesBtn.removeEventListener('click', handleYes);
+        noBtn.removeEventListener('click', handleNo);
     };
-    const cancelHandler = () => {
+    
+    const handleNo = () => {
         modal.style.display = 'none';
         if (onCancel) onCancel();
-        cleanup();
+        yesBtn.removeEventListener('click', handleYes);
+        noBtn.removeEventListener('click', handleNo);
     };
-    const cleanup = () => {
-        document.getElementById('confirmModalYes').removeEventListener('click', confirmHandler);
-        document.getElementById('confirmModalNo').removeEventListener('click', cancelHandler);
-    };
-    document.getElementById('confirmModalYes').onclick = confirmHandler;
-    document.getElementById('confirmModalNo').onclick = cancelHandler;
+    
+    yesBtn.addEventListener('click', handleYes);
+    noBtn.addEventListener('click', handleNo);
 }
 
 // Lucide ikonlarını yenile
