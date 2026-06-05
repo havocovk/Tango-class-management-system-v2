@@ -79,44 +79,62 @@ function escapeHtml(str) {
 }
 
 async function addClass() {
-    // Sınıf adı sor
+    // Modal'ı yeniden kullanılabilir hale getirmek için önce mevcut event'leri temizle
     const modal = document.getElementById('dynamicModal');
     const titleEl = document.getElementById('dynamicModalTitle');
     const input = document.getElementById('dynamicInput');
+    const confirmBtn = document.getElementById('dynamicModalConfirm');
+    const cancelBtn = document.getElementById('dynamicModalCancel');
+    
+    // Eski event listener'ları kaldır (clone ile temizlik)
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
     titleEl.innerText = 'Sınıf Adı';
+    input.type = 'text';
     input.placeholder = 'Örn: Pazartesi 19:30';
     input.value = '';
     modal.style.display = 'flex';
     input.focus();
-
+    
+    let className = '';
+    
     const confirmHandler = () => {
-        const className = input.value.trim();
+        className = input.value.trim();
         if (!className) {
             modal.style.display = 'none';
-            cleanup();
             return;
         }
         modal.style.display = 'none';
-        cleanup();
-        // Başlangıç tarihi sor
+        // Şimdi tarih seçme modal'ını aç (date input)
         const dateModal = document.getElementById('dynamicModal');
         const dateTitle = document.getElementById('dynamicModalTitle');
         const dateInput = document.getElementById('dynamicInput');
+        const dateConfirmBtn = document.getElementById('dynamicModalConfirm');
+        const dateCancelBtn = document.getElementById('dynamicModalCancel');
+        
+        // Yine clone ile temizlik
+        const newDateConfirm = dateConfirmBtn.cloneNode(true);
+        const newDateCancel = dateCancelBtn.cloneNode(true);
+        dateConfirmBtn.parentNode.replaceChild(newDateConfirm, dateConfirmBtn);
+        dateCancelBtn.parentNode.replaceChild(newDateCancel, dateCancelBtn);
+        
         dateTitle.innerText = 'Başlangıç Tarihi';
-        dateInput.placeholder = 'YYYY-MM-DD (örn: 2025-06-01)';
-        dateInput.value = '';
+        dateInput.type = 'date';
+        dateInput.placeholder = '';
+        dateInput.value = new Date().toISOString().split('T')[0];
         dateModal.style.display = 'flex';
         dateInput.focus();
-
+        
         const dateConfirmHandler = async () => {
-            const startDate = dateInput.value.trim();
+            const startDate = dateInput.value;
             if (!startDate) {
                 dateModal.style.display = 'none';
-                dateCleanup();
                 return;
             }
             dateModal.style.display = 'none';
-            dateCleanup();
             const { data: newClass, error: classError } = await supabase.from('classes').insert({ school_id: currentSchoolId, name: className }).select().single();
             if (classError) { alert('Sınıf eklenemedi: ' + classError.message); return; }
             const { error: dateError } = await supabase.from('course_dates').insert({ class_id: newClass.id, date: startDate, teacher_partner: null });
@@ -124,33 +142,27 @@ async function addClass() {
             await loadClasses();
             renderClassesView();
         };
+        
         const dateCancelHandler = () => {
             dateModal.style.display = 'none';
-            dateCleanup();
         };
-        const dateCleanup = () => {
-            document.getElementById('dynamicModalConfirm').removeEventListener('click', dateConfirmHandler);
-            document.getElementById('dynamicModalCancel').removeEventListener('click', dateCancelHandler);
-            dateInput.removeEventListener('keypress', dateKeyHandler);
-        };
-        const dateKeyHandler = (e) => { if (e.key === 'Enter') dateConfirmHandler(); };
-        document.getElementById('dynamicModalConfirm').onclick = dateConfirmHandler;
-        document.getElementById('dynamicModalCancel').onclick = dateCancelHandler;
-        dateInput.addEventListener('keypress', dateKeyHandler);
+        
+        newDateConfirm.onclick = dateConfirmHandler;
+        newDateCancel.onclick = dateCancelHandler;
+        dateInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') dateConfirmHandler();
+        });
     };
+    
     const cancelHandler = () => {
         modal.style.display = 'none';
-        cleanup();
     };
-    const cleanup = () => {
-        document.getElementById('dynamicModalConfirm').removeEventListener('click', confirmHandler);
-        document.getElementById('dynamicModalCancel').removeEventListener('click', cancelHandler);
-        input.removeEventListener('keypress', keyHandler);
-    };
-    const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
-    document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
-    document.getElementById('dynamicModalCancel').onclick = cancelHandler;
-    input.addEventListener('keypress', keyHandler);
+    
+    newConfirmBtn.onclick = confirmHandler;
+    newCancelBtn.onclick = cancelHandler;
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') confirmHandler();
+    });
 }
 
 async function editClass(classId, oldName) {
@@ -253,9 +265,9 @@ async function showWeeklyStats() {
         if (dates && dates.length) classLastDate[cls.id] = dates[0].date;
     }
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    let html = `<div class="view"><div class="back-link" id="statsBackBtn">← Geri</div><div class="main-title">Haftalık Program</div><table class="stats-table"><thead><tr>${days.map(d => `<th>${d}</th>`).join('')}</table></thead><tbody><tr>`;
+    let html = `<div class="view"><div class="back-link" id="statsBackBtn">← Geri</div><div class="main-title">Haftalık Program</div><table class="stats-table"><thead><tr>${days.map(d => `<th>${d}</th>`).join('')}</tr></thead><tbody><tr>`;
     for (let i = 0; i < 7; i++) {
-        let cell = '</td>';
+        let cell = '<tr>';
         for (const cls of allClasses) {
             const lastDateStr = classLastDate[cls.id];
             if (lastDateStr) {
