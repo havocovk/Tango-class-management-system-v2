@@ -16,6 +16,27 @@
 </div>
 
 <!-- ========== MODALLAR ========== -->
+
+<!-- YENİ: Yeni Sınıf Oluştur Modalı (ad + başlangıç tarihi) -->
+<div id="newClassModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">Yeni Sınıf Oluştur</h3>
+        <input type="text" id="newClassName" placeholder="Sınıf adını giriniz" autocomplete="off" style="width:100%; margin-bottom:15px;">
+        <div style="display:flex; align-items: center; gap: 8px; margin-bottom:20px;">
+            <input type="text" id="newClassDateDisplay" readonly placeholder="Gün/Ay/Yıl" style="flex:1; background:#1e293b; color:white;" value="">
+            <span id="calendarIconBtn" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <!-- Gizli date input (showPicker için) -->
+        <input type="date" id="hiddenDatePicker" style="display:none;">
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="newClassConfirmBtn">Oluştur</button>
+            <button class="btn-secondary" id="newClassCancelBtn">İptal</button>
+        </div>
+    </div>
+</div>
+
 <!-- Tek girişli dinamik modal -->
 <div id="dynamicModal" class="modal">
     <div class="modal-content">
@@ -56,7 +77,6 @@
 <!-- Öğrenci düzenleme/silme modalı (çift modlu) -->
 <div id="studentActionModal" class="modal">
     <div class="modal-content">
-        <!-- Görüntüleme modu -->
         <div id="studentViewMode">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span id="studentNameDisplay" style="font-size:18px; font-weight:600;"></span>
@@ -67,8 +87,6 @@
             </div>
             <button class="btn-secondary" id="studentModalCloseView" style="width:100%; margin-top:25px;">Kapat</button>
         </div>
-
-        <!-- Düzenleme modu (başlangıçta gizli) -->
         <div id="studentEditMode" style="display:none;">
             <h3 style="margin-top:0;">Öğrenci Adını Düzenle</h3>
             <input type="text" id="studentEditInput" style="width:100%; margin:15px 0;" autocomplete="off">
@@ -80,7 +98,7 @@
     </div>
 </div>
 
-<!-- Sınıf düzenleme modalı (ad + yeni başlangıç tarihi) -->
+<!-- Sınıf düzenleme modalı (mevcut, dokunulmadı) -->
 <div id="editClassModal" class="modal">
     <div class="modal-content">
         <h3>Sınıf Düzenle</h3>
@@ -94,7 +112,7 @@
     </div>
 </div>
 
-<!-- Video Modal (ikonlu, kapat butonlu) -->
+<!-- Video Modal -->
 <div id="videoModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <h3 style="margin-top:0; text-align: center;">

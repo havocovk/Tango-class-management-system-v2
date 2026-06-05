@@ -346,3 +346,10 @@ tfoot th.sticky-col:nth-child(2) {
     background: #2DD4BF !important;
     color: #000 !important;
 }
+
+/* Yeni sınıf modalındaki takvim ikonu için küçük bir düzenleme (isteğe bağlı) */
+#calendarIconBtn:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 4px var(--primary));
+    transition: all 0.2s ease;
+}

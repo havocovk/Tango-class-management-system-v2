@@ -5,6 +5,29 @@ export function formatDate(dateStr) {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
+// Görüntüleme için GG.AA.YYYY formatı (readonly inputlarda kullanılır)
+export function formatDateForDisplay(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+// YYYY-MM-DD formatından GG.AA.YYYY'ye çevirir (tersi için parseDisplayDateToISO)
+export function isoToDisplayDate(isoDate) {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+// GG.AA.YYYY -> YYYY-MM-DD (kullanıcı manuel giriş yaparsa diye, ama readonly yaptığımız için çok gerekmez, yine de ekleyelim)
+export function displayDateToISO(displayDate) {
+    if (!displayDate) return '';
+    const parts = displayDate.split('/');
+    if (parts.length !== 3) return '';
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;
+}
+
 export function isoDate(dateStr) {
     const d = new Date(dateStr);
     return d.toISOString().split('T')[0];
@@ -59,7 +82,7 @@ export function openPromptModal(title, placeholder, callback) {
     input.addEventListener('keypress', keyHandler);
 }
 
-// YENİ: Tek girdili modal – mevcut değeri gösterir ve boş değere izin verir
+// Tek girdili modal – mevcut değeri gösterir ve boş değere izin verir
 export function openPromptModalWithValue(title, defaultValue, placeholder, callback) {
     const modal = document.getElementById('dynamicModal');
     const titleEl = document.getElementById('dynamicModalTitle');
@@ -69,10 +92,10 @@ export function openPromptModalWithValue(title, defaultValue, placeholder, callb
     input.value = defaultValue !== undefined ? defaultValue : '';
     modal.style.display = 'flex';
     input.focus();
-    input.select(); // Mevcut metni seçili hale getir, kolay silme/düzenleme
+    input.select();
 
     const confirmHandler = () => {
-        const val = input.value; // .trim() yapmıyoruz – boş string'e izin veriyoruz
+        const val = input.value;
         callback(val);
         modal.style.display = 'none';
         cleanup();
