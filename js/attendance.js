@@ -137,96 +137,83 @@ async function goBackToClasses() {
     }
 }
 
-// Öğrenci düzenleme/silme modalı - düzeltilmiş versiyon
+// Öğrenci düzenleme/silme modalı - kesin çalışan versiyon
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
     const editMode = document.getElementById('studentEditMode');
     const nameDisplay = document.getElementById('studentNameDisplay');
     const editInput = document.getElementById('studentEditInput');
-    
-    if (!modal) {
-        console.error('studentActionModal bulunamadı');
-        return;
-    }
-    
-    // Görüntüleme modunu ayarla
-    nameDisplay.innerText = currentName;
-    viewMode.style.display = 'block';
-    editMode.style.display = 'none';
-    modal.style.display = 'flex';
-    
-    // Buton referansları
     const editBtn = document.getElementById('studentEditBtn');
     const deleteBtn = document.getElementById('studentDeleteBtn');
     const closeBtn = document.getElementById('studentModalCloseView');
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Eski event'leri temizlemek için yeni elementler oluştur (clone)
+    // Eski event'leri temizle (clone ile)
     const newEditBtn = editBtn.cloneNode(true);
     const newDeleteBtn = deleteBtn.cloneNode(true);
     const newCloseBtn = closeBtn.cloneNode(true);
     const newSaveBtn = saveBtn.cloneNode(true);
     const newCancelBtn = cancelEditBtn.cloneNode(true);
-    
     editBtn.parentNode.replaceChild(newEditBtn, editBtn);
     deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
     closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
     saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
     cancelEditBtn.parentNode.replaceChild(newCancelBtn, cancelEditBtn);
     
+    // Görüntüleme modu
+    nameDisplay.innerText = currentName;
+    viewMode.style.display = 'block';
+    editMode.style.display = 'none';
+    modal.style.display = 'flex';
+    
     // Düzenleme butonu
-    newEditBtn.addEventListener('click', () => {
+    newEditBtn.onclick = () => {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editInput.value = currentName;
         editInput.focus();
-    });
+    };
     
     // Silme butonu
-    newDeleteBtn.addEventListener('click', (e) => {
+    newDeleteBtn.onclick = (e) => {
         e.stopPropagation();
-        // Onay modalını aç
         import('./utils.js').then(({ openConfirmModal }) => {
             openConfirmModal(
                 'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
                 async () => {
-                    // Silme işlemi
                     await deleteStudent(studentId);
-                    modal.style.display = 'none'; // Ana modalı kapat
+                    modal.style.display = 'none';
                 },
                 () => {
-                    // İptal durumunda sadece onay modalı kapanır, ana modal açık kalır
-                    console.log('Silme iptal edildi');
+                    // İptal: sadece onay modalı kapanır, ana modal açık kalır
                 }
             );
         });
-    });
+    };
     
     // Kapat butonu (sadece ana modalı kapatır)
-    newCloseBtn.addEventListener('click', () => {
+    newCloseBtn.onclick = () => {
         modal.style.display = 'none';
-    });
+    };
     
     // Kaydet butonu (düzenleme modunda)
-    newSaveBtn.addEventListener('click', async () => {
+    newSaveBtn.onclick = async () => {
         const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
             await updateStudentName(studentId, newName);
-            currentName = newName;
             nameDisplay.innerText = newName;
         }
-        // Görüntüleme moduna dön
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
-    });
+    };
     
     // İptal butonu (düzenleme modunda)
-    newCancelBtn.addEventListener('click', () => {
+    newCancelBtn.onclick = () => {
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
-    });
+    };
 }
 
 async function updateStudentName(studentId, newName) {
