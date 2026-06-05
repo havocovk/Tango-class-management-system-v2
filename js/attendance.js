@@ -46,7 +46,7 @@ function renderAttendanceView() {
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</td></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -308,7 +308,6 @@ async function handleVideo(courseDateId) {
         const deleteIcon = document.getElementById('deleteVideoBtn');
         const closeBtn = document.getElementById('closeVideoModalBtn');
         
-        // Link gösterimi - neon yeşil renkli
         linkDisplay.innerText = existingUrl;
         linkDisplay.style.color = '#2DD4BF';
         modal.style.display = 'flex';
@@ -317,18 +316,31 @@ async function handleVideo(courseDateId) {
         const watchHandler = () => {
             window.open(existingUrl, '_blank');
         };
-        const deleteHandler = async () => {
-            modal.style.display = 'none';
-            const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
-            if (!error) {
-                delete videoMap[courseDateId];
-                await loadAttendanceData();
-                renderAttendanceView();
-            } else {
-                alert('Hata: ' + error.message);
-            }
-            cleanup();
+        
+        // Silme işlemi onay modalı ile
+        const deleteHandler = () => {
+            openConfirmModal(
+                'Bu video bağlantısını silmek istediğinize emin misiniz?',
+                async () => {
+                    // Onay verildi, silme işlemini yap
+                    modal.style.display = 'none';
+                    const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
+                    if (!error) {
+                        delete videoMap[courseDateId];
+                        await loadAttendanceData();
+                        renderAttendanceView();
+                    } else {
+                        alert('Hata: ' + error.message);
+                    }
+                    cleanup();
+                },
+                () => {
+                    // İptal edildi, hiçbir şey yapma, modal açık kalsın
+                    // Sadece cleanup yapma, çünkü modal kapanmadı
+                }
+            );
         };
+        
         const closeHandler = () => {
             modal.style.display = 'none';
             cleanup();
