@@ -79,52 +79,102 @@ function escapeHtml(str) {
 }
 
 async function addClass() {
-    openPromptModalLegacy('Sınıf Adı', 'Örn: Pazartesi 19:30', async (className) => {
-        if (!className) return;
-        const defaultDate = new Date().toISOString().split('T')[0];
-        openPromptModalLegacy('Başlangıç Tarihi', 'YYYY-MM-DD (örn: 2025-06-01)', async (startDate) => {
-            if (!startDate) return;
+    // Sınıf adı sor
+    const modal = document.getElementById('dynamicModal');
+    const titleEl = document.getElementById('dynamicModalTitle');
+    const input = document.getElementById('dynamicInput');
+    titleEl.innerText = 'Sınıf Adı';
+    input.placeholder = 'Örn: Pazartesi 19:30';
+    input.value = '';
+    modal.style.display = 'flex';
+    input.focus();
+
+    const confirmHandler = () => {
+        const className = input.value.trim();
+        if (!className) {
+            modal.style.display = 'none';
+            cleanup();
+            return;
+        }
+        modal.style.display = 'none';
+        cleanup();
+        // Başlangıç tarihi sor
+        const dateModal = document.getElementById('dynamicModal');
+        const dateTitle = document.getElementById('dynamicModalTitle');
+        const dateInput = document.getElementById('dynamicInput');
+        dateTitle.innerText = 'Başlangıç Tarihi';
+        dateInput.placeholder = 'YYYY-MM-DD (örn: 2025-06-01)';
+        dateInput.value = '';
+        dateModal.style.display = 'flex';
+        dateInput.focus();
+
+        const dateConfirmHandler = async () => {
+            const startDate = dateInput.value.trim();
+            if (!startDate) {
+                dateModal.style.display = 'none';
+                dateCleanup();
+                return;
+            }
+            dateModal.style.display = 'none';
+            dateCleanup();
             const { data: newClass, error: classError } = await supabase.from('classes').insert({ school_id: currentSchoolId, name: className }).select().single();
             if (classError) { alert('Sınıf eklenemedi: ' + classError.message); return; }
             const { error: dateError } = await supabase.from('course_dates').insert({ class_id: newClass.id, date: startDate, teacher_partner: null });
             if (dateError) console.error(dateError);
             await loadClasses();
             renderClassesView();
-        });
-    });
+        };
+        const dateCancelHandler = () => {
+            dateModal.style.display = 'none';
+            dateCleanup();
+        };
+        const dateCleanup = () => {
+            document.getElementById('dynamicModalConfirm').removeEventListener('click', dateConfirmHandler);
+            document.getElementById('dynamicModalCancel').removeEventListener('click', dateCancelHandler);
+            dateInput.removeEventListener('keypress', dateKeyHandler);
+        };
+        const dateKeyHandler = (e) => { if (e.key === 'Enter') dateConfirmHandler(); };
+        document.getElementById('dynamicModalConfirm').onclick = dateConfirmHandler;
+        document.getElementById('dynamicModalCancel').onclick = dateCancelHandler;
+        dateInput.addEventListener('keypress', dateKeyHandler);
+    };
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cleanup = () => {
+        document.getElementById('dynamicModalConfirm').removeEventListener('click', confirmHandler);
+        document.getElementById('dynamicModalCancel').removeEventListener('click', cancelHandler);
+        input.removeEventListener('keypress', keyHandler);
+    };
+    const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
+    document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
+    document.getElementById('dynamicModalCancel').onclick = cancelHandler;
+    input.addEventListener('keypress', keyHandler);
 }
 
-// YENİ: Sınıf düzenleme (ad + isteğe bağlı yeni başlangıç tarihi)
 async function editClass(classId, oldName) {
-    // Modal elemanlarını al
     const modal = document.getElementById('editClassModal');
     const nameInput = document.getElementById('editClassNameInput');
     const dateInput = document.getElementById('editClassNewDateInput');
     const saveBtn = document.getElementById('editClassSaveBtn');
     const cancelBtn = document.getElementById('editClassCancelBtn');
 
-    // Mevcut değerleri yerleştir
     nameInput.value = oldName;
-    dateInput.value = ''; // boş, opsiyonel
-
-    // Modalı göster
+    dateInput.value = '';
     modal.style.display = 'flex';
     nameInput.focus();
 
-    // Kaydetme işlemi
     const saveHandler = async () => {
         const newName = nameInput.value.trim();
-        const newDateStr = dateInput.value; // YYYY-MM-DD formatında, boş olabilir
+        const newDateStr = dateInput.value;
 
-        // 1. Sınıf adını güncelle
         if (newName && newName !== oldName) {
             const { error } = await supabase.from('classes').update({ name: newName }).eq('id', classId);
             if (error) alert('Ad güncellenemedi: ' + error.message);
         }
 
-        // 2. Yeni tarih girildiyse işle
         if (newDateStr) {
-            // Bu sınıfa ait mevcut ders tarihlerini al (en büyük tarihi bul)
             const { data: existingDates } = await supabase
                 .from('course_dates')
                 .select('date')
@@ -137,11 +187,9 @@ async function editClass(classId, oldName) {
             }
             const newDate = new Date(newDateStr);
             
-            // Kontrol: yeni tarih, mevcut en büyük tarihten büyük olmalı
             if (lastDate && newDate <= lastDate) {
                 alert(`Yeni tarih, son ders tarihinden (${formatDate(lastDate.toISOString().split('T')[0])}) sonra olmalıdır. Eklenmedi.`);
             } else {
-                // Tarihin daha önce eklenmiş olup olmadığını kontrol et
                 const { data: alreadyExists } = await supabase
                     .from('course_dates')
                     .select('id')
@@ -152,20 +200,16 @@ async function editClass(classId, oldName) {
                 if (alreadyExists) {
                     alert('Bu tarih zaten mevcut. Eklenmedi.');
                 } else {
-                    // Yeni tarihi course_dates tablosuna ekle
                     const { error: insertError } = await supabase
                         .from('course_dates')
                         .insert({ class_id: classId, date: newDateStr, teacher_partner: null });
                     if (insertError) {
                         alert('Tarih eklenirken hata: ' + insertError.message);
-                    } else {
-                        // Başarıyla eklendi, attendance view yenilenecek
                     }
                 }
             }
         }
 
-        // Modalı kapat ve listeyi yenile
         modal.style.display = 'none';
         await loadClasses();
         renderClassesView();
@@ -184,62 +228,11 @@ async function editClass(classId, oldName) {
 
     saveBtn.addEventListener('click', saveHandler);
     cancelBtn.addEventListener('click', cancelHandler);
-    // Enter tuşu için
     const keyHandler = (e) => {
         if (e.key === 'Enter') saveHandler();
     };
     nameInput.addEventListener('keypress', keyHandler);
     dateInput.addEventListener('keypress', keyHandler);
-    // Cleanup'te keyHandler'ı da çıkar
-    const originalCleanup = cleanup;
-    window.cleanupEditClass = () => {
-        nameInput.removeEventListener('keypress', keyHandler);
-        dateInput.removeEventListener('keypress', keyHandler);
-        originalCleanup();
-    };
-    // override cleanup
-    const superCleanup = () => {
-        nameInput.removeEventListener('keypress', keyHandler);
-        dateInput.removeEventListener('keypress', keyHandler);
-        saveBtn.removeEventListener('click', saveHandler);
-        cancelBtn.removeEventListener('click', cancelHandler);
-    };
-    // basitçe yeniden ata
-    window.superCleanup = superCleanup;
-    // ama event listener'lar birden fazla eklenmesin, öncekileri temizlemek için
-    // daha sağlam bir yöntem: modal kapatıldığında temizle, ama birden fazla açma kapamada sorun olmasın.
-    // En iyisi her açılışta yeni handler'lar ekleyip kapatınca çıkarmak. Bunu yaptık.
-}
-
-// Eski tek inputlu prompt (addClass içinde kullanılıyor) - utils'teki openPromptModal'a erişim için
-function openPromptModalLegacy(title, placeholder, callback) {
-    const modal = document.getElementById('dynamicModal');
-    const titleEl = document.getElementById('dynamicModalTitle');
-    const input = document.getElementById('dynamicInput');
-    titleEl.innerText = title;
-    input.placeholder = placeholder || '';
-    input.value = '';
-    modal.style.display = 'flex';
-    input.focus();
-    const confirmHandler = () => {
-        const val = input.value.trim();
-        if (val) callback(val);
-        modal.style.display = 'none';
-        cleanup();
-    };
-    const cancelHandler = () => {
-        modal.style.display = 'none';
-        cleanup();
-    };
-    const cleanup = () => {
-        document.getElementById('dynamicModalConfirm').removeEventListener('click', confirmHandler);
-        document.getElementById('dynamicModalCancel').removeEventListener('click', cancelHandler);
-        input.removeEventListener('keypress', keyHandler);
-    };
-    const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
-    document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
-    document.getElementById('dynamicModalCancel').onclick = cancelHandler;
-    input.addEventListener('keypress', keyHandler);
 }
 
 async function deleteClass(classId) {
@@ -260,9 +253,9 @@ async function showWeeklyStats() {
         if (dates && dates.length) classLastDate[cls.id] = dates[0].date;
     }
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    let html = `<div class="view"><div class="back-link" id="statsBackBtn">← Geri</div><div class="main-title">Haftalık Program</div><table class="stats-table"><thead><tr>${days.map(d => `<th>${d}</th>`).join('')}</tr></thead><tbody><tr>`;
+    let html = `<div class="view"><div class="back-link" id="statsBackBtn">← Geri</div><div class="main-title">Haftalık Program</div><table class="stats-table"><thead><tr>${days.map(d => `<th>${d}</th>`).join('')}</table></thead><tbody><tr>`;
     for (let i = 0; i < 7; i++) {
-        let cell = '<td>';
+        let cell = '</td>';
         for (const cls of allClasses) {
             const lastDateStr = classLastDate[cls.id];
             if (lastDateStr) {
