@@ -180,13 +180,21 @@ function openStudentActionModal(studentId, currentName) {
     
     // Silme butonu
     newDeleteBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-        // Onay modalını kullan (utils'teki openConfirmModal)
+        // Modal'ı kapatmıyoruz, sadece confirm modalını açıyoruz
         import('./utils.js').then(({ openConfirmModal }) => {
-            openConfirmModal('Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.', async () => {
-                await deleteStudent(studentId);
-                // Silme işlemi sonrası tablo yenilenecek, ayrıca modal kapatıldı
-            });
+            openConfirmModal(
+                'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
+                async () => {
+                // Silme işlemini yap
+                    await deleteStudent(studentId);
+                // Silme başarılı olursa ana modalı kapat
+                    modal.style.display = 'none';
+                },
+                () => {
+                    // İptal edildiğinde hiçbir şey yapma, ana modal açık kalsın
+                    console.log('Silme iptal edildi, modal kapanmadı');
+                }
+            );
         });
     });
     
@@ -242,13 +250,38 @@ async function toggleAttendance(studentId, courseDateId) {
     else if (current === '+') newStatus = '-';
     else if (current === '-') newStatus = 'S';
     else newStatus = '';
+    
     if (newStatus === '') {
-        await supabase.from('attendance').delete().eq('student_id', studentId).eq('course_date_id', courseDateId);
-        delete attendanceMap[`${studentId}_${courseDateId}`];
+        // Kaydı sil
+        const { error } = await supabase
+            .from('attendance')
+            .delete()
+            .eq('student_id', studentId)
+            .eq('course_date_id', courseDateId);
+        if (!error) {
+            delete attendanceMap[`${studentId}_${courseDateId}`];
+        } else {
+            alert('Hata: ' + error.message);
+            return;
+        }
     } else {
-        const { error } = await supabase.from('attendance').upsert({ student_id: studentId, course_date_id: courseDateId, status: newStatus });
-        if (!error) attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
-        else alert('Hata: ' + error.message);
+        // Önce varsa sil, sonra ekle (unique constraint hatasını önler)
+        await supabase
+            .from('attendance')
+            .delete()
+            .eq('student_id', studentId)
+            .eq('course_date_id', courseDateId);
+        
+        const { error } = await supabase
+            .from('attendance')
+            .insert({ student_id: studentId, course_date_id: courseDateId, status: newStatus });
+        
+        if (!error) {
+            attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
+        } else {
+            alert('Hata: ' + error.message);
+            return;
+        }
     }
     await loadAttendanceData();
     renderAttendanceView();

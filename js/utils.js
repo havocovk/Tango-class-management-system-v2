@@ -91,8 +91,8 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme)
-export function openConfirmModal(message, onConfirm) {
+// Onay modalı (silme) - iptal callback'i eklendi
+export function openConfirmModal(message, onConfirm, onCancel = null) {
     const modal = document.getElementById('confirmModal');
     const msgSpan = document.getElementById('confirmMessage');
     msgSpan.innerText = message;
@@ -104,6 +104,7 @@ export function openConfirmModal(message, onConfirm) {
     };
     const cancelHandler = () => {
         modal.style.display = 'none';
+        if (onCancel) onCancel();
         cleanup();
     };
     const cleanup = () => {
