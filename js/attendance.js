@@ -72,7 +72,7 @@ function renderAttendanceView() {
     const footer = document.getElementById('footerRow');
     footer.innerHTML = '';
 
-    // Class Recaps satırı - iki sütunu birleştirip sticky uyguluyoruz
+    // Class Recaps satırı
     let videoRow = `<tr>`;
     videoRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Class Recaps</td>`;
@@ -94,7 +94,7 @@ function renderAttendanceView() {
 
     footer.innerHTML = videoRow + partnerRow;
 
-    // Event listener'lar (aynı)
+    // Event listener'lar
     document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
     document.getElementById('addStudentBtn').onclick = () => addStudent();
     document.getElementById('addWeekBtn').onclick = () => addWeek();
@@ -161,9 +161,6 @@ function renderAttendanceView() {
 
     refreshIcons();
 }
-
-// Diğer fonksiyonlar (goBackToClasses, openStudentActionModal, updateStudentName, deleteStudent, toggleAttendance, handleVideo, updateTeacherPartner, addStudent, addWeek, deleteWeek, escapeHtml) aynen kalır.
-// Aşağıda kısaca yazıyorum, ama eksiksiz koyuyorum.
 
 async function goBackToClasses() {
     const { data: cls } = await supabase.from('classes').select('school_id').eq('id', currentClassId).single();
@@ -302,16 +299,65 @@ async function toggleAttendance(studentId, courseDateId) {
     renderAttendanceView();
 }
 
+// ========== YENİ handleVideo (Video Modal ile) ==========
 async function handleVideo(courseDateId) {
     const existingUrl = videoMap[courseDateId];
     if (existingUrl) {
-        if (confirm(`Video mevcut: ${existingUrl}\nSilmek istiyor musunuz?`)) {
-            await supabase.from('videos').delete().eq('course_date_id', courseDateId);
-            delete videoMap[courseDateId];
-            await loadAttendanceData();
-            renderAttendanceView();
-        }
+        // Video varsa, videoModal'ı göster
+        const modal = document.getElementById('videoModal');
+        const linkDisplay = document.getElementById('videoLinkDisplay');
+        const watchBtn = document.getElementById('watchVideoBtn');
+        const deleteBtn = document.getElementById('deleteVideoBtn');
+        const closeBtn = document.getElementById('closeVideoModalBtn');
+        
+        // Linki göster
+        linkDisplay.innerText = existingUrl;
+        modal.style.display = 'flex';
+        refreshIcons(); // Modal içindeki lucide iconları yenile
+        
+        // İzle butonu
+        const watchHandler = () => {
+            window.open(existingUrl, '_blank');
+        };
+        // Sil butonu
+        const deleteHandler = async () => {
+            modal.style.display = 'none';
+            // Videoyu sil
+            const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
+            if (!error) {
+                delete videoMap[courseDateId];
+                await loadAttendanceData();
+                renderAttendanceView();
+            } else {
+                alert('Hata: ' + error.message);
+            }
+            cleanup();
+        };
+        const closeHandler = () => {
+            modal.style.display = 'none';
+            cleanup();
+        };
+        
+        const cleanup = () => {
+            watchBtn.removeEventListener('click', watchHandler);
+            deleteBtn.removeEventListener('click', deleteHandler);
+            closeBtn.removeEventListener('click', closeHandler);
+        };
+        
+        watchBtn.addEventListener('click', watchHandler);
+        deleteBtn.addEventListener('click', deleteHandler);
+        closeBtn.addEventListener('click', closeHandler);
+        
+        // Modal dışına tıklama ile kapatma (opsiyonel)
+        modal.addEventListener('click', function outsideClick(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                cleanup();
+                modal.removeEventListener('click', outsideClick);
+            }
+        });
     } else {
+        // Video yoksa, link girme promptu göster
         openPromptModal('Video Linki', 'https://...', async (url) => {
             if (url && url.startsWith('http')) {
                 const { error } = await supabase.from('videos').insert({ course_date_id: courseDateId, url });
