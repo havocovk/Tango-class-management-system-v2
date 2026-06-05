@@ -46,7 +46,7 @@ function renderAttendanceView() {
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</td></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -83,7 +83,7 @@ function renderAttendanceView() {
     videoRow += `</tr>`;
 
     // Partner/Teacher satırı
-    let partnerRow = `<tr>`;
+    let partnerRow = `<table>`;
     partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     courseDates.forEach(date => {
@@ -299,6 +299,7 @@ async function toggleAttendance(studentId, courseDateId) {
     renderAttendanceView();
 }
 
+// DÜZELTİLMİŞ handleVideo - sil butonuna basınca direkt onay modalı açılır
 async function handleVideo(courseDateId) {
     const existingUrl = videoMap[courseDateId];
     if (existingUrl) {
@@ -317,12 +318,12 @@ async function handleVideo(courseDateId) {
             window.open(existingUrl, '_blank');
         };
         
-        // Silme işlemi onay modalı ile
+        // Sil butonuna tıklayınca direkt onay modalı
         const deleteHandler = () => {
             openConfirmModal(
                 'Bu video bağlantısını silmek istediğinize emin misiniz?',
                 async () => {
-                    // Onay verildi, silme işlemini yap
+                    // Evet (kırmızı buton) -> sil
                     modal.style.display = 'none';
                     const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
                     if (!error) {
@@ -335,8 +336,8 @@ async function handleVideo(courseDateId) {
                     cleanup();
                 },
                 () => {
-                    // İptal edildi, hiçbir şey yapma, modal açık kalsın
-                    // Sadece cleanup yapma, çünkü modal kapanmadı
+                    // İptal -> sadece videoModal'ı kapatma, olduğu gibi kalsın
+                    // Hiçbir şey yapma
                 }
             );
         };
