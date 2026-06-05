@@ -299,7 +299,6 @@ async function toggleAttendance(studentId, courseDateId) {
     renderAttendanceView();
 }
 
-// ========== GÜNCELLENMİŞ handleVideo (Kapat butonlu, ikonlu) ==========
 async function handleVideo(courseDateId) {
     const existingUrl = videoMap[courseDateId];
     if (existingUrl) {
@@ -309,7 +308,9 @@ async function handleVideo(courseDateId) {
         const deleteIcon = document.getElementById('deleteVideoBtn');
         const closeBtn = document.getElementById('closeVideoModalBtn');
         
+        // Link gösterimi - neon yeşil renkli
         linkDisplay.innerText = existingUrl;
+        linkDisplay.style.color = '#2DD4BF';
         modal.style.display = 'flex';
         refreshIcons();
         

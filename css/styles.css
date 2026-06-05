@@ -9,7 +9,7 @@
     --danger: #ef4444;
     --info: #3b82f6;
     --glass: rgba(18, 20, 18, 0.8);
-    --neon-green: #2ef8a1;
+    --neon-green: #2DD4BF;   /* değiştirildi */
     --dim-forest: #2a5c4a; 
 }
 
@@ -92,7 +92,7 @@ button {
 }
 
 .btn-info {
-    background: var(--primary) !important;
+    background: #2DD4BF !important;
     color: #000 !important;
 }
 
@@ -107,15 +107,15 @@ button {
 }
 
 .btn-success {
-    background: var(--neon-green) !important;
+    background: #2DD4BF !important;
     color: #000 !important;
     border: none;
-    box-shadow: 0 0 10px rgba(46, 248, 161, 0.2);
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);
 }
 
 .btn-success:hover {
     background: #25c982 !important;
-    box-shadow: 0 0 15px rgba(46, 248, 161, 0.4);
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.4);
 }
 
 .btn-icon-edit {
@@ -136,7 +136,7 @@ button {
 }
 .btn-icon-delete:hover { color: #ff8080; }
 
-.icon-present { color: var(--neon-green); }
+.icon-present { color: #2DD4BF; }
 .icon-absent { color: var(--dim-forest); opacity: 0.8; }
 
 .vid-icon {
@@ -145,8 +145,8 @@ button {
     transition: 0.3s;
 }
 .vid-icon.active {
-    color: var(--neon-green);
-    filter: drop-shadow(0 0 5px var(--neon-green));
+    color: #2DD4BF;
+    filter: drop-shadow(0 0 5px #2DD4BF);
 }
 
 .modal {
@@ -192,7 +192,7 @@ button {
     transition: transform 0.2s;
 }
 .video-action-btn:active { transform: scale(0.9); }
-.icon-watch { color: var(--neon-green); }
+.icon-watch { color: #2DD4BF; }
 .icon-delete-alt { color: var(--danger); }
 
 .stats-table {
@@ -336,4 +336,13 @@ tfoot th.sticky-col {
 tfoot td.sticky-col:nth-child(2),
 tfoot th.sticky-col:nth-child(2) {
     left: 30px;
+}
+
+/* Modal içindeki success butonları */
+#dynamicModal .btn-success,
+#doubleInputModal .btn-success,
+#confirmModal .btn-danger,
+#editClassModal .btn-success {
+    background: #2DD4BF !important;
+    color: #000 !important;
 }
