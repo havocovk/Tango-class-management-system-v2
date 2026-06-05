@@ -91,41 +91,33 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - kesin çalışan versiyon
+// Onay modalı (silme) - BASİT VE GARANTİLİ VERSİYON
+// Butonlara doğrudan onclick atar, her çağrıda önceki event'leri temizler.
 export function openConfirmModal(message, onConfirm, onCancel = null) {
     const modal = document.getElementById('confirmModal');
-    if (!modal) {
-        console.error('confirmModal bulunamadı');
-        return;
-    }
+    if (!modal) return;
     const msgSpan = document.getElementById('confirmMessage');
     const yesBtn = document.getElementById('confirmModalYes');
     const noBtn = document.getElementById('confirmModalNo');
-    
-    if (!yesBtn || !noBtn) {
-        console.error('confirmModal butonları bulunamadı');
-        return;
-    }
+    if (!yesBtn || !noBtn) return;
     
     msgSpan.innerText = message;
-    modal.style.display = 'flex';
     
-    // Önceki event'leri temizle (clone ile)
-    const newYes = yesBtn.cloneNode(true);
-    const newNo = noBtn.cloneNode(true);
-    yesBtn.parentNode.replaceChild(newYes, yesBtn);
-    noBtn.parentNode.replaceChild(newNo, noBtn);
+    // Eski onclick'leri kaldır
+    yesBtn.onclick = null;
+    noBtn.onclick = null;
     
-    const handleYes = () => {
+    // Yeni onclick'leri ata
+    yesBtn.onclick = () => {
         modal.style.display = 'none';
         if (onConfirm) onConfirm();
     };
-    const handleNo = () => {
+    noBtn.onclick = () => {
         modal.style.display = 'none';
         if (onCancel) onCancel();
     };
-    newYes.addEventListener('click', handleYes);
-    newNo.addEventListener('click', handleNo);
+    
+    modal.style.display = 'flex';
 }
 
 // Lucide ikonlarını yenile

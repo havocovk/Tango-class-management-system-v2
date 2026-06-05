@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModal, openConfirmModal, showModal, closeModal } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModal, openConfirmModal } from './utils.js';
 import { showPaymentsView } from './payments.js';
 
 let currentClassId = null;
@@ -76,7 +76,7 @@ function renderAttendanceView() {
         const hasVideo = videoMap[date.id];
         videoRow += `<td><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
-    videoRow += `</tr>`;
+    videoRow += `</table>`;
     let partnerRow = `<tr><td colspan="2" style="font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     courseDates.forEach(date => {
         const partner = partnerMap[date.id] || '';
@@ -137,7 +137,7 @@ async function goBackToClasses() {
     }
 }
 
-// Öğrenci düzenleme/silme modalı - kesin çalışan versiyon
+// DÜZELTİLMİŞ ÖĞRENCİ MODALI
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
@@ -150,17 +150,12 @@ function openStudentActionModal(studentId, currentName) {
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Eski event'leri temizle (clone ile)
-    const newEditBtn = editBtn.cloneNode(true);
-    const newDeleteBtn = deleteBtn.cloneNode(true);
-    const newCloseBtn = closeBtn.cloneNode(true);
-    const newSaveBtn = saveBtn.cloneNode(true);
-    const newCancelBtn = cancelEditBtn.cloneNode(true);
-    editBtn.parentNode.replaceChild(newEditBtn, editBtn);
-    deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
-    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-    cancelEditBtn.parentNode.replaceChild(newCancelBtn, cancelEditBtn);
+    // Önceki event'leri temizle (onclick ile)
+    editBtn.onclick = null;
+    deleteBtn.onclick = null;
+    closeBtn.onclick = null;
+    saveBtn.onclick = null;
+    cancelEditBtn.onclick = null;
     
     // Görüntüleme modu
     nameDisplay.innerText = currentName;
@@ -169,7 +164,7 @@ function openStudentActionModal(studentId, currentName) {
     modal.style.display = 'flex';
     
     // Düzenleme butonu
-    newEditBtn.onclick = () => {
+    editBtn.onclick = () => {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editInput.value = currentName;
@@ -177,40 +172,39 @@ function openStudentActionModal(studentId, currentName) {
     };
     
     // Silme butonu
-    newDeleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        import('./utils.js').then(({ openConfirmModal }) => {
-            openConfirmModal(
-                'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
-                async () => {
-                    await deleteStudent(studentId);
-                    modal.style.display = 'none';
-                },
-                () => {
-                    // İptal: sadece onay modalı kapanır, ana modal açık kalır
-                }
-            );
-        });
+    deleteBtn.onclick = () => {
+        openConfirmModal(
+            'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
+            async () => {
+                await deleteStudent(studentId);
+                modal.style.display = 'none';
+            },
+            () => {
+                // İptal: sadece onay modalı kapanır, ana modal açık kalır
+                // Hiçbir şey yapma
+            }
+        );
     };
     
-    // Kapat butonu (sadece ana modalı kapatır)
-    newCloseBtn.onclick = () => {
+    // Kapat butonu
+    closeBtn.onclick = () => {
         modal.style.display = 'none';
     };
     
     // Kaydet butonu (düzenleme modunda)
-    newSaveBtn.onclick = async () => {
+    saveBtn.onclick = async () => {
         const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
             await updateStudentName(studentId, newName);
             nameDisplay.innerText = newName;
+            currentName = newName; // güncelle
         }
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
     
     // İptal butonu (düzenleme modunda)
-    newCancelBtn.onclick = () => {
+    cancelEditBtn.onclick = () => {
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
@@ -244,7 +238,6 @@ async function toggleAttendance(studentId, courseDateId) {
     else newStatus = '';
     
     if (newStatus === '') {
-        // Kaydı sil
         const { error } = await supabase
             .from('attendance')
             .delete()
@@ -257,7 +250,6 @@ async function toggleAttendance(studentId, courseDateId) {
             return;
         }
     } else {
-        // Önce varsa sil, sonra ekle (unique constraint hatasını önler)
         await supabase
             .from('attendance')
             .delete()
