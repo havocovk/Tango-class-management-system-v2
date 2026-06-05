@@ -46,7 +46,7 @@ function renderAttendanceView() {
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px;" data-date-id="${d.id}" data-date="${d.date}">${formatDate(d.date)}</th>`).join('')}</tr></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')} </tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -84,10 +84,14 @@ function renderAttendanceView() {
     });
     partnerRow += `</tr>`;
     footer.innerHTML = videoRow + partnerRow;
+
+    // Geri butonu
     document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
     document.getElementById('addStudentBtn').onclick = () => addStudent();
     document.getElementById('addWeekBtn').onclick = () => addWeek();
     document.getElementById('paymentsBtn').onclick = () => showPaymentsView(currentClassId, currentClassName);
+
+    // Yoklama hücreleri
     document.querySelectorAll('.att-cell').forEach(cell => {
         cell.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -99,6 +103,8 @@ function renderAttendanceView() {
             await toggleAttendance(studentId, dateId);
         });
     });
+
+    // Video ikonları
     document.querySelectorAll('.vid-icon').forEach(icon => {
         icon.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -106,23 +112,24 @@ function renderAttendanceView() {
             await handleVideo(dateId);
         });
     });
-    // PARTNER DÜZENLEME – YENİ FONKSİYON KULLANILIYOR
+
+    // Partner düzenleme
     document.querySelectorAll('.partner-edit').forEach(span => {
         span.addEventListener('click', async () => {
             const dateId = parseInt(span.dataset.dateId);
             const current = span.dataset.partner === '✏️' ? '' : span.dataset.partner;
-            // Yeni modal: mevcut değeri göster, boş değere izin ver
             openPromptModalWithValue(
                 'Partner / Teacher Adı',
                 current,
                 'İsim girin (boş bırakıp Tamam derseniz silinir)',
                 async (newPartner) => {
-                    // newPartner boş string olabilir
                     await updateTeacherPartner(dateId, newPartner);
                 }
             );
         });
     });
+
+    // Öğrenci düzenleme
     document.querySelectorAll('.btn-icon-edit').forEach(icon => {
         icon.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -131,6 +138,23 @@ function renderAttendanceView() {
             openStudentActionModal(studentId, currentName);
         });
     });
+
+    // ✅ YENİ: Hafta başlıklarına tıklama ile silme işlevi
+    document.querySelectorAll('#headerRow th[data-date-id]').forEach(th => {
+        th.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const dateId = parseInt(th.dataset.dateId);
+            const dateStr = th.dataset.date;
+            const formatted = formatDate(dateStr);
+            openConfirmModal(
+                `${formatted} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
+                async () => {
+                    await deleteWeek(dateId);
+                }
+            );
+        });
+    });
+
     refreshIcons();
 }
 
@@ -323,6 +347,41 @@ async function addWeek() {
         await loadAttendanceData();
         renderAttendanceView();
     } else alert('Hata: ' + error.message);
+}
+
+// ✅ YENİ FONKSİYON: Hafta silme
+async function deleteWeek(courseDateId) {
+    // Önce bağlı attendance kayıtları ve videolar cascade ile silinecek (foreign key)
+    // Ancak Supabase'de cascade tanımlı değilse manuel silmek gerekir.
+    // Emniyet için önce attendance, sonra video, sonra course_date satırını silelim.
+    try {
+        // 1. Attendance kayıtlarını sil
+        const { error: attError } = await supabase
+            .from('attendance')
+            .delete()
+            .eq('course_date_id', courseDateId);
+        if (attError) throw attError;
+
+        // 2. Video kayıtlarını sil
+        const { error: vidError } = await supabase
+            .from('videos')
+            .delete()
+            .eq('course_date_id', courseDateId);
+        if (vidError) throw vidError;
+
+        // 3. Course date satırını sil
+        const { error: dateError } = await supabase
+            .from('course_dates')
+            .delete()
+            .eq('id', courseDateId);
+        if (dateError) throw dateError;
+
+        // Verileri yeniden yükle ve ekranı tazele
+        await loadAttendanceData();
+        renderAttendanceView();
+    } catch (err) {
+        alert('Hafta silinirken hata oluştu: ' + err.message);
+    }
 }
 
 function escapeHtml(str) {
