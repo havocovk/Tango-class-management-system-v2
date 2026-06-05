@@ -137,7 +137,6 @@ async function goBackToClasses() {
     }
 }
 
-// DÜZELTİLMİŞ ÖĞRENCİ MODALI - silme butonu confirm kullanıyor
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
@@ -171,14 +170,14 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu - özel modal kullan
+    // Silme butonu - önce öğrenci modalını kapat, sonra onay modalını aç
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
+        modal.style.display = 'none';
         openConfirmModal(
             'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
             async () => {
                 await deleteStudent(studentId);
-                modal.style.display = 'none';
             }
         );
     };
