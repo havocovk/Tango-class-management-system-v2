@@ -137,7 +137,7 @@ async function goBackToClasses() {
     }
 }
 
-// DÜZELTİLMİŞ ÖĞRENCİ MODALI
+// DÜZELTİLMİŞ ÖĞRENCİ MODALI (kesin çalışan)
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
@@ -150,7 +150,7 @@ function openStudentActionModal(studentId, currentName) {
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Önceki event'leri temizle (onclick ile)
+    // Önceki tüm onclick'leri temizle
     editBtn.onclick = null;
     deleteBtn.onclick = null;
     closeBtn.onclick = null;
@@ -171,17 +171,18 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu
+    // Silme butonu - openConfirmModal kullanıyor
     deleteBtn.onclick = () => {
+        // 'openConfirmModal' utils.js'den geliyor
         openConfirmModal(
             'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
             async () => {
                 await deleteStudent(studentId);
-                modal.style.display = 'none';
+                modal.style.display = 'none'; // Ana modalı kapat
             },
             () => {
-                // İptal: sadece onay modalı kapanır, ana modal açık kalır
-                // Hiçbir şey yapma
+                // İptal edilince sadece onay modalı kapanır, ana modal açık kalır.
+                // Burada hiçbir şey yapmıyoruz.
             }
         );
     };
@@ -197,7 +198,7 @@ function openStudentActionModal(studentId, currentName) {
         if (newName && newName !== currentName) {
             await updateStudentName(studentId, newName);
             nameDisplay.innerText = newName;
-            currentName = newName; // güncelle
+            currentName = newName;
         }
         viewMode.style.display = 'block';
         editMode.style.display = 'none';

@@ -91,8 +91,7 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - BASİT VE GARANTİLİ VERSİYON
-// Butonlara doğrudan onclick atar, her çağrıda önceki event'leri temizler.
+// Onay modalı (silme) - KESİN ÇÖZÜM: direkt onclick kullanıyor, event listener birikmez.
 export function openConfirmModal(message, onConfirm, onCancel = null) {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
@@ -103,7 +102,7 @@ export function openConfirmModal(message, onConfirm, onCancel = null) {
     
     msgSpan.innerText = message;
     
-    // Eski onclick'leri kaldır
+    // Önceki onclick'leri temizle
     yesBtn.onclick = null;
     noBtn.onclick = null;
     
