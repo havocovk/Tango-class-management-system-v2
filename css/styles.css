@@ -322,3 +322,18 @@ th:nth-child(2), td:nth-child(2) {
     cursor: pointer;
     font-weight: 600;
 }
+
+/* Footer satırlarındaki ilk iki sütunu da sticky yap */
+tfoot td.sticky-col,
+tfoot th.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: var(--card-bg);
+}
+
+/* İkinci sütun için ayrıca left değeri ayarla (üstteki th/td ikinci sütun 30px sola kayar) */
+tfoot td.sticky-col:nth-child(2),
+tfoot th.sticky-col:nth-child(2) {
+    left: 30px;
+}

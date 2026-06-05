@@ -45,7 +45,7 @@ function renderAttendanceView() {
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
             <div class="table-wrapper">
-                <table>
+                </table>
                     <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')} </tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
@@ -69,20 +69,31 @@ function renderAttendanceView() {
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
     });
+
+    // FOOTER SATIRLARI - DÜZELTİLMİŞ: İlk iki sütun ayrı ayrı hücre olup sticky olacak
     const footer = document.getElementById('footerRow');
     footer.innerHTML = '';
-    let videoRow = `<tr><td colspan="2" style="font-weight:800; color:var(--accent);">Class Recaps</td>`;
+
+    // 1. satır: Class Recaps
+    let videoRow = `<tr>`;
+    videoRow += `<td class="sticky-col">#</td>`;
+    videoRow += `<td class="sticky-col" style="font-weight:800; color:var(--accent);">Class Recaps</td>`;
     courseDates.forEach(date => {
         const hasVideo = videoMap[date.id];
         videoRow += `<td><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
     videoRow += `</tr>`;
-    let partnerRow = `<tr><td colspan="2" style="font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
+
+    // 2. satır: Partner/Teacher
+    let partnerRow = `<tr>`;
+    partnerRow += `<td class="sticky-col">#</td>`;
+    partnerRow += `<td class="sticky-col" style="font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     courseDates.forEach(date => {
         const partner = partnerMap[date.id] || '';
         partnerRow += `<td><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" style="cursor:pointer; color:var(--primary);">${partner ? escapeHtml(partner.substring(0,8)) : '✏️'}</span></td>`;
     });
     partnerRow += `</tr>`;
+
     footer.innerHTML = videoRow + partnerRow;
 
     // Geri butonu
@@ -139,7 +150,7 @@ function renderAttendanceView() {
         });
     });
 
-    // ✅ YENİ: Hafta başlıklarına tıklama ile silme işlevi
+    // Hafta başlıklarına tıklama ile silme
     document.querySelectorAll('#headerRow th[data-date-id]').forEach(th => {
         th.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -349,34 +360,26 @@ async function addWeek() {
     } else alert('Hata: ' + error.message);
 }
 
-// ✅ YENİ FONKSİYON: Hafta silme
 async function deleteWeek(courseDateId) {
-    // Önce bağlı attendance kayıtları ve videolar cascade ile silinecek (foreign key)
-    // Ancak Supabase'de cascade tanımlı değilse manuel silmek gerekir.
-    // Emniyet için önce attendance, sonra video, sonra course_date satırını silelim.
     try {
-        // 1. Attendance kayıtlarını sil
         const { error: attError } = await supabase
             .from('attendance')
             .delete()
             .eq('course_date_id', courseDateId);
         if (attError) throw attError;
 
-        // 2. Video kayıtlarını sil
         const { error: vidError } = await supabase
             .from('videos')
             .delete()
             .eq('course_date_id', courseDateId);
         if (vidError) throw vidError;
 
-        // 3. Course date satırını sil
         const { error: dateError } = await supabase
             .from('course_dates')
             .delete()
             .eq('id', courseDateId);
         if (dateError) throw dateError;
 
-        // Verileri yeniden yükle ve ekranı tazele
         await loadAttendanceData();
         renderAttendanceView();
     } catch (err) {
