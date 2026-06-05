@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModal, openConfirmModal } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal } from './utils.js';
 import { showPaymentsView } from './payments.js';
 
 let currentClassId = null;
@@ -106,13 +106,21 @@ function renderAttendanceView() {
             await handleVideo(dateId);
         });
     });
+    // PARTNER DÜZENLEME – YENİ FONKSİYON KULLANILIYOR
     document.querySelectorAll('.partner-edit').forEach(span => {
         span.addEventListener('click', async () => {
             const dateId = parseInt(span.dataset.dateId);
             const current = span.dataset.partner === '✏️' ? '' : span.dataset.partner;
-            openPromptModal('Partner / Teacher Adı', current || 'İsim girin', async (newPartner) => {
-                await updateTeacherPartner(dateId, newPartner);
-            });
+            // Yeni modal: mevcut değeri göster, boş değere izin ver
+            openPromptModalWithValue(
+                'Partner / Teacher Adı',
+                current,
+                'İsim girin (boş bırakıp Tamam derseniz silinir)',
+                async (newPartner) => {
+                    // newPartner boş string olabilir
+                    await updateTeacherPartner(dateId, newPartner);
+                }
+            );
         });
     });
     document.querySelectorAll('.btn-icon-edit').forEach(icon => {
@@ -149,20 +157,17 @@ function openStudentActionModal(studentId, currentName) {
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Önceki event'leri temizle
     editBtn.onclick = null;
     deleteBtn.onclick = null;
     closeBtn.onclick = null;
     saveBtn.onclick = null;
     cancelEditBtn.onclick = null;
     
-    // Görüntüleme modu
     nameDisplay.innerText = currentName;
     viewMode.style.display = 'block';
     editMode.style.display = 'none';
     modal.style.display = 'flex';
     
-    // Düzenleme butonu
     editBtn.onclick = () => {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
@@ -170,8 +175,6 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu - öğrenci modalını kapat, onay modalını aç
-    // İptal edilirse öğrenci modalına geri dön
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
         modal.style.display = 'none';
@@ -186,12 +189,10 @@ function openStudentActionModal(studentId, currentName) {
         );
     };
     
-    // Kapat butonu
     closeBtn.onclick = () => {
         modal.style.display = 'none';
     };
     
-    // Kaydet butonu (düzenleme modunda)
     saveBtn.onclick = async () => {
         const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
@@ -203,7 +204,6 @@ function openStudentActionModal(studentId, currentName) {
         editMode.style.display = 'none';
     };
     
-    // İptal butonu (düzenleme modunda)
     cancelEditBtn.onclick = () => {
         viewMode.style.display = 'block';
         editMode.style.display = 'none';

@@ -28,7 +28,7 @@ export function isPastDate(dateStr) {
     return target < today;
 }
 
-// Tek girdili modal (prompt yerine)
+// Tek girdili modal (boş değere izin VERMEZ - eski davranış)
 export function openPromptModal(title, placeholder, callback) {
     const modal = document.getElementById('dynamicModal');
     const titleEl = document.getElementById('dynamicModalTitle');
@@ -54,6 +54,40 @@ export function openPromptModal(title, placeholder, callback) {
         input.removeEventListener('keypress', keyHandler);
     };
     const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
+    document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
+    document.getElementById('dynamicModalCancel').onclick = cancelHandler;
+    input.addEventListener('keypress', keyHandler);
+}
+
+// YENİ: Tek girdili modal – mevcut değeri gösterir ve boş değere izin verir
+export function openPromptModalWithValue(title, defaultValue, placeholder, callback) {
+    const modal = document.getElementById('dynamicModal');
+    const titleEl = document.getElementById('dynamicModalTitle');
+    const input = document.getElementById('dynamicInput');
+    titleEl.innerText = title;
+    input.placeholder = placeholder || '';
+    input.value = defaultValue !== undefined ? defaultValue : '';
+    modal.style.display = 'flex';
+    input.focus();
+    input.select(); // Mevcut metni seçili hale getir, kolay silme/düzenleme
+
+    const confirmHandler = () => {
+        const val = input.value; // .trim() yapmıyoruz – boş string'e izin veriyoruz
+        callback(val);
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+    const cleanup = () => {
+        document.getElementById('dynamicModalConfirm').removeEventListener('click', confirmHandler);
+        document.getElementById('dynamicModalCancel').removeEventListener('click', cancelHandler);
+        input.removeEventListener('keypress', keyHandler);
+    };
+    const keyHandler = (e) => { if (e.key === 'Enter') confirmHandler(); };
+    
     document.getElementById('dynamicModalConfirm').onclick = confirmHandler;
     document.getElementById('dynamicModalCancel').onclick = cancelHandler;
     input.addEventListener('keypress', keyHandler);
@@ -91,7 +125,7 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - isteğe bağlı onCancel callback desteği eklendi
+// Onay modalı (silme) - isteğe bağlı onCancel callback desteği
 export function openConfirmModal(message, onConfirm, onCancel) {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
@@ -101,10 +135,6 @@ export function openConfirmModal(message, onConfirm, onCancel) {
     if (!yesBtn || !noBtn) return;
     
     msgSpan.innerText = message;
-    
-    // Eski onclick'leri kaldır
-    yesBtn.onclick = null;
-    noBtn.onclick = null;
     
     yesBtn.onclick = () => {
         modal.style.display = 'none';
