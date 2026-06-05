@@ -76,7 +76,7 @@ function renderAttendanceView() {
         const hasVideo = videoMap[date.id];
         videoRow += `<td><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
-    videoRow += `</table>`;
+    videoRow += `</tr>`;
     let partnerRow = `<tr><td colspan="2" style="font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     courseDates.forEach(date => {
         const partner = partnerMap[date.id] || '';
@@ -137,7 +137,7 @@ async function goBackToClasses() {
     }
 }
 
-// DÜZELTİLMİŞ ÖĞRENCİ MODALI (kesin çalışan)
+// DÜZELTİLMİŞ ÖĞRENCİ MODALI - silme butonu confirm kullanıyor
 function openStudentActionModal(studentId, currentName) {
     const modal = document.getElementById('studentActionModal');
     const viewMode = document.getElementById('studentViewMode');
@@ -150,7 +150,7 @@ function openStudentActionModal(studentId, currentName) {
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     
-    // Önceki tüm onclick'leri temizle
+    // Önceki event'leri temizle
     editBtn.onclick = null;
     deleteBtn.onclick = null;
     closeBtn.onclick = null;
@@ -171,20 +171,15 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu - openConfirmModal kullanıyor
-    deleteBtn.onclick = () => {
-        // 'openConfirmModal' utils.js'den geliyor
-        openConfirmModal(
-            'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
-            async () => {
-                await deleteStudent(studentId);
-                modal.style.display = 'none'; // Ana modalı kapat
-            },
-            () => {
-                // İptal edilince sadece onay modalı kapanır, ana modal açık kalır.
-                // Burada hiçbir şey yapmıyoruz.
-            }
-        );
+    // Silme butonu - DOĞRUDAN confirm() KULLAN
+    deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm('Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.')) {
+            deleteStudent(studentId).then(() => {
+                modal.style.display = 'none';
+            });
+        }
+        // İptal edilirse sadece confirm kapanır, studentActionModal açık kalır
     };
     
     // Kapat butonu
@@ -275,12 +270,12 @@ async function toggleAttendance(studentId, courseDateId) {
 async function handleVideo(courseDateId) {
     const existingUrl = videoMap[courseDateId];
     if (existingUrl) {
-        openConfirmModal(`Video mevcut: ${existingUrl}\nSilmek istiyor musunuz?`, async () => {
+        if (confirm(`Video mevcut: ${existingUrl}\nSilmek istiyor musunuz?`)) {
             await supabase.from('videos').delete().eq('course_date_id', courseDateId);
             delete videoMap[courseDateId];
             await loadAttendanceData();
             renderAttendanceView();
-        });
+        }
     } else {
         openPromptModal('Video Linki', 'https://...', async (url) => {
             if (url && url.startsWith('http')) {
