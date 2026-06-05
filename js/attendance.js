@@ -318,13 +318,15 @@ async function handleVideo(courseDateId) {
             window.open(existingUrl, '_blank');
         };
         
-        // Sil butonuna tıklayınca direkt onay modalı
+        // Silme işlemi için doğru event handler
         const deleteHandler = () => {
+            // Önce video modalını kapat
+            modal.style.display = 'none';
+            // Sonra onay modalını göster
             openConfirmModal(
                 'Bu video bağlantısını silmek istediğinize emin misiniz?',
                 async () => {
-                    // Evet (kırmızı buton) -> sil
-                    modal.style.display = 'none';
+                    // Evet: silme işlemini yap
                     const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
                     if (!error) {
                         delete videoMap[courseDateId];
@@ -336,10 +338,16 @@ async function handleVideo(courseDateId) {
                     cleanup();
                 },
                 () => {
-                    // İptal -> sadece videoModal'ı kapatma, olduğu gibi kalsın
-                    // Hiçbir şey yapma
+                    // İptal: video modalını tekrar aç
+                    modal.style.display = 'flex';
+                    refreshIcons();
+                    // Event listener'ları yeniden bağla (çünkü cleanup yapıldıysa)
+                    // Ancak cleanup henüz yapılmadı, sadece modal tekrar açıldı.
+                    // Burada ekstra bir şey yapmaya gerek yok çünkü aynı elementler var.
                 }
             );
+            // cleanup yapma, çünkü video modalı kapatıldı ama onay modalı açık
+            // Event listener'ları temizlemek için değil, sadece silme sonrası temizlik yapılacak.
         };
         
         const closeHandler = () => {
@@ -360,6 +368,12 @@ async function handleVideo(courseDateId) {
                 cleanup();
             }
         };
+        
+        // Önceki listener'ları temizle (varsa)
+        watchIcon.removeEventListener('click', watchHandler);
+        deleteIcon.removeEventListener('click', deleteHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+        modal.removeEventListener('click', outsideClickHandler);
         
         watchIcon.addEventListener('click', watchHandler);
         deleteIcon.addEventListener('click', deleteHandler);
