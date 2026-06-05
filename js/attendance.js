@@ -171,15 +171,16 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu - DOĞRUDAN confirm() KULLAN
+    // Silme butonu - özel modal kullan
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        if (confirm('Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.')) {
-            deleteStudent(studentId).then(() => {
+        openConfirmModal(
+            'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
+            async () => {
+                await deleteStudent(studentId);
                 modal.style.display = 'none';
-            });
-        }
-        // İptal edilirse sadece confirm kapanır, studentActionModal açık kalır
+            }
+        );
     };
     
     // Kapat butonu
