@@ -94,23 +94,23 @@
     </div>
 </div>
 
-<!-- YENİ: Video izle/sil modalı -->
+<!-- Video Modal: Başlık ortada, link neon, iki ikon (play, trash), altında geniş Kapat butonu -->
 <div id="videoModal" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <h3 style="margin-top:0; display:flex; align-items:center; gap:8px;">
-            <i data-lucide="video" size="20" style="color:var(--neon-green);"></i> 
-            Lesson Recap
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 style="margin-top:0; text-align: center;">
+            <i data-lucide="video" size="20" style="color:var(--neon-green); display: inline-block; vertical-align: middle;"></i> 
+            <span style="vertical-align: middle;">Lesson Recap</span>
         </h3>
-        <p id="videoLinkDisplay" style="word-break:break-all; background:#1e293b; padding:10px; border-radius:8px; font-size:13px; margin:15px 0;"></p>
-        <div style="display:flex; gap:12px; justify-content:center; margin-top:10px;">
-            <button id="watchVideoBtn" class="btn-success" style="display:inline-flex; align-items:center; gap:6px;">
-                <i data-lucide="play" size="16"></i> İzle
-            </button>
-            <button id="deleteVideoBtn" class="btn-danger" style="display:inline-flex; align-items:center; gap:6px;">
-                <i data-lucide="trash-2" size="16"></i> Sil
-            </button>
-            <button id="closeVideoModalBtn" class="btn-secondary">Kapat</button>
+        <p id="videoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:8px; font-size:13px; margin:20px 0; color: var(--neon-green); border: 1px solid rgba(45,212,191,0.3);"></p>
+        <div style="display:flex; gap:24px; justify-content: center; margin:15px 0 20px 0;">
+            <span id="watchVideoBtn" style="cursor:pointer; color: var(--neon-green); transition: transform 0.2s;">
+                <i data-lucide="play" size="32"></i>
+            </span>
+            <span id="deleteVideoBtn" style="cursor:pointer; color: var(--danger); transition: transform 0.2s;">
+                <i data-lucide="trash-2" size="32"></i>
+            </span>
         </div>
+        <button id="closeVideoModalBtn" class="btn-secondary" style="width:100%;">Kapat</button>
     </div>
 </div>
 
