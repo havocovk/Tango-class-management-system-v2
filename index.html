@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<!-- İki girişli modal (miktar+hafta) -->
+<!-- İki girişli modal (miktar+hafta) - ÖDEMELER için -->
 <div id="doubleInputModal" class="modal">
     <div class="modal-content">
         <h3 id="doubleModalTitle">Başlık</h3>
@@ -79,5 +79,20 @@
         </div>
     </div>
 </div>
+
+<!-- YENİ: Sınıf düzenleme modalı (ad + yeni başlangıç tarihi) -->
+<div id="editClassModal" class="modal">
+    <div class="modal-content">
+        <h3>Sınıf Düzenle</h3>
+        <input type="text" id="editClassNameInput" placeholder="Sınıf adı" autocomplete="off" style="width:100%; margin-bottom:12px;">
+        <input type="date" id="editClassNewDateInput" placeholder="Yeni başlangıç tarihi (opsiyonel)" autocomplete="off" style="width:100%; margin-bottom:12px;">
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="editClassSaveBtn">Kaydet</button>
+            <button class="btn-secondary" id="editClassCancelBtn">İptal</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
