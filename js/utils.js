@@ -91,8 +91,8 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - düzeltilmiş: iptalde sadece modal kapanır, callback çalışmaz
-export function openConfirmModal(message, onConfirm) {
+// Onay modalı (silme) - isteğe bağlı onCancel callback desteği eklendi
+export function openConfirmModal(message, onConfirm, onCancel) {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
     const msgSpan = document.getElementById('confirmMessage');
@@ -112,7 +112,7 @@ export function openConfirmModal(message, onConfirm) {
     };
     noBtn.onclick = () => {
         modal.style.display = 'none';
-        // İptalde hiçbir şey yapma, ana modal kapanmaz
+        if (onCancel) onCancel();
     };
     
     modal.style.display = 'flex';

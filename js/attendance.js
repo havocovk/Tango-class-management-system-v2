@@ -170,7 +170,8 @@ function openStudentActionModal(studentId, currentName) {
         editInput.focus();
     };
     
-    // Silme butonu - önce öğrenci modalını kapat, sonra onay modalını aç
+    // Silme butonu - öğrenci modalını kapat, onay modalını aç
+    // İptal edilirse öğrenci modalına geri dön
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
         modal.style.display = 'none';
@@ -178,6 +179,9 @@ function openStudentActionModal(studentId, currentName) {
             'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
             async () => {
                 await deleteStudent(studentId);
+            },
+            () => {
+                modal.style.display = 'flex';
             }
         );
     };
