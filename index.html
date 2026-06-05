@@ -17,7 +17,7 @@
 
 <!-- ========== MODALLAR ========== -->
 
-<!-- YENİ: Yeni Sınıf Oluştur Modalı (ad + başlangıç tarihi) -->
+<!-- Yeni Sınıf Oluştur Modalı -->
 <div id="newClassModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0;">Yeni Sınıf Oluştur</h3>
@@ -28,7 +28,6 @@
                 <i data-lucide="calendar" size="22"></i>
             </span>
         </div>
-        <!-- Gizli date input (showPicker için) -->
         <input type="date" id="hiddenDatePicker" style="display:none;">
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="newClassConfirmBtn">Oluştur</button>
@@ -49,7 +48,7 @@
     </div>
 </div>
 
-<!-- İki girişli modal (miktar+hafta) - ÖDEMELER için -->
+<!-- İki girişli modal -->
 <div id="doubleInputModal" class="modal">
     <div class="modal-content">
         <h3 id="doubleModalTitle">Başlık</h3>
@@ -62,7 +61,7 @@
     </div>
 </div>
 
-<!-- Onay modalı (silme) -->
+<!-- Onay modalı -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
         <h3>Emin misiniz?</h3>
@@ -74,7 +73,7 @@
     </div>
 </div>
 
-<!-- Öğrenci düzenleme/silme modalı (çift modlu) -->
+<!-- Öğrenci düzenleme/silme modalı -->
 <div id="studentActionModal" class="modal">
     <div class="modal-content">
         <div id="studentViewMode">
@@ -98,12 +97,20 @@
     </div>
 </div>
 
-<!-- Sınıf düzenleme modalı (mevcut, dokunulmadı) -->
+<!-- Sınıf düzenleme modalı (GÜNCELLENDİ: tarih seçici artık readonly + takvim ikonu) -->
 <div id="editClassModal" class="modal">
     <div class="modal-content">
         <h3>Sınıf Düzenle</h3>
         <input type="text" id="editClassNameInput" placeholder="Sınıf adı" autocomplete="off" style="width:100%; margin-bottom:12px;">
-        <input type="date" id="editClassNewDateInput" placeholder="Yeni başlangıç tarihi (opsiyonel)" autocomplete="off" style="width:100%; margin-bottom:12px;">
+        <!-- Yeni tarih seçici (readonly + ikon) -->
+        <div style="display:flex; align-items: center; gap: 8px; margin-bottom:12px;">
+            <input type="text" id="editClassNewDateDisplay" readonly placeholder="GG/AA/YYYY" style="flex:1; background:#1e293b; color:white;">
+            <span id="editClassCalendarIcon" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <!-- Gizli date picker -->
+        <input type="date" id="hiddenEditClassDatePicker" style="display:none;">
         <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="editClassSaveBtn">Kaydet</button>

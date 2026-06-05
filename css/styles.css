@@ -353,3 +353,11 @@ tfoot th.sticky-col:nth-child(2) {
     filter: drop-shadow(0 0 4px var(--primary));
     transition: all 0.2s ease;
 }
+
+/* Takvim ikonu hover efekti (hem yeni sınıf hem düzenleme modalı için) */
+#calendarIconBtn:hover,
+#editClassCalendarIcon:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 4px var(--primary));
+    transition: all 0.2s ease;
+}
