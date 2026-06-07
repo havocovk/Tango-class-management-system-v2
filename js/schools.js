@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, openPromptModal, openConfirmModal } from './utils.js';
+import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 
 let currentSchools = [];
 
@@ -56,22 +56,15 @@ function renderSchoolsView() {
     refreshIcons();
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
 async function addSchool() {
     openPromptModal('Okul Adı', 'Örn: Tango Mia', async (name) => {
         if (!name) return;
         const { error } = await supabase.from('schools').insert({ name });
-        if (error) alert('Hata: ' + error.message);
-        else await loadSchools();
+        if (error) showToast('Okul eklenemedi. Bağlantıyı kontrol edin.', 'error');
+        else {
+            showToast(`${name} eklendi ✓`, 'success');
+            await loadSchools();
+        }
     });
 }
 
@@ -79,15 +72,21 @@ async function editSchool(id, oldName) {
     openPromptModal('Okul Adını Düzenle', oldName, async (newName) => {
         if (!newName || newName === oldName) return;
         const { error } = await supabase.from('schools').update({ name: newName }).eq('id', id);
-        if (error) alert('Hata: ' + error.message);
-        else await loadSchools();
+        if (error) showToast('Okul adı güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+        else {
+            showToast('Okul adı güncellendi ✓', 'success');
+            await loadSchools();
+        }
     });
 }
 
 async function deleteSchool(id) {
     openConfirmModal('Okul silinecek. İçindeki tüm sınıflar ve veriler de silinir. Emin misiniz?', async () => {
         const { error } = await supabase.from('schools').delete().eq('id', id);
-        if (error) alert('Hata: ' + error.message);
-        else await loadSchools();
+        if (error) showToast('Okul silinemedi. Bağlantıyı kontrol edin.', 'error');
+        else {
+            showToast('Okul silindi ✓', 'success');
+            await loadSchools();
+        }
     });
 }

@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, refreshIcons, openPromptModal, openDoubleInputModal, openConfirmModal } from './utils.js';
+import { formatDate, refreshIcons, openPromptModal, openDoubleInputModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { showAttendanceView } from './attendance.js';
 
 let currentClassId = null;
@@ -77,9 +77,12 @@ function renderPaymentsView() {
                             weeks_covered: parseInt(weeks)
                         });
                         if (!error) {
+                            showToast('Ödeme eklendi ✓', 'success');
                             await loadPaymentsData();
                             renderPaymentsView();
-                        } else alert('Hata: ' + error.message);
+                        } else {
+                            showToast('Ödeme eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                        }
                     });
                 }
             });
@@ -99,14 +102,4 @@ function checkIsPaid(studentId, dateIndex) {
         if (dateIndex >= startIdx && dateIndex < startIdx + p.weeks_covered) return true;
     }
     return false;
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }

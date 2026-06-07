@@ -227,3 +227,18 @@ export function openConfirmModal(message, onConfirm, onCancel) {
 export function refreshIcons() {
     if (window.lucide) window.lucide.createIcons();
 }
+
+// ---------------------------------------------------------------
+// ADIM 3.2 — escapeHtml TEK YERDE TANIMLI
+// Eskiden attendance.js, classes.js, payments.js, schools.js
+// dosyalarında ayrı ayrı kopyası vardı. Artık sadece burada.
+// ---------------------------------------------------------------
+export function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}

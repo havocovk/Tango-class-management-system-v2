@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate } from './utils.js';
+import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml } from './utils.js';
 import { showAttendanceView } from './attendance.js';
 
 let currentSchoolId = null;
@@ -477,14 +477,4 @@ async function drawChartForClass(classId) {
     });
 
     refreshIcons();
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }

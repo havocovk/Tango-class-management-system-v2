@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { showPaymentsView } from './payments.js';
 
 let currentClassId = null;
@@ -445,14 +445,4 @@ async function deleteWeek(courseDateId) {
     } catch (err) {
         showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
     }
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }
