@@ -374,10 +374,10 @@ async function showWeeklyStats() {
                     </tr>
                 </tbody>
             </table>
+            <div id="chartTitle" style="text-align:center; padding:12px 15px 4px; color:var(--accent); font-weight:700;">Bir sınıfa tıkla, katılım grafiğini gör</div>
             <div id="chartSection">
-                <div id="chartTitle" style="text-align:center; padding:15px; color:var(--accent);">Bir sınıfa tıkla, katılım grafiğini gör</div>
-                <div id="chartContainer" class="chart-container" style="min-height: 220px; justify-content: center; align-items: center;">
-                    <div style="color: var(--text-dim); text-align: center;">Henüz bir sınıf seçilmedi.</div>
+                <div id="chartContainer" class="chart-container" style="justify-content: center; align-items: center;">
+                    <div style="color: var(--text-dim); text-align: center; padding: 40px 0;">Henüz bir sınıf seçilmedi.</div>
                 </div>
             </div>
         </div>
@@ -465,15 +465,18 @@ async function drawChartForClass(classId) {
     const chartContainer = document.getElementById('chartContainer');
     chartContainer.innerHTML = '';
     chartContainer.style.justifyContent = 'flex-start';
+    chartContainer.style.alignItems = 'flex-end';
 
     dates.forEach(dateObj => {
         const count = countByDate[dateObj.id] || 0;
-        const barHeight = Math.max(4, count * 6);
+        const barHeight = Math.max(4, count * 8);
         const wrapper = document.createElement('div');
         wrapper.className = 'bar-wrapper';
         wrapper.innerHTML = `
             <div class="bar-label-top">${count}</div>
-            <div class="bar" style="height: ${barHeight}px;"></div>
+            <div class="bar-inner">
+                <div class="bar" style="height: ${barHeight}px;"></div>
+            </div>
             <div class="bar-label-bottom">${formatDate(dateObj.date)}</div>
         `;
         chartContainer.appendChild(wrapper);
