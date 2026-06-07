@@ -23,6 +23,9 @@ async function loadAttendanceData() {
     if (videoData) videoData.forEach(v => { appState.videoMap[v.course_date_id] = v.url; });
     appState.partnerMap = {};
     appState.courseDates.forEach(d => { appState.partnerMap[d.id] = d.teacher_partner || ''; });
+    // ADIM 6.4: Öğrenci profil modalı ödeme bilgisine ihtiyaç duyuyor
+    const { data: paymentsData } = await supabase.from('payments').select('*').in('student_id', appState.students.map(s => s.id));
+    appState.payments = paymentsData || [];
 }
 
 function renderAttendanceView() {
@@ -50,7 +53,7 @@ function renderAttendanceView() {
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '';
     appState.students.forEach((student, idx) => {
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;">${escapeHtml(student.name)}<span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
+        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${escapeHtml(student.name)}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
             let iconHtml = '';
@@ -136,6 +139,16 @@ function renderAttendanceView() {
             const studentId = parseInt(icon.dataset.studentId);
             const currentName = icon.dataset.studentName;
             openStudentActionModal(studentId, currentName);
+        });
+    });
+
+    // ADIM 6.4 — Öğrenci adına tıklayınca profil modalını aç
+    document.querySelectorAll('.student-name-link').forEach(span => {
+        span.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const studentId = parseInt(span.dataset.studentId);
+            const student = appState.students.find(s => s.id === studentId);
+            if (student) await openStudentProfileModal(student);
         });
     });
 
@@ -522,4 +535,97 @@ async function deleteWeek(courseDateId) {
     } catch (err) {
         showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
     }
+}
+
+// ---------------------------------------------------------------
+// ADIM 6.4 — ÖĞRENCİ PROFİL MODALI
+// Öğrenci adına tıklanınca şunları hesaplayıp gösterir:
+//   - Toplam ders sayısı (sınıftaki tüm haftalar)
+//   - Katılım oranı (gelen / (gelen + gitmeyen) × 100)
+//   - Devamsızlık sayısı ('-' statüsündeki kayıtlar)
+//   - Toplam ödenen tutar (tüm payments.amount toplamı)
+//   - Son ödeme tarihi (ödemelerin başlangıç tarihine göre en son)
+// appState içindeki mevcut veriyi kullanır — ekstra DB sorgusu yok.
+// ---------------------------------------------------------------
+async function openStudentProfileModal(student) {
+    const modal   = document.getElementById('studentProfileModal');
+    const loading = document.getElementById('profileLoadingMsg');
+    const content = document.getElementById('profileContent');
+
+    // İsmi yaz, içeriği gizle, modalı aç
+    document.getElementById('profileStudentName').textContent = student.name;
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    modal.style.display = 'flex';
+    refreshIcons();
+
+    // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
+    const totalDates = appState.courseDates.length;
+
+    let presentCount  = 0; // '+' statüsü
+    let absentCount   = 0; // '-' statüsü
+
+    appState.courseDates.forEach(d => {
+        const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
+        if (status === '+') presentCount++;
+        else if (status === '-') absentCount++;
+    });
+
+    // Katılım oranı: sadece işaretlenmiş hücreler üzerinden hesapla
+    const markedCount = presentCount + absentCount;
+    const attendanceRate = markedCount > 0
+        ? Math.round((presentCount / markedCount) * 100)
+        : 0;
+
+    // Ödeme bilgileri
+    const studentPayments = appState.payments.filter(p => p.student_id === student.id);
+    const totalPaid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    // Son ödemenin başlangıç tarihi: start_date_id → courseDates içinde bul
+    let lastPaymentDateStr = null;
+    if (studentPayments.length > 0) {
+        // En yüksek start_date_id'ye sahip ödemeyi bul (sırayla eklendiği varsayılır)
+        const lastPayment = studentPayments.reduce((latest, p) => {
+            const latestDate = appState.courseDates.find(d => d.id === latest.start_date_id);
+            const curDate    = appState.courseDates.find(d => d.id === p.start_date_id);
+            if (!latestDate) return p;
+            if (!curDate)    return latest;
+            return curDate.date > latestDate.date ? p : latest;
+        });
+        const dateObj = appState.courseDates.find(d => d.id === lastPayment.start_date_id);
+        if (dateObj) lastPaymentDateStr = formatDate(dateObj.date);
+    }
+
+    // ---- DOM güncelleme ----
+    document.getElementById('profileTotalDates').textContent    = totalDates;
+    document.getElementById('profileAttendanceRate').textContent = `%${attendanceRate}`;
+    document.getElementById('profileAbsenceCount').textContent  = absentCount;
+    document.getElementById('profileTotalPaid').textContent     = `${totalPaid.toLocaleString('tr-TR')}₺`;
+
+    const lastPaymentRow = document.getElementById('profileLastPaymentRow');
+    if (lastPaymentDateStr) {
+        document.getElementById('profileLastPaymentDate').textContent = lastPaymentDateStr;
+        lastPaymentRow.style.display = 'flex';
+    } else {
+        lastPaymentRow.style.display = 'none';
+    }
+
+    loading.style.display = 'none';
+    content.style.display = 'block';
+
+    // ---- Kapat butonu ----
+    const closeBtn = document.getElementById('profileCloseBtn');
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    // Modalın dışına tıklayınca da kapat
+    const outsideHandler = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            modal.removeEventListener('click', outsideHandler);
+        }
+    };
+    modal.removeEventListener('click', outsideHandler);
+    modal.addEventListener('click', outsideHandler);
 }

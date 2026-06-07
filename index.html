@@ -145,6 +145,44 @@
     </div>
 </div>
 
+<!-- ========== ADIM 6.4 — ÖĞRENCİ PROFİL MODALI ========== -->
+<div id="studentProfileModal" class="modal">
+    <div class="modal-content" style="max-width:380px; text-align:left;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--primary); display:inline-flex;"><i data-lucide="user-round" size="26"></i></span>
+                <span id="profileStudentName" style="font-size:18px; font-weight:800; color:var(--text-main);"></span>
+            </div>
+        </div>
+        <div id="profileLoadingMsg" style="text-align:center; color:var(--text-dim); padding:20px 0;">Yükleniyor...</div>
+        <div id="profileContent" style="display:none;">
+            <div class="profile-stats-grid">
+                <div class="profile-stat-card">
+                    <div class="profile-stat-value" id="profileTotalDates">—</div>
+                    <div class="profile-stat-label">Toplam Ders</div>
+                </div>
+                <div class="profile-stat-card profile-stat-present">
+                    <div class="profile-stat-value" id="profileAttendanceRate">—</div>
+                    <div class="profile-stat-label">Katılım Oranı</div>
+                </div>
+                <div class="profile-stat-card profile-stat-absent">
+                    <div class="profile-stat-value" id="profileAbsenceCount">—</div>
+                    <div class="profile-stat-label">Devamsızlık</div>
+                </div>
+                <div class="profile-stat-card profile-stat-payment">
+                    <div class="profile-stat-value" id="profileTotalPaid">—</div>
+                    <div class="profile-stat-label">Toplam Ödeme</div>
+                </div>
+            </div>
+            <div class="profile-last-payment" id="profileLastPaymentRow" style="display:none;">
+                <span style="color:var(--text-dim); font-size:12px;">Son Ödeme:</span>
+                <span id="profileLastPaymentDate" style="font-size:13px; font-weight:700; color:var(--accent); margin-left:6px;"></span>
+            </div>
+        </div>
+        <button class="btn-secondary" id="profileCloseBtn" style="width:100%; margin-top:22px;">Kapat</button>
+    </div>
+</div>
+
 <!-- Video Modal -->
 <div id="videoModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
