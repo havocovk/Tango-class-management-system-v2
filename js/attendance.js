@@ -320,6 +320,26 @@ async function toggleAttendance(studentId, courseDateId) {
     }
 }
 
+// ---------------------------------------------------------------
+// ADIM 6.2 — VIDEO PLATFORM TESPİTİ
+// URL içindeki anahtar kelimelere göre platform adı ve rengi döndürür.
+// Desteklenen platformlar: YouTube, Vimeo, Google Drive, Diğer
+// ---------------------------------------------------------------
+function detectVideoPlatform(url) {
+    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    const lower = url.toLowerCase();
+    if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
+        return { name: 'YouTube', color: '#FF0000' };
+    }
+    if (lower.includes('vimeo.com')) {
+        return { name: 'Vimeo', color: '#1AB7EA' };
+    }
+    if (lower.includes('drive.google.com')) {
+        return { name: 'Google Drive', color: '#34A853' };
+    }
+    return { name: 'Diğer', color: '#94a3b8' };
+}
+
 async function handleVideo(courseDateId) {
     const existingUrl = appState.videoMap[courseDateId];
     if (existingUrl) {
@@ -328,6 +348,31 @@ async function handleVideo(courseDateId) {
         const watchIcon = document.getElementById('watchVideoBtn');
         const deleteIcon = document.getElementById('deleteVideoBtn');
         const closeBtn = document.getElementById('closeVideoModalBtn');
+
+        // Platform tespiti
+        const platform = detectVideoPlatform(existingUrl);
+
+        // Modalın başlığını platform badge'i ile güncelle
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.innerHTML = `
+                <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
+                <span style="vertical-align:middle;">Lesson Recap</span>
+                <span style="
+                    display:inline-block;
+                    vertical-align:middle;
+                    margin-left:8px;
+                    padding:2px 8px;
+                    border-radius:12px;
+                    font-size:11px;
+                    font-weight:700;
+                    letter-spacing:0.5px;
+                    background:${platform.color}22;
+                    color:${platform.color};
+                    border:1px solid ${platform.color}55;
+                ">${platform.name}</span>
+            `;
+        }
 
         linkDisplay.innerText = existingUrl;
         linkDisplay.style.color = '#2DD4BF';
@@ -364,6 +409,14 @@ async function handleVideo(courseDateId) {
 
         const closeHandler = () => {
             modal.style.display = 'none';
+            // Başlığı orijinal haline sıfırla (bir sonraki açılışta temiz gelsin)
+            const modalTitle = modal.querySelector('h3');
+            if (modalTitle) {
+                modalTitle.innerHTML = `
+                    <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i>
+                    <span style="vertical-align: middle;">Lesson Recap</span>
+                `;
+            }
             cleanup();
         };
 
