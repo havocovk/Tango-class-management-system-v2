@@ -1,13 +1,12 @@
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
-
-let currentSchools = [];
+import { appState } from './state.js';
 
 export async function loadSchools() {
     const { data, error } = await supabase.from('schools').select('*').order('id');
     if (error) console.error(error);
-    else currentSchools = data;
+    else appState.currentSchools = data;
     renderSchoolsView();
 }
 
@@ -26,10 +25,10 @@ function renderSchoolsView() {
     `;
     const listDiv = document.getElementById('schoolsList');
     listDiv.innerHTML = '';
-    if (currentSchools.length === 0) {
+    if (appState.currentSchools.length === 0) {
         listDiv.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">Henüz okul yok. Okul eklemek için butonu kullanın.</div>';
     } else {
-        currentSchools.forEach(school => {
+        appState.currentSchools.forEach(school => {
             const card = document.createElement('div');
             card.className = 'class-card';
             card.innerHTML = `

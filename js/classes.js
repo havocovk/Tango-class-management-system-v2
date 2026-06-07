@@ -1,22 +1,19 @@
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
-
-let currentSchoolId = null;
-let currentSchoolName = null;
-let classesList = [];
+import { appState } from './state.js';
 
 export async function showClassesView(schoolId, schoolName) {
-    currentSchoolId = schoolId;
-    currentSchoolName = schoolName;
+    appState.currentSchoolId = schoolId;
+    appState.currentSchoolName = schoolName;
     await loadClasses();
     renderClassesView();
 }
 
 async function loadClasses() {
-    const { data, error } = await supabase.from('classes').select('*').eq('school_id', currentSchoolId).order('id');
+    const { data, error } = await supabase.from('classes').select('*').eq('school_id', appState.currentSchoolId).order('id');
     if (error) console.error(error);
-    else classesList = data;
+    else appState.classesList = data;
 }
 
 function renderClassesView() {
@@ -25,7 +22,7 @@ function renderClassesView() {
         <div class="view">
             <div class="back-link" id="backToSchoolsBtn">← Okullar</div>
             <div class="main-title">Tango Class Management System</div>
-            <div class="sub-header">Sınıf Listesi - ${escapeHtml(currentSchoolName)}</div>
+            <div class="sub-header">Sınıf Listesi - ${escapeHtml(appState.currentSchoolName)}</div>
             <div id="classesListContainer"></div>
             <div class="nav-buttons">
                 <button id="newClassBtn" class="btn-success">➕ Yeni Sınıf</button>
@@ -38,10 +35,10 @@ function renderClassesView() {
     };
     const listDiv = document.getElementById('classesListContainer');
     listDiv.innerHTML = '';
-    if (classesList.length === 0) {
+    if (appState.classesList.length === 0) {
         listDiv.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">Henüz sınıf yok. Yeni sınıf ekleyin.</div>';
     } else {
-        classesList.forEach(cls => {
+        appState.classesList.forEach(cls => {
             const card = document.createElement('div');
             card.className = 'class-card';
             card.innerHTML = `
@@ -121,7 +118,7 @@ function openNewClassModal() {
 
         const { data: newClass, error: classError } = await supabase
             .from('classes')
-            .insert({ school_id: currentSchoolId, name: className })
+            .insert({ school_id: appState.currentSchoolId, name: className })
             .select()
             .single();
 
@@ -274,7 +271,7 @@ async function showWeeklyStats() {
     const { data: allClasses } = await supabase
         .from('classes')
         .select('id, name')
-        .eq('school_id', currentSchoolId);
+        .eq('school_id', appState.currentSchoolId);
 
     if (!allClasses || allClasses.length === 0) {
         alert('Bu okulda henüz sınıf yok.');
@@ -383,7 +380,7 @@ async function showWeeklyStats() {
     const container = document.getElementById('dynamicView');
     container.innerHTML = html;
 
-    document.getElementById('statsBackBtn').onclick = () => showClassesView(currentSchoolId, currentSchoolName);
+    document.getElementById('statsBackBtn').onclick = () => showClassesView(appState.currentSchoolId, appState.currentSchoolName);
 
     document.querySelectorAll('.class-item-link').forEach(el => {
         el.addEventListener('click', async () => {

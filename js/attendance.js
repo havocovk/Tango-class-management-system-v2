@@ -1,35 +1,28 @@
 import { supabase } from './supabaseClient.js';
 import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
-
-let currentClassId = null;
-let currentClassName = null;
-let students = [];
-let courseDates = [];
-let attendanceMap = {};
-let videoMap = {};
-let partnerMap = {};
+import { appState } from './state.js';
 
 export async function showAttendanceView(classId, className) {
-    currentClassId = classId;
-    currentClassName = className;
+    appState.currentClassId = classId;
+    appState.currentClassName = className;
     await loadAttendanceData();
     renderAttendanceView();
 }
 
 async function loadAttendanceData() {
-    const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', currentClassId).order('id');
-    students = studentsData || [];
-    const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', currentClassId).order('date');
-    courseDates = datesData || [];
-    const { data: attData } = await supabase.from('attendance').select('*').in('course_date_id', courseDates.map(d => d.id));
-    attendanceMap = {};
-    if (attData) attData.forEach(a => { attendanceMap[`${a.student_id}_${a.course_date_id}`] = a.status; });
-    const { data: videoData } = await supabase.from('videos').select('*').in('course_date_id', courseDates.map(d => d.id));
-    videoMap = {};
-    if (videoData) videoData.forEach(v => { videoMap[v.course_date_id] = v.url; });
-    partnerMap = {};
-    courseDates.forEach(d => { partnerMap[d.id] = d.teacher_partner || ''; });
+    const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', appState.currentClassId).order('id');
+    appState.students = studentsData || [];
+    const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', appState.currentClassId).order('date');
+    appState.courseDates = datesData || [];
+    const { data: attData } = await supabase.from('attendance').select('*').in('course_date_id', appState.courseDates.map(d => d.id));
+    appState.attendanceMap = {};
+    if (attData) attData.forEach(a => { appState.attendanceMap[`${a.student_id}_${a.course_date_id}`] = a.status; });
+    const { data: videoData } = await supabase.from('videos').select('*').in('course_date_id', appState.courseDates.map(d => d.id));
+    appState.videoMap = {};
+    if (videoData) videoData.forEach(v => { appState.videoMap[v.course_date_id] = v.url; });
+    appState.partnerMap = {};
+    appState.courseDates.forEach(d => { appState.partnerMap[d.id] = d.teacher_partner || ''; });
 }
 
 function renderAttendanceView() {
@@ -43,10 +36,10 @@ function renderAttendanceView() {
                 <button id="addWeekBtn">📅 Add Week</button>
                 <button id="paymentsBtn" class="btn-info">💰 Payments</button>
             </div>
-            <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
+            <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${appState.courseDates.map((d) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -56,10 +49,10 @@ function renderAttendanceView() {
     container.innerHTML = html;
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '';
-    students.forEach((student, idx) => {
+    appState.students.forEach((student, idx) => {
         let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;">${escapeHtml(student.name)}<span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
-        courseDates.forEach(date => {
-            const status = attendanceMap[`${student.id}_${date.id}`] || '';
+        appState.courseDates.forEach(date => {
+            const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
             let iconHtml = '';
             if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
@@ -77,8 +70,8 @@ function renderAttendanceView() {
     let videoRow = `<tr>`;
     videoRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Class Recaps</td>`;
-    courseDates.forEach(date => {
-        const hasVideo = videoMap[date.id];
+    appState.courseDates.forEach(date => {
+        const hasVideo = appState.videoMap[date.id];
         videoRow += `<td><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
     videoRow += `</tr>`;
@@ -87,8 +80,8 @@ function renderAttendanceView() {
     let partnerRow = `<tr>`;
     partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
-    courseDates.forEach(date => {
-        const partner = partnerMap[date.id] || '';
+    appState.courseDates.forEach(date => {
+        const partner = appState.partnerMap[date.id] || '';
         partnerRow += `<td><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" style="cursor:pointer; color:var(--primary);">${partner ? escapeHtml(partner.substring(0,8)) : '✏️'}</span></td>`;
     });
     partnerRow += `</tr>`;
@@ -99,14 +92,14 @@ function renderAttendanceView() {
     document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
     document.getElementById('addStudentBtn').onclick = () => addStudent();
     document.getElementById('addWeekBtn').onclick = () => addWeek();
-    document.getElementById('paymentsBtn').onclick = () => navigateTo('payments', { classId: currentClassId, className: currentClassName });
+    document.getElementById('paymentsBtn').onclick = () => navigateTo('payments', { classId: appState.currentClassId, className: appState.currentClassName });
 
     document.querySelectorAll('.att-cell').forEach(cell => {
         cell.addEventListener('click', async (e) => {
             e.stopPropagation();
             const studentId = parseInt(cell.dataset.studentId);
             const dateId = parseInt(cell.dataset.dateId);
-            const dateObj = courseDates.find(d => d.id === dateId);
+            const dateObj = appState.courseDates.find(d => d.id === dateId);
             if (!dateObj) return;
             if (isPastDate(dateObj.date) && !confirm('Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinizden emin misiniz?')) return;
             await toggleAttendance(studentId, dateId);
@@ -164,7 +157,7 @@ function renderAttendanceView() {
 }
 
 async function goBackToClasses() {
-    const { data: cls } = await supabase.from('classes').select('school_id').eq('id', currentClassId).single();
+    const { data: cls } = await supabase.from('classes').select('school_id').eq('id', appState.currentClassId).single();
     if (cls) {
         const { data: school } = await supabase.from('schools').select('name').eq('id', cls.school_id).single();
         if (school) {
@@ -262,7 +255,7 @@ async function deleteStudent(studentId) {
 }
 
 async function toggleAttendance(studentId, courseDateId) {
-    const current = attendanceMap[`${studentId}_${courseDateId}`] || '';
+    const current = appState.attendanceMap[`${studentId}_${courseDateId}`] || '';
     let newStatus = '';
     if (current === '') newStatus = '+';
     else if (current === '+') newStatus = '-';
@@ -276,7 +269,7 @@ async function toggleAttendance(studentId, courseDateId) {
             .eq('student_id', studentId)
             .eq('course_date_id', courseDateId);
         if (!error) {
-            delete attendanceMap[`${studentId}_${courseDateId}`];
+            delete appState.attendanceMap[`${studentId}_${courseDateId}`];
         } else {
             showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
             return;
@@ -293,7 +286,7 @@ async function toggleAttendance(studentId, courseDateId) {
             .insert({ student_id: studentId, course_date_id: courseDateId, status: newStatus });
 
         if (!error) {
-            attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
+            appState.attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
         } else {
             showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
             return;
@@ -304,7 +297,7 @@ async function toggleAttendance(studentId, courseDateId) {
 }
 
 async function handleVideo(courseDateId) {
-    const existingUrl = videoMap[courseDateId];
+    const existingUrl = appState.videoMap[courseDateId];
     if (existingUrl) {
         const modal = document.getElementById('videoModal');
         const linkDisplay = document.getElementById('videoLinkDisplay');
@@ -329,7 +322,7 @@ async function handleVideo(courseDateId) {
                     const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
                     if (!error) {
                         showToast('Video bağlantısı silindi ✓', 'success');
-                        delete videoMap[courseDateId];
+                        delete appState.videoMap[courseDateId];
                         await loadAttendanceData();
                         renderAttendanceView();
                     } else {
@@ -378,7 +371,7 @@ async function handleVideo(courseDateId) {
                 const { error } = await supabase.from('videos').insert({ course_date_id: courseDateId, url });
                 if (!error) {
                     showToast('Video bağlantısı eklendi ✓', 'success');
-                    videoMap[courseDateId] = url;
+                    appState.videoMap[courseDateId] = url;
                     await loadAttendanceData();
                     renderAttendanceView();
                 } else {
@@ -394,7 +387,7 @@ async function handleVideo(courseDateId) {
 async function updateTeacherPartner(courseDateId, newPartner) {
     const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner }).eq('id', courseDateId);
     if (!error) {
-        partnerMap[courseDateId] = newPartner;
+        appState.partnerMap[courseDateId] = newPartner;
         showToast(newPartner ? 'Partner güncellendi ✓' : 'Partner silindi ✓', 'success');
         renderAttendanceView();
     } else {
@@ -405,7 +398,7 @@ async function updateTeacherPartner(courseDateId, newPartner) {
 async function addStudent() {
     openPromptModal('Yeni Öğrenci', 'Adı ve soyadı', async (name) => {
         if (!name) return;
-        const { error } = await supabase.from('students').insert({ class_id: currentClassId, name });
+        const { error } = await supabase.from('students').insert({ class_id: appState.currentClassId, name });
         if (error) {
             showToast('Öğrenci eklenemedi. Bağlantıyı kontrol edin.', 'error');
         } else {
@@ -417,10 +410,10 @@ async function addStudent() {
 }
 
 async function addWeek() {
-    const lastDate = courseDates.length ? new Date(courseDates[courseDates.length-1].date) : new Date();
+    const lastDate = appState.courseDates.length ? new Date(appState.courseDates[appState.courseDates.length-1].date) : new Date();
     const newDate = new Date(lastDate.getTime() + 7*24*60*60*1000);
     const newDateStr = newDate.toISOString().split('T')[0];
-    const { error } = await supabase.from('course_dates').insert({ class_id: currentClassId, date: newDateStr, teacher_partner: null });
+    const { error } = await supabase.from('course_dates').insert({ class_id: appState.currentClassId, date: newDateStr, teacher_partner: null });
     if (!error) {
         showToast('Yeni hafta eklendi ✓', 'success');
         await loadAttendanceData();
