@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast } from './utils.js';
 import { showPaymentsView } from './payments.js';
 
 let currentClassId = null;
@@ -46,7 +46,7 @@ function renderAttendanceView() {
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d, idx) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${courseDates.map((d) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -69,6 +69,7 @@ function renderAttendanceView() {
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
     });
+
     const footer = document.getElementById('footerRow');
     footer.innerHTML = '';
 
@@ -83,7 +84,7 @@ function renderAttendanceView() {
     videoRow += `</tr>`;
 
     // Partner/Teacher satırı
-    let partnerRow = `<table>`;
+    let partnerRow = `<tr>`;
     partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     courseDates.forEach(date => {
@@ -184,25 +185,25 @@ function openStudentActionModal(studentId, currentName) {
     const closeBtn = document.getElementById('studentModalCloseView');
     const saveBtn = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
-    
+
     editBtn.onclick = null;
     deleteBtn.onclick = null;
     closeBtn.onclick = null;
     saveBtn.onclick = null;
     cancelEditBtn.onclick = null;
-    
+
     nameDisplay.innerText = currentName;
     viewMode.style.display = 'block';
     editMode.style.display = 'none';
     modal.style.display = 'flex';
-    
+
     editBtn.onclick = () => {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editInput.value = currentName;
         editInput.focus();
     };
-    
+
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
         modal.style.display = 'none';
@@ -216,11 +217,11 @@ function openStudentActionModal(studentId, currentName) {
             }
         );
     };
-    
+
     closeBtn.onclick = () => {
         modal.style.display = 'none';
     };
-    
+
     saveBtn.onclick = async () => {
         const newName = editInput.value.trim();
         if (newName && newName !== currentName) {
@@ -231,7 +232,7 @@ function openStudentActionModal(studentId, currentName) {
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
-    
+
     cancelEditBtn.onclick = () => {
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
@@ -241,17 +242,21 @@ function openStudentActionModal(studentId, currentName) {
 async function updateStudentName(studentId, newName) {
     const { error } = await supabase.from('students').update({ name: newName }).eq('id', studentId);
     if (!error) {
+        showToast('Öğrenci adı güncellendi ✓', 'success');
         await loadAttendanceData();
         renderAttendanceView();
-    } else alert('Hata: ' + error.message);
+    } else {
+        showToast('Ad güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
 }
 
 async function deleteStudent(studentId) {
     const { error } = await supabase.from('students').delete().eq('id', studentId);
     if (error) {
-        alert('Hata: ' + error.message);
+        showToast('Öğrenci silinemedi. Bağlantıyı kontrol edin.', 'error');
         return false;
     }
+    showToast('Öğrenci silindi ✓', 'success');
     await loadAttendanceData();
     renderAttendanceView();
     return true;
@@ -264,7 +269,7 @@ async function toggleAttendance(studentId, courseDateId) {
     else if (current === '+') newStatus = '-';
     else if (current === '-') newStatus = 'S';
     else newStatus = '';
-    
+
     if (newStatus === '') {
         const { error } = await supabase
             .from('attendance')
@@ -274,7 +279,7 @@ async function toggleAttendance(studentId, courseDateId) {
         if (!error) {
             delete attendanceMap[`${studentId}_${courseDateId}`];
         } else {
-            alert('Hata: ' + error.message);
+            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
             return;
         }
     } else {
@@ -283,15 +288,15 @@ async function toggleAttendance(studentId, courseDateId) {
             .delete()
             .eq('student_id', studentId)
             .eq('course_date_id', courseDateId);
-        
+
         const { error } = await supabase
             .from('attendance')
             .insert({ student_id: studentId, course_date_id: courseDateId, status: newStatus });
-        
+
         if (!error) {
             attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
         } else {
-            alert('Hata: ' + error.message);
+            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
             return;
         }
     }
@@ -299,7 +304,6 @@ async function toggleAttendance(studentId, courseDateId) {
     renderAttendanceView();
 }
 
-// DÜZELTİLMİŞ handleVideo - sil butonuna basınca direkt onay modalı açılır
 async function handleVideo(courseDateId) {
     const existingUrl = videoMap[courseDateId];
     if (existingUrl) {
@@ -308,73 +312,63 @@ async function handleVideo(courseDateId) {
         const watchIcon = document.getElementById('watchVideoBtn');
         const deleteIcon = document.getElementById('deleteVideoBtn');
         const closeBtn = document.getElementById('closeVideoModalBtn');
-        
+
         linkDisplay.innerText = existingUrl;
         linkDisplay.style.color = '#2DD4BF';
         modal.style.display = 'flex';
         refreshIcons();
-        
+
         const watchHandler = () => {
             window.open(existingUrl, '_blank');
         };
-        
-        // Silme işlemi için doğru event handler
+
         const deleteHandler = () => {
-            // Önce video modalını kapat
             modal.style.display = 'none';
-            // Sonra onay modalını göster
             openConfirmModal(
                 'Bu video bağlantısını silmek istediğinize emin misiniz?',
                 async () => {
-                    // Evet: silme işlemini yap
                     const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
                     if (!error) {
+                        showToast('Video bağlantısı silindi ✓', 'success');
                         delete videoMap[courseDateId];
                         await loadAttendanceData();
                         renderAttendanceView();
                     } else {
-                        alert('Hata: ' + error.message);
+                        showToast('Video silinemedi. Bağlantıyı kontrol edin.', 'error');
                     }
                     cleanup();
                 },
                 () => {
-                    // İptal: video modalını tekrar aç
                     modal.style.display = 'flex';
                     refreshIcons();
-                    // Event listener'ları yeniden bağla (çünkü cleanup yapıldıysa)
-                    // Ancak cleanup henüz yapılmadı, sadece modal tekrar açıldı.
-                    // Burada ekstra bir şey yapmaya gerek yok çünkü aynı elementler var.
                 }
             );
-            // cleanup yapma, çünkü video modalı kapatıldı ama onay modalı açık
-            // Event listener'ları temizlemek için değil, sadece silme sonrası temizlik yapılacak.
         };
-        
+
         const closeHandler = () => {
             modal.style.display = 'none';
             cleanup();
         };
-        
+
         const cleanup = () => {
             watchIcon.removeEventListener('click', watchHandler);
             deleteIcon.removeEventListener('click', deleteHandler);
             closeBtn.removeEventListener('click', closeHandler);
             modal.removeEventListener('click', outsideClickHandler);
         };
-        
+
         const outsideClickHandler = (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
                 cleanup();
             }
         };
-        
-        // Önceki listener'ları temizle (varsa)
+
         watchIcon.removeEventListener('click', watchHandler);
         deleteIcon.removeEventListener('click', deleteHandler);
         closeBtn.removeEventListener('click', closeHandler);
         modal.removeEventListener('click', outsideClickHandler);
-        
+
         watchIcon.addEventListener('click', watchHandler);
         deleteIcon.addEventListener('click', deleteHandler);
         closeBtn.addEventListener('click', closeHandler);
@@ -384,10 +378,15 @@ async function handleVideo(courseDateId) {
             if (url && url.startsWith('http')) {
                 const { error } = await supabase.from('videos').insert({ course_date_id: courseDateId, url });
                 if (!error) {
+                    showToast('Video bağlantısı eklendi ✓', 'success');
                     videoMap[courseDateId] = url;
                     await loadAttendanceData();
                     renderAttendanceView();
-                } else alert('Hata: ' + error.message);
+                } else {
+                    showToast('Video eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                }
+            } else {
+                showToast('Geçerli bir URL girin (http ile başlamalı)', 'warning');
             }
         });
     }
@@ -397,16 +396,21 @@ async function updateTeacherPartner(courseDateId, newPartner) {
     const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner }).eq('id', courseDateId);
     if (!error) {
         partnerMap[courseDateId] = newPartner;
+        showToast(newPartner ? 'Partner güncellendi ✓' : 'Partner silindi ✓', 'success');
         renderAttendanceView();
-    } else alert('Hata: ' + error.message);
+    } else {
+        showToast('Partner güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
 }
 
 async function addStudent() {
     openPromptModal('Yeni Öğrenci', 'Adı ve soyadı', async (name) => {
         if (!name) return;
         const { error } = await supabase.from('students').insert({ class_id: currentClassId, name });
-        if (error) alert('Hata: ' + error.message);
-        else {
+        if (error) {
+            showToast('Öğrenci eklenemedi. Bağlantıyı kontrol edin.', 'error');
+        } else {
+            showToast(`${name} sınıfa eklendi ✓`, 'success');
             await loadAttendanceData();
             renderAttendanceView();
         }
@@ -419,9 +423,12 @@ async function addWeek() {
     const newDateStr = newDate.toISOString().split('T')[0];
     const { error } = await supabase.from('course_dates').insert({ class_id: currentClassId, date: newDateStr, teacher_partner: null });
     if (!error) {
+        showToast('Yeni hafta eklendi ✓', 'success');
         await loadAttendanceData();
         renderAttendanceView();
-    } else alert('Hata: ' + error.message);
+    } else {
+        showToast('Hafta eklenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
 }
 
 async function deleteWeek(courseDateId) {
@@ -432,10 +439,11 @@ async function deleteWeek(courseDateId) {
         if (vidError) throw vidError;
         const { error: dateError } = await supabase.from('course_dates').delete().eq('id', courseDateId);
         if (dateError) throw dateError;
+        showToast('Hafta silindi ✓', 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } catch (err) {
-        alert('Hafta silinirken hata oluştu: ' + err.message);
+        showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
     }
 }
 

@@ -2,41 +2,32 @@
 
 // ---------------------------------------------------------------
 // TARİH YARDIMCILARI
-// Önemli: "2026-06-07" gibi YYYY-MM-DD formatındaki tarihleri
-// new Date() ile oluştururken UTC gece yarısı olarak yorumlanır.
-// Türkiye UTC+3 olduğu için bu 1 gün kaymaya yol açar.
-// Çözüm: tarihi parçalara ayırıp yerel saatle oluşturmak.
 // ---------------------------------------------------------------
 
-// YYYY-MM-DD → yerel saat dilimine göre Date nesnesi oluşturur (kayma olmaz)
 function parseDateLocal(dateStr) {
     if (!dateStr) return null;
     const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day); // Yerel saat dilimine göre
+    return new Date(year, month - 1, day);
 }
 
-// YYYY-MM-DD → GG/AA/YYYY formatına çevirir (tabloda gösterim için)
 export function formatDate(dateStr) {
     if (!dateStr) return '';
     const d = parseDateLocal(dateStr);
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-// Görüntüleme için GG/AA/YYYY formatı (readonly inputlarda kullanılır)
 export function formatDateForDisplay(dateStr) {
     if (!dateStr) return '';
     const d = parseDateLocal(dateStr);
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-// YYYY-MM-DD → GG/AA/YYYY (takvim ikonuyla seçilen tarihi göstermek için)
 export function isoToDisplayDate(isoDate) {
     if (!isoDate) return '';
     const d = parseDateLocal(isoDate);
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-// GG/AA/YYYY → YYYY-MM-DD
 export function displayDateToISO(displayDate) {
     if (!displayDate) return '';
     const parts = displayDate.split('/');
@@ -51,7 +42,6 @@ export function isoDate(dateStr) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Tarih geçmiş mi? (saat dilimi kayması olmadan, yerel tarihe göre karşılaştırır)
 export function isPastDate(dateStr) {
     const target = parseDateLocal(dateStr);
     if (!target) return false;
@@ -59,6 +49,49 @@ export function isPastDate(dateStr) {
     today.setHours(0, 0, 0, 0);
     target.setHours(0, 0, 0, 0);
     return target < today;
+}
+
+// ---------------------------------------------------------------
+// ADIM 4.1 — TOAST BİLDİRİMLERİ
+// alert() yerine ekranın sağ altında beliren, 3 saniye sonra
+// kendi kendine kaybolan şık bildirim kutuları.
+// Kullanım: showToast('Mesaj', 'success' | 'error' | 'warning')
+// ---------------------------------------------------------------
+
+export function showToast(message, type = 'success') {
+    // Konteyner yoksa oluştur
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    // İkon seç
+    const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠'
+    };
+    const icon = icons[type] || '✓';
+
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-message">${message}</span>`;
+    container.appendChild(toast);
+
+    // Animasyonlu giriş için kısa gecikme
+    setTimeout(() => toast.classList.add('toast-visible'), 10);
+
+    // 3 saniye sonra kaybol ve DOM'dan sil
+    setTimeout(() => {
+        toast.classList.remove('toast-visible');
+        toast.classList.add('toast-hiding');
+        setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 400);
+    }, 3000);
 }
 
 // ---------------------------------------------------------------
@@ -75,7 +108,6 @@ export function closeModal(id) {
     if (modal) modal.style.display = 'none';
 }
 
-// Tek girdili modal (boş değere izin VERMEZ - eski davranış)
 export function openPromptModal(title, placeholder, callback) {
     const modal = document.getElementById('dynamicModal');
     const titleEl = document.getElementById('dynamicModalTitle');
@@ -106,7 +138,6 @@ export function openPromptModal(title, placeholder, callback) {
     input.addEventListener('keypress', keyHandler);
 }
 
-// Tek girdili modal – mevcut değeri gösterir ve boş değere izin verir
 export function openPromptModalWithValue(title, defaultValue, placeholder, callback) {
     const modal = document.getElementById('dynamicModal');
     const titleEl = document.getElementById('dynamicModalTitle');
@@ -140,7 +171,6 @@ export function openPromptModalWithValue(title, defaultValue, placeholder, callb
     input.addEventListener('keypress', keyHandler);
 }
 
-// İki girdili modal (miktar + hafta)
 export function openDoubleInputModal(title, placeholder1, placeholder2, callback) {
     const modal = document.getElementById('doubleInputModal');
     const titleEl = document.getElementById('doubleModalTitle');
@@ -172,7 +202,6 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-// Onay modalı (silme) - isteğe bağlı onCancel callback desteği
 export function openConfirmModal(message, onConfirm, onCancel) {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
@@ -195,7 +224,6 @@ export function openConfirmModal(message, onConfirm, onCancel) {
     modal.style.display = 'flex';
 }
 
-// Lucide ikonlarını yenile
 export function refreshIcons() {
     if (window.lucide) window.lucide.createIcons();
 }
