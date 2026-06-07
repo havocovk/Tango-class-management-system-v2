@@ -284,16 +284,25 @@ async function showWeeklyStats() {
         .from('course_dates')
         .select('class_id, date')
         .in('class_id', classIds)
-        .order('date', { ascending: false });
+        .order('date', { ascending: true });
 
-    // Her sınıfın son tarihini JavaScript içinde bul (veritabanına tekrar gitme)
-    const classLastDate = {};
+    // ---------------------------------------------------------------
+    // ADIM 6.3 — TÜM HAFTA GÜNLERİNİ GÖSTER
+    // ESKİ: Her sınıf için yalnızca son ders tarihinin günü alınıyordu.
+    //        Pazartesi + Perşembe dersli bir sınıf yalnızca Perşembe'de görünüyordu.
+    // YENİ: Tüm ders tarihlerindeki haftanın günleri bir Set içinde toplanıyor.
+    //        Sınıf gerçekte hangi günlerde ders yapıyorsa hepsinde görünüyor.
+    // ---------------------------------------------------------------
+
+    // Her sınıf için benzersiz haftanın günlerini bul (Set: tekrar yok)
+    const classDaySet = {}; // class_id → Set of dayIndex (Pzt=0 … Paz=6)
     if (allDates) {
         allDates.forEach(d => {
-            // Azalan sırayla geldiği için ilk karşılaşılan = en son tarih
-            if (!classLastDate[d.class_id]) {
-                classLastDate[d.class_id] = d.date;
-            }
+            const [year, month, day] = d.date.split('-').map(Number);
+            const dateObj = new Date(year, month - 1, day);
+            const dayIndex = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
+            if (!classDaySet[d.class_id]) classDaySet[d.class_id] = new Set();
+            classDaySet[d.class_id].add(dayIndex);
         });
     }
 
@@ -303,15 +312,12 @@ async function showWeeklyStats() {
     let cells = Array(7).fill().map(() => []);
 
     for (const cls of allClasses) {
-        const lastDateStr = classLastDate[cls.id];
-        if (lastDateStr) {
-            // Saat dilimi kayması olmadan gün hesapla
-            const [year, month, day] = lastDateStr.split('-').map(Number);
-            const d = new Date(year, month - 1, day);
-            let dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1; // Pazartesi=0, Pazar=6
-            if (dayIndex >= 0 && dayIndex < 7) {
+        const daySet = classDaySet[cls.id];
+        if (daySet) {
+            // Sınıfı ders yaptığı HER günün sütununa ekle
+            daySet.forEach(dayIndex => {
                 cells[dayIndex].push({ id: cls.id, name: cls.name });
-            }
+            });
         }
     }
 
