@@ -11,82 +11,26 @@ export async function showPaymentsView(classId, className) {
 }
 
 async function loadPaymentsData() {
-    const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', appState.currentClassId).order('id');
+    const { data: studentsData } = await supabase
+        .from('students').select('*')
+        .eq('class_id', appState.currentClassId).order('id');
     appState.students = studentsData || [];
-    const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', appState.currentClassId).order('date');
+
+    const { data: datesData } = await supabase
+        .from('course_dates').select('*')
+        .eq('class_id', appState.currentClassId).order('date');
     appState.courseDates = datesData || [];
-    const { data: paymentsData } = await supabase.from('payments').select('*').in('student_id', appState.students.map(s => s.id));
+
+    const { data: paymentsData } = await supabase
+        .from('payments').select('*')
+        .in('student_id', appState.students.map(s => s.id));
     appState.payments = paymentsData || [];
 }
 
-function renderPaymentsView() {
-    const container = document.getElementById('dynamicView');
-    container.innerHTML = `
-        <div class="view">
-            <div class="back-link" id="backToAttendanceBtn">← Yoklama Sayfası</div>
-            <div class="main-title">Ödeme Takibi - ${escapeHtml(appState.currentClassName)}</div>
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr id="payHeader"><th>#</th><th>Student</th>${appState.courseDates.map(d => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px;">${formatDate(d.date)}</th>`).join('')}</tr></thead>
-                    <tbody id="payRows"></tbody>
-                </table>
-            </div>
-        </div>
-    `;
-    const tbody = document.getElementById('payRows');
-    tbody.innerHTML = '';
-    appState.students.forEach((student, idx) => {
-        let row = `<tr><td>${idx+1}</td><td>${escapeHtml(student.name)}</td>`;
-        appState.courseDates.forEach((date, dateIdx) => {
-            const isPaid = checkIsPaid(student.id, dateIdx);
-            row += `<td class="${isPaid ? 'paid-period' : ''}" data-student-id="${student.id}" data-date-id="${date.id}" data-date-index="${dateIdx}">`;
-            const payment = appState.payments.find(p => p.student_id === student.id && p.start_date_id === date.id);
-            if (payment) row += `${payment.amount}₺ (${payment.weeks_covered} hafta)`;
-            else row += `-`;
-            row += `</td>`;
-        });
-        row += `</tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
-    });
-    document.querySelectorAll('#payRows td').forEach(cell => {
-        const studentId = parseInt(cell.dataset.studentId);
-        const dateId = parseInt(cell.dataset.dateId);
-        if (!isNaN(studentId) && !isNaN(dateId)) {
-            cell.style.cursor = 'pointer';
-            cell.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const existing = appState.payments.find(p => p.student_id === studentId && p.start_date_id === dateId);
-                if (existing) {
-                    openConfirmModal('Bu ödemeyi silmek istediğinize emin misiniz?', async () => {
-                        await supabase.from('payments').delete().eq('id', existing.id);
-                        await loadPaymentsData();
-                        renderPaymentsView();
-                    });
-                } else {
-                    openDoubleInputModal('Ödeme Ekle', 'Miktar (₺)', 'Kaç hafta geçerli?', async (amount, weeks) => {
-                        if (!amount || !weeks) return;
-                        const { error } = await supabase.from('payments').insert({
-                            student_id: studentId,
-                            start_date_id: dateId,
-                            amount: parseInt(amount),
-                            weeks_covered: parseInt(weeks)
-                        });
-                        if (!error) {
-                            showToast('Ödeme eklendi ✓', 'success');
-                            await loadPaymentsData();
-                            renderPaymentsView();
-                        } else {
-                            showToast('Ödeme eklenemedi. Bağlantıyı kontrol edin.', 'error');
-                        }
-                    });
-                }
-            });
-        }
-    });
-    document.getElementById('backToAttendanceBtn').onclick = () => navigateTo('attendance', { classId: appState.currentClassId, className: appState.currentClassName });
-    refreshIcons();
-}
-
+// ---------------------------------------------------------------
+// Bir öğrencinin belirli bir hafta indeksinde ödeme kapsamında
+// olup olmadığını kontrol eder.
+// ---------------------------------------------------------------
 function checkIsPaid(studentId, dateIndex) {
     const dateObj = appState.courseDates[dateIndex];
     if (!dateObj) return false;
@@ -97,4 +41,217 @@ function checkIsPaid(studentId, dateIndex) {
         if (dateIndex >= startIdx && dateIndex < startIdx + p.weeks_covered) return true;
     }
     return false;
+}
+
+// ---------------------------------------------------------------
+// ADIM 6.1 — BORÇ TAKİBİ
+// Her öğrenci için:
+//   - Toplam ödenen hafta sayısı hesaplanır
+//   - Toplam ders sayısıyla kıyaslanır
+//   - Kalan ders sayısı (artı = avans, eksi = borç) bulunur
+// ---------------------------------------------------------------
+function calcStudentDebt(student) {
+    const totalDates = appState.courseDates.length;
+
+    // Bu öğrenciye ait tüm ödemelerin toplam hafta kapsamını topla
+    const studentPayments = appState.payments.filter(p => p.student_id === student.id);
+    const totalPaidWeeks = studentPayments.reduce((sum, p) => sum + p.weeks_covered, 0);
+
+    // Kaç ders ödendi, kaç ders gerçekleşti?
+    const remaining = totalPaidWeeks - totalDates;
+    // remaining > 0  → avans (fazla ödedi)
+    // remaining === 0 → tam ödedi
+    // remaining < 0  → borçlu (eksik ödedi)
+
+    const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    return { remaining, totalPaidWeeks, totalDates, totalAmount };
+}
+
+// ---------------------------------------------------------------
+// Kalan ders durumuna göre CSS sınıfı ve rozet metni döndürür
+// ---------------------------------------------------------------
+function getDebtBadge(remaining) {
+    if (remaining < 0) {
+        // Borçlu: kırmızı
+        return {
+            cls: 'debt-badge debt-danger',
+            text: `${Math.abs(remaining)} ders borçlu`
+        };
+    } else if (remaining === 0) {
+        // Tam ödedi: yeşil
+        return {
+            cls: 'debt-badge debt-ok',
+            text: 'Güncel ✓'
+        };
+    } else if (remaining <= 2) {
+        // 1-2 ders kaldı: turuncu uyarı
+        return {
+            cls: 'debt-badge debt-warning',
+            text: `${remaining} ders kaldı`
+        };
+    } else {
+        // Avans: mavi/gri bilgi
+        return {
+            cls: 'debt-badge debt-info',
+            text: `${remaining} ders avans`
+        };
+    }
+}
+
+function renderPaymentsView() {
+    const container = document.getElementById('dynamicView');
+    const totalDates = appState.courseDates.length;
+
+    // ---- Özet hesaplamaları ----
+    let totalCollected = 0;
+    let debtorCount    = 0;
+    let warningCount   = 0;
+
+    const debtMap = {}; // student.id → { remaining, totalAmount }
+    appState.students.forEach(s => {
+        const d = calcStudentDebt(s);
+        debtMap[s.id] = d;
+        totalCollected += d.totalAmount;
+        if (d.remaining < 0)         debtorCount++;
+        else if (d.remaining <= 2)   warningCount++;
+    });
+
+    // ---- Özet kartları HTML ----
+    const summaryHtml = `
+        <div class="payment-summary">
+            <div class="summary-card summary-total">
+                <div class="summary-value">${totalCollected.toLocaleString('tr-TR')} ₺</div>
+                <div class="summary-label">Toplam Tahsilat</div>
+            </div>
+            <div class="summary-card summary-danger">
+                <div class="summary-value">${debtorCount}</div>
+                <div class="summary-label">Borçlu Öğrenci</div>
+            </div>
+            <div class="summary-card summary-warning">
+                <div class="summary-value">${warningCount}</div>
+                <div class="summary-label">Paketi Bitiyor</div>
+            </div>
+            <div class="summary-card summary-dates">
+                <div class="summary-value">${totalDates}</div>
+                <div class="summary-label">Toplam Ders</div>
+            </div>
+        </div>
+    `;
+
+    // ---- Tablo HTML ----
+    container.innerHTML = `
+        <div class="view">
+            <div class="back-link" id="backToAttendanceBtn">← Yoklama Sayfası</div>
+            <div class="main-title">Ödeme Takibi</div>
+            <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:16px; font-weight:600;">
+                ${escapeHtml(appState.currentClassName)}
+            </div>
+
+            ${summaryHtml}
+
+            <div class="table-wrapper" style="margin-top:20px;">
+                <table>
+                    <thead>
+                        <tr id="payHeader">
+                            <th>#</th>
+                            <th>Öğrenci</th>
+                            <th style="white-space:nowrap; min-width:110px;">Durum</th>
+                            ${appState.courseDates.map(d =>
+                                `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px;">${formatDate(d.date)}</th>`
+                            ).join('')}
+                        </tr>
+                    </thead>
+                    <tbody id="payRows"></tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    const tbody = document.getElementById('payRows');
+    tbody.innerHTML = '';
+
+    appState.students.forEach((student, idx) => {
+        const { remaining } = debtMap[student.id];
+        const badge = getDebtBadge(remaining);
+
+        // Satır arka plan rengi: borçluysa hafif kırmızı, uyarıysa hafif turuncu
+        let rowStyle = '';
+        if (remaining < 0)        rowStyle = 'background: rgba(239,68,68,0.07);';
+        else if (remaining <= 2)   rowStyle = 'background: rgba(251,191,36,0.07);';
+
+        let row = `<tr style="${rowStyle}">`;
+        row += `<td>${idx + 1}</td>`;
+        row += `<td style="text-align:left; font-weight:600;">${escapeHtml(student.name)}</td>`;
+        row += `<td><span class="${badge.cls}">${badge.text}</span></td>`;
+
+        appState.courseDates.forEach((date, dateIdx) => {
+            const isPaid = checkIsPaid(student.id, dateIdx);
+            const payment = appState.payments.find(
+                p => p.student_id === student.id && p.start_date_id === date.id
+            );
+            row += `<td class="${isPaid ? 'paid-period' : ''}"
+                        data-student-id="${student.id}"
+                        data-date-id="${date.id}"
+                        data-date-index="${dateIdx}">`;
+            if (payment) row += `${payment.amount}₺<br><small style="color:var(--text-dim)">${payment.weeks_covered}h</small>`;
+            else         row += `–`;
+            row += `</td>`;
+        });
+
+        row += `</tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    // ---- Hücre tıklama: ödeme ekle / sil ----
+    document.querySelectorAll('#payRows td[data-student-id]').forEach(cell => {
+        const studentId = parseInt(cell.dataset.studentId);
+        const dateId    = parseInt(cell.dataset.dateId);
+        if (isNaN(studentId) || isNaN(dateId)) return;
+
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const existing = appState.payments.find(
+                p => p.student_id === studentId && p.start_date_id === dateId
+            );
+            if (existing) {
+                openConfirmModal('Bu ödemeyi silmek istediğinize emin misiniz?', async () => {
+                    const { error } = await supabase.from('payments').delete().eq('id', existing.id);
+                    if (error) {
+                        showToast('Ödeme silinemedi. Bağlantıyı kontrol edin.', 'error');
+                    } else {
+                        showToast('Ödeme silindi ✓', 'success');
+                        await loadPaymentsData();
+                        renderPaymentsView();
+                    }
+                });
+            } else {
+                openDoubleInputModal('Ödeme Ekle', 'Miktar (₺)', 'Kaç hafta geçerli?', async (amount, weeks) => {
+                    if (!amount || !weeks) return;
+                    const { error } = await supabase.from('payments').insert({
+                        student_id:    studentId,
+                        start_date_id: dateId,
+                        amount:        parseInt(amount),
+                        weeks_covered: parseInt(weeks)
+                    });
+                    if (error) {
+                        showToast('Ödeme eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                    } else {
+                        showToast('Ödeme eklendi ✓', 'success');
+                        await loadPaymentsData();
+                        renderPaymentsView();
+                    }
+                });
+            }
+        });
+    });
+
+    document.getElementById('backToAttendanceBtn').onclick = () =>
+        navigateTo('attendance', {
+            classId:   appState.currentClassId,
+            className: appState.currentClassName
+        });
+
+    refreshIcons();
 }

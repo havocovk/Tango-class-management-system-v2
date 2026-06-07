@@ -743,3 +743,87 @@ tfoot th.sticky-col:nth-child(2) {
 #retryBtn:hover {
     opacity: 0.85;
 }
+/* ================================================================
+   ADIM 6.1 — ÖDEME TAKİBİ: BORÇ / AVANS ROZETLERİ VE ÖZET KARTLAR
+   ================================================================ */
+
+.payment-summary {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0 0 0;
+    flex-wrap: wrap;
+}
+
+.summary-card {
+    flex: 1;
+    min-width: 70px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+}
+
+.summary-value {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.summary-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.3;
+}
+
+.summary-total   { border-color: rgba(45,212,191,0.4); }
+.summary-total   .summary-value { color: var(--primary); }
+
+.summary-danger  { border-color: rgba(239,68,68,0.4); }
+.summary-danger  .summary-value { color: var(--danger); }
+
+.summary-warning { border-color: rgba(251,191,36,0.4); }
+.summary-warning .summary-value { color: var(--accent); }
+
+.summary-dates   { border-color: rgba(59,130,246,0.4); }
+.summary-dates   .summary-value { color: var(--info); }
+
+.debt-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.debt-danger {
+    background: rgba(239,68,68,0.15);
+    color: #ef4444;
+    border-color: rgba(239,68,68,0.4);
+}
+
+.debt-warning {
+    background: rgba(251,191,36,0.15);
+    color: var(--accent);
+    border-color: rgba(251,191,36,0.4);
+}
+
+.debt-ok {
+    background: rgba(45,212,191,0.12);
+    color: var(--primary);
+    border-color: rgba(45,212,191,0.3);
+}
+
+.debt-info {
+    background: rgba(59,130,246,0.12);
+    color: var(--info);
+    border-color: rgba(59,130,246,0.3);
+}
+
+#payHeader th:nth-child(3),
+#payRows td:nth-child(3) {
+    min-width: 110px;
+}
