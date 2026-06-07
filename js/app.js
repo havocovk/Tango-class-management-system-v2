@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { navigateTo } from './router.js';
+import { showToast } from './utils.js';
 
 // ---------------------------------------------------------------
 // ADIM 1.2 — KULLANICI GİRİŞ SİSTEMİ
@@ -18,11 +19,58 @@ const emailInput    = document.getElementById('loginEmail');
 const passwordInput = document.getElementById('loginPassword');
 const loginError    = document.getElementById('loginError');
 
-// Uygulamanın bir kez başlatıldığını izleyen bayrak.
-// (Oturum tazelenince kullanıcıyı tekrar okullar sayfasına atmamak için.)
+// ---------------------------------------------------------------
+// ADIM 4.2 — İNTERNET BAĞLANTISI KOPMA YÖNETİMİ
+// ---------------------------------------------------------------
+// Tango dersleri bodrum katlarda yapılır — internet olmayabilir.
+// Bu kod; bağlantı kesilince sayfanın üstünde turuncu bir uyarı
+// bandı gösterir. İnternet gelince bant otomatik kaybolur.
+// ---------------------------------------------------------------
+
+const offlineBanner = document.getElementById('offlineBanner');
+const retryBtn      = document.getElementById('retryBtn');
+
+function showOfflineBanner() {
+    offlineBanner.style.display = 'flex';
+    // Bant sayfanın üstünü kapatamasın diye içerik aşağı kayar
+    document.body.style.paddingTop = '63px';
+}
+
+function hideOfflineBanner() {
+    offlineBanner.style.display = 'none';
+    document.body.style.paddingTop = '15px';
+}
+
+// Tarayıcı internet bağlantısını izliyor
+window.addEventListener('offline', () => {
+    showOfflineBanner();
+});
+
+window.addEventListener('online', () => {
+    hideOfflineBanner();
+    showToast('Bağlantı geri geldi ✓', 'success');
+});
+
+// "Tekrar Dene" butonu: okullar sayfasını yeniden yükle
+retryBtn.onclick = async () => {
+    if (!navigator.onLine) {
+        showToast('Hâlâ çevrimdışısınız. Bağlantıyı kontrol edin.', 'warning');
+        return;
+    }
+    await navigateTo('schools');
+};
+
+// Sayfa ilk açılışında bağlantı yoksa hemen bandı göster
+if (!navigator.onLine) {
+    showOfflineBanner();
+}
+
+// ---------------------------------------------------------------
+// GİRİŞ / ÇIKIŞ FONKSİYONLARI
+// ---------------------------------------------------------------
+
 let appStarted = false;
 
-// Giriş ekranını göster, uygulamayı gizle
 function showLogin() {
     appStarted = false;
     loginScreen.style.display = 'flex';
@@ -32,7 +80,6 @@ function showLogin() {
     passwordInput.value = '';
 }
 
-// Uygulamayı başlat, giriş ekranını gizle — yalnızca bir kez çalışır
 async function startApp() {
     if (appStarted) return;
     appStarted = true;
@@ -42,7 +89,6 @@ async function startApp() {
     await navigateTo('schools');
 }
 
-// "Giriş Yap" butonu
 async function handleLogin() {
     const email = emailInput.value.trim();
     const password = passwordInput.value;
@@ -62,36 +108,29 @@ async function handleLogin() {
     loginBtn.innerText = 'Giriş Yap';
 
     if (error) {
-        loginError.innerText = 'Giriş başarısız. E-posta veya şifre hatalı.';
+        loginError.innerText = navigator.onLine
+            ? 'Giriş başarısız. E-posta veya şifre hatalı.'
+            : 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
     }
-    // Başarılıysa aşağıdaki onAuthStateChange "SIGNED_IN" olayını yakalar
-    // ve startApp() otomatik çalışır.
 }
 
-// "Çıkış" butonu
 async function handleLogout() {
     await supabase.auth.signOut();
-    // onAuthStateChange "SIGNED_OUT" olayını yakalar ve showLogin() çalışır.
 }
 
-// Buton ve klavye (Enter) olayları
 loginBtn.onclick = handleLogin;
 emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 logoutBtn.onclick = handleLogout;
 
-// Giriş / çıkış değişikliklerini dinle
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         startApp();
     } else if (event === 'SIGNED_OUT') {
         showLogin();
     }
-    // TOKEN_REFRESHED gibi diğer olaylarda hiçbir şey yapma —
-    // kullanıcıyı çalışırken rahatsız etmeyelim.
 });
 
-// Sayfa ilk açıldığında: tarayıcıda kayıtlı bir oturum var mı?
 (async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
