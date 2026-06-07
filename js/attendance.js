@@ -254,6 +254,20 @@ async function deleteStudent(studentId) {
     return true;
 }
 
+// ---------------------------------------------------------------
+// ADIM 5.1 — YOKLAMA DEĞİŞİMİNDE SADECE İLGİLİ HÜCREYİ GÜNCELLE
+// ---------------------------------------------------------------
+// ESKİ DAVRANIM:
+//   1. Veritabanına git → tüm yoklama verisini yeniden çek
+//   2. Tüm tabloyu sıfırdan yeniden çiz (renderAttendanceView)
+//   → Her tıklamada tüm sayfa titriyor, gereksiz yavaşlık.
+//
+// YENİ DAVRANIM:
+//   1. Veritabanını güncelle
+//   2. appState.attendanceMap'i bellekte güncelle (DB'ye gitmeden)
+//   3. Sadece o tek hücreyi sayfada bul → sadece ikonunu değiştir
+//   → Sayfa titremez, anlık güncelleme, çok daha hızlı.
+// ---------------------------------------------------------------
 async function toggleAttendance(studentId, courseDateId) {
     const current = appState.attendanceMap[`${studentId}_${courseDateId}`] || '';
     let newStatus = '';
@@ -292,8 +306,17 @@ async function toggleAttendance(studentId, courseDateId) {
             return;
         }
     }
-    await loadAttendanceData();
-    renderAttendanceView();
+
+    // Sadece bu hücreyi bul ve ikonunu güncelle — tüm tabloyu yeniden çizme!
+    const cell = document.querySelector(`.att-cell[data-student-id="${studentId}"][data-date-id="${courseDateId}"]`);
+    if (cell) {
+        let iconHtml = '';
+        if (newStatus === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
+        else if (newStatus === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
+        else if (newStatus === 'S') iconHtml = '<span style="color:var(--info); font-weight:800;">S</span>';
+        cell.innerHTML = iconHtml;
+        refreshIcons();
+    }
 }
 
 async function handleVideo(courseDateId) {
