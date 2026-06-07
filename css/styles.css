@@ -285,26 +285,6 @@ th:nth-child(2), td:nth-child(2) {
 }
 .class-card:active { transform: scale(0.98); }
 
-.chart-container {
-    display: flex;
-    align-items: flex-end;
-    height: 180px;
-    padding: 40px 10px 60px 10px;
-    gap: 30px;
-    width: max-content;
-}
-.bar {
-    background: linear-gradient(to top, var(--primary), #5eead4);
-    width: 22px;
-    border-radius: 6px 6px 0 0;
-    transition: height 0.5s ease-out;
-}
-.bar-label-top {
-    color: var(--primary);
-    font-weight: 700;
-    font-size: 11px;
-    margin-bottom: 5px;
-}
 .hidden {
     display: none !important;
 }
@@ -440,39 +420,52 @@ tfoot th.sticky-col:nth-child(2) {
     padding: 10px 0;
 }
 
+/* ---------------------------------------------------------------
+   CHART — YENİ 3-KATMANLI YAPI
+   chart-container (sütun)
+     ├── chart-bars-zone  → sadece çubuklar (flex-row, align-bottom)
+     ├── chart-xaxis      → 1px x ekseni çizgisi
+     └── chart-dates-zone → sadece tarihler (flex-row, hizalı)
+   Bu yapıyla çubuklar ve tarihler ASLA üst üste gelemez.
+--------------------------------------------------------------- */
+
+/* Dıştaki kaydırılabilir çerçeve (flex sütun) */
 .chart-container {
     display: flex;
-    align-items: flex-end;
-    gap: 20px;
-    padding: 20px 16px 40px 16px;
-    min-width: max-content; /* İçerik genişliği kadar, kaydırma çubuğu sağlar */
+    flex-direction: column;
+    min-width: max-content;
+    padding: 16px 16px 16px 16px;
 }
 
-/* Bar stili */
-.bar-wrapper {
+/* Çubuk alanı: sabit yükseklik, çubuklar alttan büyür */
+.chart-bars-zone {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+    height: 200px;
+}
+
+/* Her sütun: sayı + çubuk */
+.bar-col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 50px;
+    justify-content: flex-end;
+    width: 44px;
+    gap: 5px;
 }
 
-/* DÜZELTME: Sabit yükseklikli çubuk alanı — çubuklar her zaman bu kutunun içinde büyür.
-   Bu sayede kısa çubuklar için tarihler üste çıkmaz, her zaman altta kalır. */
-.bar-inner {
-    height: 160px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-}
-
-.bar-label-top {
+/* Çubuk üstündeki sayı */
+.bar-count {
     color: var(--primary);
     font-weight: 700;
     font-size: 14px;
-    margin-bottom: 6px;
     text-align: center;
+    line-height: 1;
 }
 
+/* Renkli çubuk */
 .bar {
     background: linear-gradient(to top, var(--primary), #5eead4);
     width: 32px;
@@ -481,18 +474,36 @@ tfoot th.sticky-col:nth-child(2) {
     min-height: 4px;
 }
 
-.bar-label-bottom {
+/* X ekseni çizgisi */
+.chart-xaxis {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin: 0;
+    min-width: max-content;
+}
+
+/* Tarih etiketi alanı: çubuk sütunlarıyla hizalı */
+.chart-dates-zone {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding-top: 6px;
+    padding-bottom: 8px;
+}
+
+/* Tek tarih etiketi: döndürülmüş, sabit genişlik */
+.bar-date {
+    width: 44px;
     color: var(--text-dim);
     font-size: 10px;
-    margin-top: 6px;
-    text-align: center;
     white-space: nowrap;
     transform: rotate(-45deg);
     transform-origin: top left;
-    width: 60px;
+    height: 52px;
     position: relative;
-    left: 10px;
-    height: 44px;
+    left: 6px;
+    overflow: visible;
 }
 
 /* Boş hücrelerin de aynı yükseklikte kalması için */

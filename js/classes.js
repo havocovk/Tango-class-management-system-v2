@@ -464,23 +464,44 @@ async function drawChartForClass(classId) {
 
     const chartContainer = document.getElementById('chartContainer');
     chartContainer.innerHTML = '';
-    chartContainer.style.justifyContent = 'flex-start';
-    chartContainer.style.alignItems = 'flex-end';
+    chartContainer.style.justifyContent = '';
+    chartContainer.style.alignItems = '';
+
+    // ----- KATMAN 1: Çubuk alanı -----
+    const barsZone = document.createElement('div');
+    barsZone.className = 'chart-bars-zone';
+
+    // ----- KATMAN 2: X ekseni çizgisi -----
+    const xAxis = document.createElement('div');
+    xAxis.className = 'chart-xaxis';
+
+    // ----- KATMAN 3: Tarih etiketi alanı -----
+    const datesZone = document.createElement('div');
+    datesZone.className = 'chart-dates-zone';
 
     dates.forEach(dateObj => {
         const count = countByDate[dateObj.id] || 0;
         const barHeight = Math.max(4, count * 8);
-        const wrapper = document.createElement('div');
-        wrapper.className = 'bar-wrapper';
-        wrapper.innerHTML = `
-            <div class="bar-label-top">${count}</div>
-            <div class="bar-inner">
-                <div class="bar" style="height: ${barHeight}px;"></div>
-            </div>
-            <div class="bar-label-bottom">${formatDate(dateObj.date)}</div>
+
+        // Çubuk sütunu (sayı + çubuk)
+        const col = document.createElement('div');
+        col.className = 'bar-col';
+        col.innerHTML = `
+            <div class="bar-count">${count}</div>
+            <div class="bar" style="height:${barHeight}px;"></div>
         `;
-        chartContainer.appendChild(wrapper);
+        barsZone.appendChild(col);
+
+        // Tarih etiketi
+        const dateLabel = document.createElement('div');
+        dateLabel.className = 'bar-date';
+        dateLabel.textContent = formatDate(dateObj.date);
+        datesZone.appendChild(dateLabel);
     });
+
+    chartContainer.appendChild(barsZone);
+    chartContainer.appendChild(xAxis);
+    chartContainer.appendChild(datesZone);
 
     refreshIcons();
 }
