@@ -82,7 +82,8 @@ function renderAttendanceView() {
     partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
     appState.courseDates.forEach(date => {
         const partner = appState.partnerMap[date.id] || '';
-        partnerRow += `<td><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" style="cursor:pointer; color:var(--primary);">${partner ? escapeHtml(partner.substring(0,8)) : '✏️'}</span></td>`;
+        const iconColor = partner ? 'var(--primary)' : 'var(--text-dim)';
+        partnerRow += `<td><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" title="${escapeHtml(partner)}" style="cursor:pointer; display:inline-flex; color:${iconColor};"><i data-lucide="notebook-pen" size="18"></i></span></td>`;
     });
     partnerRow += `</tr>`;
 
@@ -117,7 +118,7 @@ function renderAttendanceView() {
     document.querySelectorAll('.partner-edit').forEach(span => {
         span.addEventListener('click', async () => {
             const dateId = parseInt(span.dataset.dateId);
-            const current = span.dataset.partner === '✏️' ? '' : span.dataset.partner;
+            const current = span.dataset.partner || '';
             openPromptModalWithValue(
                 'Partner / Teacher Adı',
                 current,
@@ -414,7 +415,13 @@ async function updateTeacherPartner(courseDateId, newPartner) {
     if (!error) {
         appState.partnerMap[courseDateId] = newPartner;
         showToast(newPartner ? 'Partner güncellendi ✓' : 'Partner silindi ✓', 'success');
-        renderAttendanceView();
+        // Sadece ilgili ikonu güncelle — tüm tabloyu yeniden çizme!
+        const span = document.querySelector(`.partner-edit[data-date-id="${courseDateId}"]`);
+        if (span) {
+            span.dataset.partner = newPartner;
+            span.title = newPartner;
+            span.style.color = newPartner ? 'var(--primary)' : 'var(--text-dim)';
+        }
     } else {
         showToast('Partner güncellenemedi. Bağlantıyı kontrol edin.', 'error');
     }
