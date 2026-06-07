@@ -823,72 +823,116 @@ tfoot th.sticky-col:nth-child(2) {
     border-color: rgba(59,130,246,0.3);
 }
 
-
 #payHeader th:nth-child(3),
 #payRows td:nth-child(3) {
     min-width: 110px;
 }
 
 /* ================================================================
-   ADIM 6.4 — ÖĞRENCİ PROFİL MODALI STİLLERİ
+   ADIM 7.3 — MOBİL DOKUNMA ALANLARI (Apple HIG: min 44×44px)
+   Parmakla basılan tüm tıklanabilir elementlerin dokunma yüzeyi
+   genişletildi. Görsel boyut değişmiyor; sadece tıklanabilir alan
+   padding + negatif margin tekniğiyle büyütülüyor.
    ================================================================ */
 
-.profile-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 14px;
+/* --- Yoklama tablosu hücreleri --- */
+/* Her yoklama hücresi en az 44px yüksekliğinde ve genişliğinde */
+.att-cell {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 12px 6px !important;
+    cursor: pointer;
 }
 
-.profile-stat-card {
-    background: #1a1f1a;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px 10px;
-    text-align: center;
-}
-
-.profile-stat-value {
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1.1;
-    color: var(--text-main);
-}
-
-.profile-stat-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 5px;
-    line-height: 1.3;
-}
-
-.profile-stat-present {
-    border-color: rgba(45,212,191,0.35);
-}
-.profile-stat-present .profile-stat-value {
-    color: var(--primary);
-}
-
-.profile-stat-absent {
-    border-color: rgba(239,68,68,0.35);
-}
-.profile-stat-absent .profile-stat-value {
-    color: var(--danger);
-}
-
-.profile-stat-payment {
-    border-color: rgba(251,191,36,0.35);
-}
-.profile-stat-payment .profile-stat-value {
-    color: var(--accent);
-}
-
-.profile-last-payment {
-    background: #1a1f1a;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 4px;
-    display: flex;
+/* --- Video ikonu (Class Recaps satırı) --- */
+.vid-icon {
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+    margin: -12px;
+    /* Not: cursor ve color mevcut .vid-icon kuralından geliyor, burada tekrar yazılmıyor */
+}
+
+/* --- Partner/Teacher düzenleme ikonu --- */
+.partner-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px;
+    margin: -12px;
+}
+
+/* --- Öğrenci adı tıklama alanı (profil) --- */
+.student-name-link {
+    display: inline-block;
+    padding: 10px 4px;
+    margin: -10px -4px;
+    min-height: 44px;
+    line-height: 24px;
+}
+
+/* --- Düzenle / Sil ikon butonları (kalem, çöp) --- */
+.btn-icon-edit,
+.btn-icon-delete {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+    margin: -10px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Geri linkleri --- */
+.back-link {
+    min-height: 44px;
+    line-height: 44px;
+    padding-right: 12px;
+}
+
+/* --- Haftalık istatistikler tablosundaki sınıf linkleri --- */
+.class-item-link {
+    min-height: 44px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Video modalındaki izle/sil ikonları --- */
+#watchVideoBtn,
+#deleteVideoBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 6px;
+}
+
+/* --- Öğrenci profil modalı: kalem ve çöp ikonları --- */
+#studentEditBtn,
+#studentDeleteBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+    margin: -10px;
+}
+
+/* --- Takvim ikonu (modal içindeki tarih seçici) --- */
+#calendarIconBtn,
+#editClassCalendarIcon {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin: -10px;
 }
