@@ -278,46 +278,43 @@ async function showWeeklyStats() {
         return;
     }
 
-    // TÜM sınıfların TÜM ders tarihlerini TEK SORGUDA çek
+    // TÜM sınıfların ders tarihlerini TEK SORGUDA çek (azalan sırayla — en son önce gelir)
     const classIds = allClasses.map(c => c.id);
     const { data: allDates } = await supabase
         .from('course_dates')
         .select('class_id, date')
         .in('class_id', classIds)
-        .order('date', { ascending: true });
+        .order('date', { ascending: false });
 
-    // ---------------------------------------------------------------
-    // ADIM 6.3 — TÜM HAFTA GÜNLERİNİ GÖSTER
-    // ESKİ: Her sınıf için yalnızca son ders tarihinin günü alınıyordu.
-    //        Pazartesi + Perşembe dersli bir sınıf yalnızca Perşembe'de görünüyordu.
-    // YENİ: Tüm ders tarihlerindeki haftanın günleri bir Set içinde toplanıyor.
-    //        Sınıf gerçekte hangi günlerde ders yapıyorsa hepsinde görünüyor.
-    // ---------------------------------------------------------------
-
-    // Her sınıf için benzersiz haftanın günlerini bul (Set: tekrar yok)
-    const classDaySet = {}; // class_id → Set of dayIndex (Pzt=0 … Paz=6)
+    // Her sınıfın YALNIZCA EN SON ders tarihini al.
+    // Rationale: Bir sınıfın günü değiştiğinde (örn. Cumartesi → Pazartesi),
+    // eski Cumartesi dersleri veritabanında kalmaya devam eder. Tüm günleri
+    // gösterirsek sınıf hem Cumartesi hem Pazartesi sütununda görünür — yanlış.
+    // Yalnızca son tarihin günü sınıfın "şu anki" gününü doğru yansıtır.
+    const classLastDate = {};
     if (allDates) {
         allDates.forEach(d => {
-            const [year, month, day] = d.date.split('-').map(Number);
-            const dateObj = new Date(year, month - 1, day);
-            const dayIndex = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
-            if (!classDaySet[d.class_id]) classDaySet[d.class_id] = new Set();
-            classDaySet[d.class_id].add(dayIndex);
+            // Azalan sırayla geldiği için ilk karşılaşılan = en son tarih
+            if (!classLastDate[d.class_id]) {
+                classLastDate[d.class_id] = d.date;
+            }
         });
     }
 
     const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
-    // 7 günlük hücre yapısı — her gün için o günde dersi olan sınıfların listesi
+    // 7 günlük hücre yapısı — her gün için o günde ders yapan sınıfların listesi
     let cells = Array(7).fill().map(() => []);
 
     for (const cls of allClasses) {
-        const daySet = classDaySet[cls.id];
-        if (daySet) {
-            // Sınıfı ders yaptığı HER günün sütununa ekle
-            daySet.forEach(dayIndex => {
+        const lastDateStr = classLastDate[cls.id];
+        if (lastDateStr) {
+            const [year, month, day] = lastDateStr.split('-').map(Number);
+            const dateObj = new Date(year, month - 1, day);
+            const dayIndex = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
+            if (dayIndex >= 0 && dayIndex < 7) {
                 cells[dayIndex].push({ id: cls.id, name: cls.name });
-            });
+            }
         }
     }
 
