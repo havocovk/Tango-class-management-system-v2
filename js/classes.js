@@ -481,7 +481,7 @@ async function drawChartForClass(classId) {
 
     dates.forEach(dateObj => {
         const count = countByDate[dateObj.id] || 0;
-        const barHeight = Math.max(4, count * 8);
+        const barHeight = Math.min(270, Math.max(4, count * 22));
 
         // Çubuk sütunu (sayı + çubuk)
         const col = document.createElement('div');
