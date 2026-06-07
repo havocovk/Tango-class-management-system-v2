@@ -346,8 +346,9 @@ async function handleVideo(courseDateId) {
                     if (!error) {
                         showToast('Video bağlantısı silindi ✓', 'success');
                         delete appState.videoMap[courseDateId];
-                        await loadAttendanceData();
-                        renderAttendanceView();
+                        // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
+                        const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
+                        if (icon) icon.classList.remove('active');
                     } else {
                         showToast('Video silinemedi. Bağlantıyı kontrol edin.', 'error');
                     }
@@ -395,8 +396,9 @@ async function handleVideo(courseDateId) {
                 if (!error) {
                     showToast('Video bağlantısı eklendi ✓', 'success');
                     appState.videoMap[courseDateId] = url;
-                    await loadAttendanceData();
-                    renderAttendanceView();
+                    // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
+                    const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
+                    if (icon) icon.classList.add('active');
                 } else {
                     showToast('Video eklenemedi. Bağlantıyı kontrol edin.', 'error');
                 }
