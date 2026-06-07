@@ -68,7 +68,6 @@ function renderClassesView() {
     refreshIcons();
 }
 
-// Yeni Sınıf Oluşturma Modalı (değişmedi)
 function openNewClassModal() {
     const modal = document.getElementById('newClassModal');
     const nameInput = document.getElementById('newClassName');
@@ -162,7 +161,6 @@ function openNewClassModal() {
     cancelBtn.onclick = cancelHandler;
 }
 
-// Sınıf Düzenleme (değişmedi)
 async function editClass(classId, oldName) {
     const modal = document.getElementById('editClassModal');
     const nameInput = document.getElementById('editClassNameInput');
@@ -265,38 +263,54 @@ async function editClass(classId, oldName) {
     cancelBtn.onclick = cancelHandler;
 }
 
-// GÜNCELLENMİŞ showWeeklyStats
+// ---------------------------------------------------------------
+// ADIM 2.1 — N+1 SORUNU DÜZELTİLDİ
+// ESKİ: Her sınıf için ayrı ayrı veritabanına gidip son tarihi soruyordu
+//        10 sınıf = 10 gidiş-dönüş
+// YENİ: Tek seferde tüm sınıfların tüm tarihlerini çekiyor
+//        10 sınıf = 1 gidiş-dönüş, JavaScript içinde gruplama yapılıyor
+// ---------------------------------------------------------------
 async function showWeeklyStats() {
     const { data: allClasses } = await supabase
         .from('classes')
         .select('id, name')
         .eq('school_id', currentSchoolId);
+
     if (!allClasses || allClasses.length === 0) {
         alert('Bu okulda henüz sınıf yok.');
         return;
     }
 
-    // Her sınıfın en son ders tarihini bul (haftalık tabloda göstermek için)
+    // TÜM sınıfların TÜM ders tarihlerini TEK SORGUDA çek
+    const classIds = allClasses.map(c => c.id);
+    const { data: allDates } = await supabase
+        .from('course_dates')
+        .select('class_id, date')
+        .in('class_id', classIds)
+        .order('date', { ascending: false });
+
+    // Her sınıfın son tarihini JavaScript içinde bul (veritabanına tekrar gitme)
     const classLastDate = {};
-    for (const cls of allClasses) {
-        const { data: dates } = await supabase
-            .from('course_dates')
-            .select('date')
-            .eq('class_id', cls.id)
-            .order('date', { ascending: false })
-            .limit(1);
-        if (dates && dates.length) classLastDate[cls.id] = dates[0].date;
+    if (allDates) {
+        allDates.forEach(d => {
+            // Azalan sırayla geldiği için ilk karşılaşılan = en son tarih
+            if (!classLastDate[d.class_id]) {
+                classLastDate[d.class_id] = d.date;
+            }
+        });
     }
 
     const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 
-    // Hücreleri doldurmak için 7 sütunlu bir yapı oluştur
+    // 7 günlük hücre yapısı — her gün için o günde dersi olan sınıfların listesi
     let cells = Array(7).fill().map(() => []);
 
     for (const cls of allClasses) {
         const lastDateStr = classLastDate[cls.id];
         if (lastDateStr) {
-            const d = new Date(lastDateStr);
+            // Saat dilimi kayması olmadan gün hesapla
+            const [year, month, day] = lastDateStr.split('-').map(Number);
+            const d = new Date(year, month - 1, day);
             let dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1; // Pazartesi=0, Pazar=6
             if (dayIndex >= 0 && dayIndex < 7) {
                 cells[dayIndex].push({ id: cls.id, name: cls.name });
@@ -323,29 +337,22 @@ async function showWeeklyStats() {
         if (classList.length === 0) {
             cellContent = '<div style="min-height: 50px;">&nbsp;</div>';
         } else {
-            // Dinamik font boyutu sınıfını belirle
             let fontSizeClass = '';
             if (classList.length === 1) fontSizeClass = 'dynamic-font-size-1';
             else if (classList.length === 2) fontSizeClass = 'dynamic-font-size-2';
             else if (classList.length >= 3) fontSizeClass = 'dynamic-font-size-3';
 
             const itemsHtml = classList.map(cls => {
-                // Sınıf adını iki satıra bölme (ilk boşluktan sonraki kısım veya belirli bir uzunluk)
                 let displayName = escapeHtml(cls.name);
                 let firstPart = displayName;
                 let secondPart = '';
-                // Eğer sınıf adında boşluk varsa, ilk boşluktan ayır
                 const spaceIndex = displayName.indexOf(' ');
-                if (spaceIndex !== -1 && displayName.length > 12) { // 12 karakterden uzunsa bölebiliriz
+                if (spaceIndex !== -1 && displayName.length > 12) {
                     firstPart = displayName.substring(0, spaceIndex);
                     secondPart = displayName.substring(spaceIndex + 1);
                 } else if (displayName.length > 12) {
-                    // Uzun tek kelime varsa elle böl
                     firstPart = displayName.substring(0, 8);
                     secondPart = displayName.substring(8);
-                } else {
-                    firstPart = displayName;
-                    secondPart = '';
                 }
 
                 const innerHtml = secondPart
@@ -361,7 +368,7 @@ async function showWeeklyStats() {
     }
 
     html += `
-                </tr>
+                    </tr>
                 </tbody>
             </table>
             <div id="chartSection">
@@ -378,7 +385,6 @@ async function showWeeklyStats() {
 
     document.getElementById('statsBackBtn').onclick = () => showClassesView(currentSchoolId, currentSchoolName);
 
-    // Tüm sınıf linklerine tıklama olayını bağla
     document.querySelectorAll('.class-item-link').forEach(el => {
         el.addEventListener('click', async () => {
             const classId = parseInt(el.dataset.classId);
@@ -389,7 +395,22 @@ async function showWeeklyStats() {
     refreshIcons();
 }
 
-// GÜNCELLENMİŞ drawChartForClass (yatay kaydırma ve düzgün bar gösterimi)
+async function deleteClass(classId) {
+    openConfirmModal('Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?', async () => {
+        const { error } = await supabase.from('classes').delete().eq('id', classId);
+        if (error) alert('Hata: ' + error.message);
+        else await loadClasses();
+        renderClassesView();
+    });
+}
+
+// ---------------------------------------------------------------
+// ADIM 2.2 — GRAFİK N+1 SORUNU DÜZELTİLDİ
+// ESKİ: Her hafta için ayrı ayrı yoklama sorgusu yapıyordu
+//        20 hafta = 20 gidiş-dönüş
+// YENİ: Tüm haftaların yoklamalarını tek sorguda çekiyor
+//        20 hafta = 1 gidiş-dönüş, JavaScript içinde gruplama yapılıyor
+// ---------------------------------------------------------------
 async function drawChartForClass(classId) {
     const { data: cls } = await supabase.from('classes').select('name').eq('id', classId).single();
     if (!cls) return;
@@ -399,6 +420,7 @@ async function drawChartForClass(classId) {
         .select('id, date')
         .eq('class_id', classId)
         .order('date');
+
     if (!dates || dates.length === 0) {
         document.getElementById('chartTitle').innerHTML = `<strong>${escapeHtml(cls.name)}</strong> - Ders tarihi yok`;
         const chartContainer = document.getElementById('chartContainer');
@@ -408,19 +430,30 @@ async function drawChartForClass(classId) {
         return;
     }
 
-    const { data: students } = await supabase.from('students').select('id').eq('class_id', classId);
-    const studentIds = students.map(s => s.id);
-    const attendanceCounts = [];
+    const { data: students } = await supabase
+        .from('students')
+        .select('id')
+        .eq('class_id', classId);
 
-    for (const date of dates) {
-        const { data: atts } = await supabase
-            .from('attendance')
-            .select('status')
-            .eq('course_date_id', date.id)
-            .in('student_id', studentIds);
-        let count = 0;
-        if (atts) count = atts.filter(a => a.status === '+' || a.status === '-').length;
-        attendanceCounts.push({ date: date.date, count });
+    const studentIds = (students || []).map(s => s.id);
+    const dateIds = dates.map(d => d.id);
+
+    // TÜM haftaların yoklamalarını TEK SORGUDA çek
+    const { data: allAtts } = await supabase
+        .from('attendance')
+        .select('course_date_id, status')
+        .in('course_date_id', dateIds)
+        .in('student_id', studentIds);
+
+    // Her haftanın katılım sayısını JavaScript içinde hesapla
+    const countByDate = {};
+    dateIds.forEach(id => { countByDate[id] = 0; });
+    if (allAtts) {
+        allAtts.forEach(a => {
+            if (a.status === '+' || a.status === '-') {
+                countByDate[a.course_date_id] = (countByDate[a.course_date_id] || 0) + 1;
+            }
+        });
     }
 
     const chartTitle = document.getElementById('chartTitle');
@@ -428,32 +461,22 @@ async function drawChartForClass(classId) {
 
     const chartContainer = document.getElementById('chartContainer');
     chartContainer.innerHTML = '';
-    chartContainer.style.justifyContent = 'flex-start'; // yatay kaydırma için soldan hizalı
+    chartContainer.style.justifyContent = 'flex-start';
 
-    attendanceCounts.forEach(item => {
-        const barHeight = Math.max(4, item.count * 6); // min 4px, her öğrenci 6px
+    dates.forEach(dateObj => {
+        const count = countByDate[dateObj.id] || 0;
+        const barHeight = Math.max(4, count * 6);
         const wrapper = document.createElement('div');
         wrapper.className = 'bar-wrapper';
         wrapper.innerHTML = `
-            <div class="bar-label-top">${item.count}</div>
+            <div class="bar-label-top">${count}</div>
             <div class="bar" style="height: ${barHeight}px;"></div>
-            <div class="bar-label-bottom">${formatDate(item.date)}</div>
+            <div class="bar-label-bottom">${formatDate(dateObj.date)}</div>
         `;
         chartContainer.appendChild(wrapper);
     });
 
-    // Kaydırma çubuğu zaten #chartSection'da overflow-x:auto ile sağlandı
     refreshIcons();
-}
-
-// Diğer yardımcı fonksiyonlar (deleteClass, escapeHtml) aynen kalır
-async function deleteClass(classId) {
-    openConfirmModal('Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?', async () => {
-        const { error } = await supabase.from('classes').delete().eq('id', classId);
-        if (error) alert('Hata: ' + error.message);
-        else await loadClasses();
-        renderClassesView();
-    });
 }
 
 function escapeHtml(str) {
