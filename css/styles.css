@@ -567,3 +567,96 @@ tfoot th.sticky-col:nth-child(2) {
 .toast-message {
     line-height: 1.4;
 }
+
+/* ---------------------------------------------------------------
+   ADIM 1.2 — GİRİŞ (LOGIN) EKRANI ve ÇIKIŞ BUTONU
+--------------------------------------------------------------- */
+
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-pure);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100000;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 26px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(45, 212, 191, 0.08);
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.login-logo {
+    border-radius: 18px;
+    margin-bottom: 16px;
+}
+
+.login-title {
+    color: var(--primary);
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 6px;
+}
+
+.login-subtitle {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin: 0 0 24px;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #1e293b;
+    color: white;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+.login-card #loginBtn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 14px;
+    font-size: 15px;
+}
+
+#loginError {
+    color: var(--danger);
+    font-size: 13px;
+    min-height: 18px;
+    margin: 12px 0 0;
+}
+
+#logoutBtn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 90000;
+    flex: none;
+    min-width: auto;
+    width: auto;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #334155;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#logoutBtn:hover {
+    background: #475569;
+}
