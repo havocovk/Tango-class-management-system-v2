@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
-import { showPaymentsView } from './payments.js';
+import { navigateTo } from './router.js';
 
 let currentClassId = null;
 let currentClassName = null;
@@ -99,7 +99,7 @@ function renderAttendanceView() {
     document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
     document.getElementById('addStudentBtn').onclick = () => addStudent();
     document.getElementById('addWeekBtn').onclick = () => addWeek();
-    document.getElementById('paymentsBtn').onclick = () => showPaymentsView(currentClassId, currentClassName);
+    document.getElementById('paymentsBtn').onclick = () => navigateTo('payments', { classId: currentClassId, className: currentClassName });
 
     document.querySelectorAll('.att-cell').forEach(cell => {
         cell.addEventListener('click', async (e) => {
@@ -168,8 +168,7 @@ async function goBackToClasses() {
     if (cls) {
         const { data: school } = await supabase.from('schools').select('name').eq('id', cls.school_id).single();
         if (school) {
-            const { showClassesView } = await import('./classes.js');
-            showClassesView(cls.school_id, school.name);
+            navigateTo('classes', { schoolId: cls.school_id, schoolName: school.name });
         }
     }
 }

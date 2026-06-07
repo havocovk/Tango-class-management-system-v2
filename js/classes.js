@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml } from './utils.js';
-import { showAttendanceView } from './attendance.js';
+import { navigateTo } from './router.js';
 
 let currentSchoolId = null;
 let currentSchoolName = null;
@@ -34,7 +34,7 @@ function renderClassesView() {
         </div>
     `;
     document.getElementById('backToSchoolsBtn').onclick = () => {
-        import('./schools.js').then(m => m.loadSchools());
+        navigateTo('schools');
     };
     const listDiv = document.getElementById('classesListContainer');
     listDiv.innerHTML = '';
@@ -51,7 +51,7 @@ function renderClassesView() {
                     <span class="btn-icon-delete" data-id="${cls.id}"><i data-lucide="trash-2" size="20"></i></span>
                 </div>
             `;
-            card.querySelector('[style*="flex:1"]').addEventListener('click', () => showAttendanceView(cls.id, cls.name));
+            card.querySelector('[style*="flex:1"]').addEventListener('click', () => navigateTo('attendance', { classId: cls.id, className: cls.name }));
             card.querySelector('.btn-icon-edit').addEventListener('click', (e) => {
                 e.stopPropagation();
                 editClass(cls.id, cls.name);

@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
+import { navigateTo } from './router.js';
 
 let currentSchools = [];
 
@@ -39,7 +40,7 @@ function renderSchoolsView() {
                 </div>
             `;
             card.querySelector('[style*="flex:1"]').addEventListener('click', () => {
-                import('./classes.js').then(m => m.showClassesView(school.id, school.name));
+                navigateTo('classes', { schoolId: school.id, schoolName: school.name });
             });
             card.querySelector('.btn-icon-edit').addEventListener('click', (e) => {
                 e.stopPropagation();

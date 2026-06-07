@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { formatDate, refreshIcons, openPromptModal, openDoubleInputModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
-import { showAttendanceView } from './attendance.js';
+import { navigateTo } from './router.js';
 
 let currentClassId = null;
 let currentClassName = null;
@@ -88,7 +88,7 @@ function renderPaymentsView() {
             });
         }
     });
-    document.getElementById('backToAttendanceBtn').onclick = () => showAttendanceView(currentClassId, currentClassName);
+    document.getElementById('backToAttendanceBtn').onclick = () => navigateTo('attendance', { classId: currentClassId, className: currentClassName });
     refreshIcons();
 }
 

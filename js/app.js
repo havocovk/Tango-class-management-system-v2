@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { loadSchools } from './schools.js';
+import { navigateTo } from './router.js';
 
 // Uygulama başlangıcı
 (async () => {
@@ -10,5 +10,5 @@ import { loadSchools } from './schools.js';
         document.getElementById('dynamicView').innerHTML = `<div class="view"><div class="main-title">Bağlantı Hatası</div><p style="color:red;">Supabase ayarlarını kontrol edin. ${error.message}</p></div>`;
         return;
     }
-    await loadSchools();
+    await navigateTo('schools');
 })();
