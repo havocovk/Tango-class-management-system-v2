@@ -1,7 +1,7 @@
 import { supabase } from './supabaseClient.js';
 import { navigateTo } from './router.js';
 import { showToast } from './utils.js';
-import { syncPendingChanges, refreshPendingBadge } from './offlineStore.js';
+import { syncPendingChanges, refreshPendingBadge, getPendingCount } from './offlineStore.js';
 
 // ---------------------------------------------------------------
 // ADIM 1.2 — KULLANICI GİRİŞ SİSTEMİ
@@ -48,14 +48,25 @@ window.addEventListener('offline', () => {
 });
 
 // ADIM 7.2 — Bağlantı gelince bekleyen çevrimdışı yoklamaları Supabase'e gönder.
+// isSyncing: aynı anda iki senkronizasyon çalışıp kayıtların iki kez
+// gönderilmesini engelleyen küçük bir kilit.
+let isSyncing = false;
+
 async function trySyncPending() {
-    const { synced, failed } = await syncPendingChanges();
-    await refreshPendingBadge();
-    if (synced > 0) {
-        showToast(`${synced} çevrimdışı kayıt senkronize edildi ✓`, 'success');
-    }
-    if (failed > 0) {
-        showToast(`${failed} kayıt gönderilemedi, tekrar denenecek.`, 'warning');
+    if (isSyncing) return;          // zaten senkronize ediliyorsa tekrar başlatma
+    if (!navigator.onLine) return;  // internet yoksa boşuna deneme
+    isSyncing = true;
+    try {
+        const { synced, failed } = await syncPendingChanges();
+        await refreshPendingBadge();
+        if (synced > 0) {
+            showToast(`${synced} çevrimdışı kayıt senkronize edildi ✓`, 'success');
+        }
+        if (failed > 0) {
+            showToast(`${failed} kayıt gönderilemedi, tekrar denenecek.`, 'warning');
+        }
+    } finally {
+        isSyncing = false;
     }
 }
 
@@ -64,6 +75,33 @@ window.addEventListener('online', async () => {
     showToast('Bağlantı geri geldi ✓', 'success');
     await trySyncPending();
 });
+
+// ---------------------------------------------------------------
+// ADIM 7.2 — GÜVENİLİR SENKRONİZASYON TETİKLEYİCİLERİ
+// ---------------------------------------------------------------
+// Mobil tarayıcılarda 'online' olayı her zaman tetiklenmez (özellikle
+// uçak modu açılıp kapatılınca). Bu yüzden tek bir olaya güvenmeyiz;
+// bekleyen kayıtları göndermek için iki ek yöntem daha kullanırız:
+//
+//   1) Uygulama yeniden öne geldiğinde (visibilitychange) kontrol et.
+//   2) Birkaç saniyede bir periyodik kontrol et (en garantili yol —
+//      kullanıcı ekrana bakarken internet gelirse de yakalar).
+// ---------------------------------------------------------------
+
+// 1) Uygulama tekrar öne gelince: internet varsa ve bekleyen varsa gönder
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+        const pending = await getPendingCount();
+        if (pending > 0) await trySyncPending();
+    }
+});
+
+// 2) Her 8 saniyede bir kontrol: internet varsa ve bekleyen kayıt varsa gönder
+setInterval(async () => {
+    if (!navigator.onLine) return;
+    const pending = await getPendingCount();
+    if (pending > 0) await trySyncPending();
+}, 8000);
 
 // "Tekrar Dene" butonu: okullar sayfasını yeniden yükle
 retryBtn.onclick = async () => {
