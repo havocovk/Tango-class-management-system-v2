@@ -1,0 +1,22 @@
+{
+    "name": "Tango Class Management",
+    "short_name": "TangoMS",
+    "description": "Tango derslerini, yoklamaları ve ödemeleri yönet",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#2DD4BF",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
