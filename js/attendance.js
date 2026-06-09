@@ -32,6 +32,7 @@ import { supabase } from './supabaseClient.js';
 import { formatDate, isPastDate, refreshIcons, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+import { cacheGet, cacheSet, getPendingChanges } from './offlineStore.js';
 
 // ---------------------------------------------------------------
 // Dışarıya export edilen tek giriş noktası
@@ -50,6 +51,35 @@ export async function showAttendanceView(classId, className) {
 // veri yenileme sonrası bu fonksiyonu çağırır.
 // ---------------------------------------------------------------
 export async function loadAttendanceData() {
+    const cacheKey = `attendance_${appState.currentClassId}`;
+
+    // ADIM 7.2 — ÇEVRİMDIŞI OKUMA
+    // İnternet yoksa Supabase'e gitmeyiz; en son kaydedilen veriyi
+    // telefondaki cache'ten (IndexedDB) okuruz. Ayrıca varsa henüz
+    // gönderilmemiş (bekleyen) çevrimdışı yoklama değişikliklerini de
+    // bu verinin üzerine uygularız — böylece kullanıcı kendi yaptığı
+    // işaretlemeleri çevrimdışıyken de görür.
+    if (!navigator.onLine) {
+        const cached = await cacheGet(cacheKey);
+        appState.students      = (cached && cached.students)      || [];
+        appState.courseDates   = (cached && cached.courseDates)   || [];
+        appState.attendanceMap = (cached && cached.attendanceMap) || {};
+        appState.videoMap      = (cached && cached.videoMap)      || {};
+        appState.partnerMap    = (cached && cached.partnerMap)    || {};
+        appState.payments      = (cached && cached.payments)      || [];
+
+        const pending = await getPendingChanges();
+        pending.forEach(ch => {
+            const belongsToThisClass = appState.courseDates.some(d => d.id === ch.courseDateId);
+            if (!belongsToThisClass) return;
+            const k = `${ch.studentId}_${ch.courseDateId}`;
+            if (ch.status === '') delete appState.attendanceMap[k];
+            else appState.attendanceMap[k] = ch.status;
+        });
+        return;
+    }
+
+    // ----- ÇEVRİMİÇİ: normal şekilde Supabase'den çek (mevcut davranış) -----
     const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', appState.currentClassId).order('id');
     appState.students = studentsData || [];
     const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', appState.currentClassId).order('date');
@@ -65,6 +95,20 @@ export async function loadAttendanceData() {
     // ADIM 6.4: Öğrenci profil modalı ödeme bilgisine ihtiyaç duyuyor
     const { data: paymentsData } = await supabase.from('payments').select('*').in('student_id', appState.students.map(s => s.id));
     appState.payments = paymentsData || [];
+
+    // ADIM 7.2 — Bu sınıfın güncel verisini çevrimdışı kullanım için kaydet.
+    // (Boş sonuç gelirse mevcut sağlam cache'i yanlışlıkla ezmeyelim diye
+    //  küçük bir güvenlik kontrolü.)
+    if (appState.courseDates.length > 0 || appState.students.length > 0) {
+        await cacheSet(cacheKey, {
+            students:      appState.students,
+            courseDates:   appState.courseDates,
+            attendanceMap: appState.attendanceMap,
+            videoMap:      appState.videoMap,
+            partnerMap:    appState.partnerMap,
+            payments:      appState.payments
+        });
+    }
 }
 
 // ---------------------------------------------------------------

@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient.js';
 import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+import { cacheGet, cacheSet } from './offlineStore.js';
 
 export async function showClassesView(schoolId, schoolName) {
     appState.currentSchoolId = schoolId;
@@ -11,9 +12,21 @@ export async function showClassesView(schoolId, schoolName) {
 }
 
 async function loadClasses() {
-    const { data, error } = await supabase.from('classes').select('*').eq('school_id', appState.currentSchoolId).order('id');
-    if (error) console.error(error);
-    else appState.classesList = data;
+    // ADIM 7.2 — Çevrimiçiyken Supabase'den çek + çevrimdışı için kaydet.
+    // Çevrimdışıyken bu okula ait en son sınıf listesini cache'ten oku.
+    const cacheKey = `classes_${appState.currentSchoolId}`;
+    if (navigator.onLine) {
+        const { data, error } = await supabase.from('classes').select('*').eq('school_id', appState.currentSchoolId).order('id');
+        if (error) {
+            console.error(error);
+            appState.classesList = (await cacheGet(cacheKey)) || [];
+        } else {
+            appState.classesList = data;
+            await cacheSet(cacheKey, data);
+        }
+    } else {
+        appState.classesList = (await cacheGet(cacheKey)) || [];
+    }
 }
 
 function renderClassesView() {

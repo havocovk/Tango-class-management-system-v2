@@ -2,11 +2,23 @@ import { supabase } from './supabaseClient.js';
 import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+import { cacheGet, cacheSet } from './offlineStore.js';
 
 export async function loadSchools() {
-    const { data, error } = await supabase.from('schools').select('*').order('id');
-    if (error) console.error(error);
-    else appState.currentSchools = data;
+    // ADIM 7.2 — Çevrimiçiyken Supabase'den çek + çevrimdışı için kaydet.
+    // Çevrimdışıyken en son kaydedilen okul listesini cache'ten oku.
+    if (navigator.onLine) {
+        const { data, error } = await supabase.from('schools').select('*').order('id');
+        if (error) {
+            console.error(error);
+            appState.currentSchools = (await cacheGet('schools')) || [];
+        } else {
+            appState.currentSchools = data;
+            await cacheSet('schools', data);
+        }
+    } else {
+        appState.currentSchools = (await cacheGet('schools')) || [];
+    }
     renderSchoolsView();
 }
 
