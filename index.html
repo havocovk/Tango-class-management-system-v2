@@ -122,8 +122,10 @@
             <button class="btn-secondary" id="studentModalCloseView" style="width:100%; margin-top:25px;">Kapat</button>
         </div>
         <div id="studentEditMode" style="display:none;">
-            <h3 style="margin-top:0;">Öğrenci Adını Düzenle</h3>
-            <input type="text" id="studentEditInput" style="width:100%; margin:15px 0;" autocomplete="off">
+            <h3 style="margin-top:0;">Öğrenci Bilgilerini Düzenle</h3>
+            <input type="text" id="studentEditInput" placeholder="Ad Soyad" style="width:100%; margin:15px 0 10px;" autocomplete="off">
+            <!-- ADIM 8.1 — Telefon numarası (WhatsApp için) -->
+            <input type="tel" id="studentPhoneInput" placeholder="Telefon: 905XX... veya 05XX..." style="width:100%; margin:0 0 15px;" autocomplete="tel">
             <div style="display:flex; gap:10px;">
                 <button class="btn-success" id="studentSaveBtn">Kaydet</button>
                 <button class="btn-secondary" id="studentCancelEditBtn">İptal</button>
@@ -187,6 +189,14 @@
                 <span style="color:var(--text-dim); font-size:12px;">Son Ödeme:</span>
                 <span id="profileLastPaymentDate" style="font-size:13px; font-weight:700; color:var(--accent); margin-left:6px;"></span>
             </div>
+            <!-- ADIM 8.1 — Telefon ve WhatsApp butonu -->
+            <div id="profilePhoneRow" style="display:none; margin-top:12px; padding-top:10px; border-top:1px solid var(--border);">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="color:var(--text-dim); font-size:12px;">📱 Telefon:</span>
+                    <span id="profilePhoneDisplay" style="font-size:13px; font-weight:600; color:var(--text-main);"></span>
+                </div>
+                <a id="profileWhatsAppBtn" href="#" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#128C7E; color:white; text-decoration:none; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:700;">💬 WhatsApp'ta Yaz</a>
+            </div>
         </div>
         <button class="btn-secondary" id="profileCloseBtn" style="width:100%; margin-top:22px;">Kapat</button>
     </div>
@@ -200,13 +210,17 @@
             <span style="vertical-align: middle;">Lesson Recap</span>
         </h3>
         <p id="videoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:8px; font-size:13px; margin:20px 0; color: #2DD4BF; border: 1px solid rgba(45,212,191,0.3);"></p>
-        <div style="display:flex; gap:24px; justify-content: center; margin-top:10px;">
+        <div style="display:flex; gap:24px; justify-content: center; margin-top:10px; align-items:center;">
             <span id="watchVideoBtn" style="cursor:pointer; color: #2DD4BF; transition: transform 0.2s;">
                 <i data-lucide="play" size="32"></i>
             </span>
             <span id="deleteVideoBtn" style="cursor:pointer; color: var(--danger); transition: transform 0.2s;">
                 <i data-lucide="trash-2" size="32"></i>
             </span>
+            <!-- ADIM 8.1 — WhatsApp paylaşım: alıcıyı WhatsApp'tan seçersin -->
+            <a id="whatsappVideoShareBtn" href="#" target="_blank" style="cursor:pointer; color:#25D366; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:6px; transition:transform 0.2s;">
+                <i data-lucide="message-circle" size="32"></i>
+            </a>
         </div>
         <button id="closeVideoModalBtn" class="btn-secondary" style="margin-top: 20px; width: 100%;">Kapat</button>
     </div>

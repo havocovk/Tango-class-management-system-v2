@@ -114,17 +114,20 @@ export async function toggleAttendance(studentId, courseDateId) {
 }
 
 // ---------------------------------------------------------------
-// Öğrenci adı güncelleme — openStudentActionModal (attendanceModals)
-// kaydet butonundan çağırır
+// Öğrenci adı (ve telefon) güncelleme — openStudentActionModal
+// (attendanceModals) kaydet butonundan çağırır.
+// ADIM 8.1: phone parametresi opsiyonel; verilirse birlikte kaydeder.
 // ---------------------------------------------------------------
-export async function updateStudentName(studentId, newName) {
-    const { error } = await supabase.from('students').update({ name: newName }).eq('id', studentId);
+export async function updateStudentName(studentId, newName, phone) {
+    const updateData = { name: newName };
+    if (phone !== undefined) updateData.phone = phone || null;
+    const { error } = await supabase.from('students').update(updateData).eq('id', studentId);
     if (!error) {
-        showToast('Öğrenci adı güncellendi ✓', 'success');
+        showToast('Öğrenci bilgileri güncellendi ✓', 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } else {
-        showToast('Ad güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+        showToast('Güncelleme başarısız. Bağlantıyı kontrol edin.', 'error');
     }
 }
 

@@ -52,6 +52,12 @@ export function openStudentActionModal(studentId, currentName) {
         viewMode.style.display = 'none';
         editMode.style.display = 'block';
         editInput.value = currentName;
+        // ADIM 8.1 — Telefon alanını mevcut değerle doldur
+        const phoneInput = document.getElementById('studentPhoneInput');
+        if (phoneInput) {
+            const studentObj = appState.students.find(s => s.id === studentId);
+            phoneInput.value = (studentObj && studentObj.phone) || '';
+        }
         editInput.focus();
     };
 
@@ -75,11 +81,13 @@ export function openStudentActionModal(studentId, currentName) {
 
     saveBtn.onclick = async () => {
         const newName = editInput.value.trim();
-        if (newName && newName !== currentName) {
-            await updateStudentName(studentId, newName);
-            nameDisplay.innerText = newName;
-            currentName = newName;
-        }
+        // ADIM 8.1 — Ad ile birlikte telefon numarasını da kaydet
+        const phoneInput = document.getElementById('studentPhoneInput');
+        const newPhone   = phoneInput ? phoneInput.value.trim() : '';
+        if (!newName) return;
+        await updateStudentName(studentId, newName, newPhone);
+        nameDisplay.innerText = newName;
+        currentName = newName;
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
@@ -161,6 +169,23 @@ export async function openStudentProfileModal(student) {
         lastPaymentRow.style.display = 'flex';
     } else {
         lastPaymentRow.style.display = 'none';
+    }
+
+    // ADIM 8.1 — Telefon ve WhatsApp butonu
+    const phoneRow     = document.getElementById('profilePhoneRow');
+    const phoneDisplay = document.getElementById('profilePhoneDisplay');
+    const waBtn        = document.getElementById('profileWhatsAppBtn');
+    if (student.phone && phoneRow) {
+        const digits  = student.phone.replace(/\D/g, '');
+        const waPhone = digits.startsWith('90') ? digits
+                      : digits.startsWith('0')  ? '90' + digits.slice(1)
+                      : digits.startsWith('5')  ? '90' + digits
+                      : digits;
+        phoneDisplay.textContent = student.phone;
+        waBtn.href               = `https://wa.me/${waPhone}`;
+        phoneRow.style.display   = 'block';
+    } else if (phoneRow) {
+        phoneRow.style.display = 'none';
     }
 
     loading.style.display = 'none';
@@ -245,6 +270,14 @@ export async function handleVideo(courseDateId) {
         linkDisplay.innerText    = existingUrl;
         linkDisplay.style.color  = '#2DD4BF';
         modal.style.display      = 'flex';
+
+        // ADIM 8.1 — WhatsApp paylaşım butonunu ayarla (alıcıyı WhatsApp'tan seçer)
+        const waVideoBtn = document.getElementById('whatsappVideoShareBtn');
+        if (waVideoBtn) {
+            const waMsg   = `Merhaba! Bu haftanın ders videosu hazır 🎵\n${existingUrl}`;
+            waVideoBtn.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+        }
+
         refreshIcons();
 
         const watchHandler = () => {

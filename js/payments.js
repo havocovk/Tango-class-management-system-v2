@@ -180,9 +180,23 @@ function renderPaymentsView() {
         if (remaining < 0)        rowStyle = 'background: rgba(239,68,68,0.07);';
         else if (remaining <= 2)   rowStyle = 'background: rgba(251,191,36,0.07);';
 
+        // ADIM 8.1 — Telefon varsa ve borçlu/paketi yakınsa WhatsApp hatırlatma butonu
+        let waButton = '';
+        if (student.phone && (remaining < 0 || remaining <= 2)) {
+            const digits  = student.phone.replace(/\D/g, '');
+            const waPhone = digits.startsWith('90') ? digits
+                          : digits.startsWith('0')  ? '90' + digits.slice(1)
+                          : digits.startsWith('5')  ? '90' + digits
+                          : digits;
+            const waMsg   = remaining < 0
+                ? `Merhaba ${student.name}! ${appState.currentClassName} derslerindeki ders paketiniz doldu 🙏 Yeni paket için bizi arayabilirsiniz.`
+                : `Merhaba ${student.name}! ${appState.currentClassName} derslerindeki ders paketinizden ${remaining} ders hakkınız kaldı 🙏 Paketi yenilemek için bizi arayabilirsiniz.`;
+            waButton = `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#128C7E;color:white;text-decoration:none;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-top:4px;">💬 WA</a>`;
+        }
+
         let row = `<tr style="${rowStyle}">`;
         row += `<td>${idx + 1}</td>`;
-        row += `<td style="text-align:left; font-weight:600;">${escapeHtml(student.name)}</td>`;
+        row += `<td style="text-align:left; font-weight:600;"><div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;"><span>${escapeHtml(student.name)}</span>${waButton}</div></td>`;
         row += `<td><span class="${badge.cls}">${badge.text}</span></td>`;
 
         appState.courseDates.forEach((date, dateIdx) => {
