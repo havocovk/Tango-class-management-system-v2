@@ -1,42 +1,8 @@
-// ---------------------------------------------------------------
-// attendance.js — Yoklama Ekranı Koordinatörü
-// ---------------------------------------------------------------
-// Sorumlulukları:
-//   1. showAttendanceView()   → dışarıya export edilen tek giriş noktası
-//   2. loadAttendanceData()   → Supabase'den tüm veriyi çeker, appState'e yazar
-//                               attendanceActions ve attendanceModals da bu
-//                               fonksiyonu import ederek yeniden çekme işlemini yapar
-//   3. renderAttendanceView() → tabloyu DOM'a yazar; event listener'larda
-//                               attendanceActions ve attendanceModals dinamik
-//                               import ile yüklenir — döngüsel bağımlılık olmaz
-//   4. goBackToClasses()      → geri navigasyonu
-//
-// BAĞIMLILIK HARİTASI (yönlü, çevrimsiz — döngü yok):
-//
-//   attendance.js
-//       ↑                    ↑
-//   attendanceActions.js   attendanceModals.js
-//
-//   attendance.js → attendanceActions.js : HAYIR (statik import yok)
-//   attendance.js → attendanceModals.js  : HAYIR (statik import yok)
-//   attendanceActions.js → attendance.js : EVET  (load + render için)
-//   attendanceModals.js  → attendance.js : EVET  (load + render için)
-//
-// renderAttendanceView içindeki event listener'lar actions ve modals'ı
-// SADECE BİR KERE başta dinamik import ile yükler, sonra kullanır.
-// Bu classStats.js'in classes.js'ten ayrılmasında kullanılan
-// tekniğin aynısıdır.
-// ---------------------------------------------------------------
-
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 
-// ---------------------------------------------------------------
-// Dışarıya export edilen tek giriş noktası
-// router.js bu fonksiyonu çağırır
-// ---------------------------------------------------------------
 export async function showAttendanceView(classId, className) {
     appState.currentClassId = classId;
     appState.currentClassName = className;
@@ -44,12 +10,7 @@ export async function showAttendanceView(classId, className) {
     renderAttendanceView();
 }
 
-// ---------------------------------------------------------------
-// Supabase'den tüm yoklama verisini çeker ve appState'e yazar.
-// Export edilir çünkü attendanceActions ve attendanceModals
-// veri yenileme sonrası bu fonksiyonu çağırır.
-// ---------------------------------------------------------------
-export async function loadAttendanceData() {
+async function loadAttendanceData() {
     const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', appState.currentClassId).order('id');
     appState.students = studentsData || [];
     const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', appState.currentClassId).order('date');
@@ -67,12 +28,7 @@ export async function loadAttendanceData() {
     appState.payments = paymentsData || [];
 }
 
-// ---------------------------------------------------------------
-// Tabloyu DOM'a yazar.
-// Export edilir çünkü attendanceActions ve attendanceModals
-// işlem sonrasında tabloyu yeniden çizmek için bu fonksiyonu çağırır.
-// ---------------------------------------------------------------
-export function renderAttendanceView() {
+function renderAttendanceView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
     let html = `
@@ -136,100 +92,84 @@ export function renderAttendanceView() {
 
     footer.innerHTML = videoRow + partnerRow;
 
-    // ---------------------------------------------------------------
-    // Event listener'lar — attendanceActions ve attendanceModals
-    // dinamik import ile yüklenir. renderAttendanceView her çağrıldığında
-    // modüller zaten cache'de olduğu için ikinci çağrıdan itibaren
-    // ek ağ isteği olmaz (ES module cache).
-    // ---------------------------------------------------------------
-    (async () => {
-        const actions = await import('./attendanceActions.js');
-        const modals  = await import('./attendanceModals.js');
+    // Event listener'lar
+    document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
+    document.getElementById('addStudentBtn').onclick = () => addStudent();
+    document.getElementById('addWeekBtn').onclick = () => addWeek();
+    document.getElementById('paymentsBtn').onclick = () => navigateTo('payments', { classId: appState.currentClassId, className: appState.currentClassName });
 
-        document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
-        document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();
-        document.getElementById('addWeekBtn').onclick       = () => actions.addWeek();
-        document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
-            classId:   appState.currentClassId,
-            className: appState.currentClassName
+    document.querySelectorAll('.att-cell').forEach(cell => {
+        cell.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const studentId = parseInt(cell.dataset.studentId);
+            const dateId = parseInt(cell.dataset.dateId);
+            const dateObj = appState.courseDates.find(d => d.id === dateId);
+            if (!dateObj) return;
+            if (isPastDate(dateObj.date) && !confirm('Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinizden emin misiniz?')) return;
+            await toggleAttendance(studentId, dateId);
         });
+    });
 
-        document.querySelectorAll('.att-cell').forEach(cell => {
-            cell.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const studentId = parseInt(cell.dataset.studentId);
-                const dateId    = parseInt(cell.dataset.dateId);
-                const dateObj   = appState.courseDates.find(d => d.id === dateId);
-                if (!dateObj) return;
-                if (isPastDate(dateObj.date) && !confirm('Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinizden emin misiniz?')) return;
-                await actions.toggleAttendance(studentId, dateId);
-            });
+    document.querySelectorAll('.vid-icon').forEach(icon => {
+        icon.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const dateId = parseInt(icon.dataset.dateId);
+            await handleVideo(dateId);
         });
+    });
 
-        document.querySelectorAll('.vid-icon').forEach(icon => {
-            icon.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const dateId = parseInt(icon.dataset.dateId);
-                await modals.handleVideo(dateId);
-            });
+    document.querySelectorAll('.partner-edit').forEach(span => {
+        span.addEventListener('click', async () => {
+            const dateId = parseInt(span.dataset.dateId);
+            const current = span.dataset.partner || '';
+            openPromptModalWithValue(
+                'Partner / Teacher Adı',
+                current,
+                'İsim girin (boş bırakıp Tamam derseniz silinir)',
+                async (newPartner) => {
+                    await updateTeacherPartner(dateId, newPartner);
+                }
+            );
         });
+    });
 
-        document.querySelectorAll('.partner-edit').forEach(span => {
-            span.addEventListener('click', async () => {
-                const dateId  = parseInt(span.dataset.dateId);
-                const current = span.dataset.partner || '';
-                openPromptModalWithValue(
-                    'Partner / Teacher Adı',
-                    current,
-                    'İsim girin (boş bırakıp Tamam derseniz silinir)',
-                    async (newPartner) => {
-                        await modals.updateTeacherPartner(dateId, newPartner);
-                    }
-                );
-            });
+    document.querySelectorAll('.btn-icon-edit').forEach(icon => {
+        icon.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const studentId = parseInt(icon.dataset.studentId);
+            const currentName = icon.dataset.studentName;
+            openStudentActionModal(studentId, currentName);
         });
+    });
 
-        document.querySelectorAll('.btn-icon-edit').forEach(icon => {
-            icon.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const studentId   = parseInt(icon.dataset.studentId);
-                const currentName = icon.dataset.studentName;
-                modals.openStudentActionModal(studentId, currentName);
-            });
+    // ADIM 6.4 — Öğrenci adına tıklayınca profil modalını aç
+    document.querySelectorAll('.student-name-link').forEach(span => {
+        span.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const studentId = parseInt(span.dataset.studentId);
+            const student = appState.students.find(s => s.id === studentId);
+            if (student) await openStudentProfileModal(student);
         });
+    });
 
-        // ADIM 6.4 — Öğrenci adına tıklayınca profil modalını aç
-        document.querySelectorAll('.student-name-link').forEach(span => {
-            span.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const studentId = parseInt(span.dataset.studentId);
-                const student   = appState.students.find(s => s.id === studentId);
-                if (student) await modals.openStudentProfileModal(student);
-            });
+    document.querySelectorAll('#headerRow th[data-date-id]').forEach(th => {
+        th.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const dateId = parseInt(th.dataset.dateId);
+            const dateStr = th.dataset.date;
+            const formatted = formatDate(dateStr);
+            openConfirmModal(
+                `${formatted} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
+                async () => {
+                    await deleteWeek(dateId);
+                }
+            );
         });
+    });
 
-        document.querySelectorAll('#headerRow th[data-date-id]').forEach(th => {
-            th.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const dateId    = parseInt(th.dataset.dateId);
-                const dateStr   = th.dataset.date;
-                const formatted = formatDate(dateStr);
-                openConfirmModal(
-                    `${formatted} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
-                    async () => {
-                        await actions.deleteWeek(dateId);
-                    }
-                );
-            });
-        });
-
-        refreshIcons();
-    })();
+    refreshIcons();
 }
 
-// ---------------------------------------------------------------
-// Geri: bu sınıfın hangi okula ait olduğunu DB'den çekip yönlendirir
-// ---------------------------------------------------------------
 async function goBackToClasses() {
     const { data: cls } = await supabase.from('classes').select('school_id').eq('id', appState.currentClassId).single();
     if (cls) {
@@ -238,4 +178,454 @@ async function goBackToClasses() {
             navigateTo('classes', { schoolId: cls.school_id, schoolName: school.name });
         }
     }
+}
+
+function openStudentActionModal(studentId, currentName) {
+    const modal = document.getElementById('studentActionModal');
+    const viewMode = document.getElementById('studentViewMode');
+    const editMode = document.getElementById('studentEditMode');
+    const nameDisplay = document.getElementById('studentNameDisplay');
+    const editInput = document.getElementById('studentEditInput');
+    const editBtn = document.getElementById('studentEditBtn');
+    const deleteBtn = document.getElementById('studentDeleteBtn');
+    const closeBtn = document.getElementById('studentModalCloseView');
+    const saveBtn = document.getElementById('studentSaveBtn');
+    const cancelEditBtn = document.getElementById('studentCancelEditBtn');
+
+    editBtn.onclick = null;
+    deleteBtn.onclick = null;
+    closeBtn.onclick = null;
+    saveBtn.onclick = null;
+    cancelEditBtn.onclick = null;
+
+    nameDisplay.innerText = currentName;
+    viewMode.style.display = 'block';
+    editMode.style.display = 'none';
+    modal.style.display = 'flex';
+
+    editBtn.onclick = () => {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        editInput.value = currentName;
+        editInput.focus();
+    };
+
+    deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        modal.style.display = 'none';
+        openConfirmModal(
+            'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
+            async () => {
+                await deleteStudent(studentId);
+            },
+            () => {
+                modal.style.display = 'flex';
+            }
+        );
+    };
+
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    saveBtn.onclick = async () => {
+        const newName = editInput.value.trim();
+        if (newName && newName !== currentName) {
+            await updateStudentName(studentId, newName);
+            nameDisplay.innerText = newName;
+            currentName = newName;
+        }
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    };
+
+    cancelEditBtn.onclick = () => {
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    };
+}
+
+async function updateStudentName(studentId, newName) {
+    const { error } = await supabase.from('students').update({ name: newName }).eq('id', studentId);
+    if (!error) {
+        showToast('Öğrenci adı güncellendi ✓', 'success');
+        await loadAttendanceData();
+        renderAttendanceView();
+    } else {
+        showToast('Ad güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
+}
+
+async function deleteStudent(studentId) {
+    const { error } = await supabase.from('students').delete().eq('id', studentId);
+    if (error) {
+        showToast('Öğrenci silinemedi. Bağlantıyı kontrol edin.', 'error');
+        return false;
+    }
+    showToast('Öğrenci silindi ✓', 'success');
+    await loadAttendanceData();
+    renderAttendanceView();
+    return true;
+}
+
+// ---------------------------------------------------------------
+// ADIM 5.1 — YOKLAMA DEĞİŞİMİNDE SADECE İLGİLİ HÜCREYİ GÜNCELLE
+// ---------------------------------------------------------------
+// ESKİ DAVRANIM:
+//   1. Veritabanına git → tüm yoklama verisini yeniden çek
+//   2. Tüm tabloyu sıfırdan yeniden çiz (renderAttendanceView)
+//   → Her tıklamada tüm sayfa titriyor, gereksiz yavaşlık.
+//
+// YENİ DAVRANIM:
+//   1. Veritabanını güncelle
+//   2. appState.attendanceMap'i bellekte güncelle (DB'ye gitmeden)
+//   3. Sadece o tek hücreyi sayfada bul → sadece ikonunu değiştir
+//   → Sayfa titremez, anlık güncelleme, çok daha hızlı.
+// ---------------------------------------------------------------
+async function toggleAttendance(studentId, courseDateId) {
+    const current = appState.attendanceMap[`${studentId}_${courseDateId}`] || '';
+    let newStatus = '';
+    if (current === '') newStatus = '+';
+    else if (current === '+') newStatus = '-';
+    else if (current === '-') newStatus = 'S';
+    else newStatus = '';
+
+    if (newStatus === '') {
+        const { error } = await supabase
+            .from('attendance')
+            .delete()
+            .eq('student_id', studentId)
+            .eq('course_date_id', courseDateId);
+        if (!error) {
+            delete appState.attendanceMap[`${studentId}_${courseDateId}`];
+        } else {
+            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+            return;
+        }
+    } else {
+        await supabase
+            .from('attendance')
+            .delete()
+            .eq('student_id', studentId)
+            .eq('course_date_id', courseDateId);
+
+        const { error } = await supabase
+            .from('attendance')
+            .insert({ student_id: studentId, course_date_id: courseDateId, status: newStatus });
+
+        if (!error) {
+            appState.attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
+        } else {
+            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+            return;
+        }
+    }
+
+    // Sadece bu hücreyi bul ve ikonunu güncelle — tüm tabloyu yeniden çizme!
+    const cell = document.querySelector(`.att-cell[data-student-id="${studentId}"][data-date-id="${courseDateId}"]`);
+    if (cell) {
+        let iconHtml = '';
+        if (newStatus === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
+        else if (newStatus === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
+        else if (newStatus === 'S') iconHtml = '<span style="color:var(--info); font-weight:800;">S</span>';
+        cell.innerHTML = iconHtml;
+        refreshIcons();
+    }
+}
+
+// ---------------------------------------------------------------
+// ADIM 6.2 — VIDEO PLATFORM TESPİTİ
+// URL içindeki anahtar kelimelere göre platform adı ve rengi döndürür.
+// Desteklenen platformlar: YouTube, Vimeo, Google Drive, Diğer
+// ---------------------------------------------------------------
+function detectVideoPlatform(url) {
+    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    const lower = url.toLowerCase();
+    if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
+        return { name: 'YouTube', color: '#FF0000' };
+    }
+    if (lower.includes('vimeo.com')) {
+        return { name: 'Vimeo', color: '#1AB7EA' };
+    }
+    if (lower.includes('drive.google.com')) {
+        return { name: 'Google Drive', color: '#34A853' };
+    }
+    return { name: 'Diğer', color: '#94a3b8' };
+}
+
+async function handleVideo(courseDateId) {
+    const existingUrl = appState.videoMap[courseDateId];
+    if (existingUrl) {
+        const modal = document.getElementById('videoModal');
+        const linkDisplay = document.getElementById('videoLinkDisplay');
+        const watchIcon = document.getElementById('watchVideoBtn');
+        const deleteIcon = document.getElementById('deleteVideoBtn');
+        const closeBtn = document.getElementById('closeVideoModalBtn');
+
+        // Platform tespiti
+        const platform = detectVideoPlatform(existingUrl);
+
+        // Modalın başlığını platform badge'i ile güncelle
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.innerHTML = `
+                <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
+                <span style="vertical-align:middle;">Lesson Recap</span>
+                <span style="
+                    display:inline-block;
+                    vertical-align:middle;
+                    margin-left:8px;
+                    padding:2px 8px;
+                    border-radius:12px;
+                    font-size:11px;
+                    font-weight:700;
+                    letter-spacing:0.5px;
+                    background:${platform.color}22;
+                    color:${platform.color};
+                    border:1px solid ${platform.color}55;
+                ">${platform.name}</span>
+            `;
+        }
+
+        linkDisplay.innerText = existingUrl;
+        linkDisplay.style.color = '#2DD4BF';
+        modal.style.display = 'flex';
+        refreshIcons();
+
+        const watchHandler = () => {
+            window.open(existingUrl, '_blank');
+        };
+
+        const deleteHandler = () => {
+            modal.style.display = 'none';
+            openConfirmModal(
+                'Bu video bağlantısını silmek istediğinize emin misiniz?',
+                async () => {
+                    const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
+                    if (!error) {
+                        showToast('Video bağlantısı silindi ✓', 'success');
+                        delete appState.videoMap[courseDateId];
+                        // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
+                        const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
+                        if (icon) icon.classList.remove('active');
+                    } else {
+                        showToast('Video silinemedi. Bağlantıyı kontrol edin.', 'error');
+                    }
+                    cleanup();
+                },
+                () => {
+                    modal.style.display = 'flex';
+                    refreshIcons();
+                }
+            );
+        };
+
+        const closeHandler = () => {
+            modal.style.display = 'none';
+            // Başlığı orijinal haline sıfırla (bir sonraki açılışta temiz gelsin)
+            const modalTitle = modal.querySelector('h3');
+            if (modalTitle) {
+                modalTitle.innerHTML = `
+                    <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i>
+                    <span style="vertical-align: middle;">Lesson Recap</span>
+                `;
+            }
+            cleanup();
+        };
+
+        const cleanup = () => {
+            watchIcon.removeEventListener('click', watchHandler);
+            deleteIcon.removeEventListener('click', deleteHandler);
+            closeBtn.removeEventListener('click', closeHandler);
+            modal.removeEventListener('click', outsideClickHandler);
+        };
+
+        const outsideClickHandler = (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                cleanup();
+            }
+        };
+
+        watchIcon.removeEventListener('click', watchHandler);
+        deleteIcon.removeEventListener('click', deleteHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+        modal.removeEventListener('click', outsideClickHandler);
+
+        watchIcon.addEventListener('click', watchHandler);
+        deleteIcon.addEventListener('click', deleteHandler);
+        closeBtn.addEventListener('click', closeHandler);
+        modal.addEventListener('click', outsideClickHandler);
+    } else {
+        openPromptModal('Video Linki', 'https://...', async (url) => {
+            if (url && url.startsWith('http')) {
+                const { error } = await supabase.from('videos').insert({ course_date_id: courseDateId, url });
+                if (!error) {
+                    showToast('Video bağlantısı eklendi ✓', 'success');
+                    appState.videoMap[courseDateId] = url;
+                    // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
+                    const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
+                    if (icon) icon.classList.add('active');
+                } else {
+                    showToast('Video eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                }
+            } else {
+                showToast('Geçerli bir URL girin (http ile başlamalı)', 'warning');
+            }
+        });
+    }
+}
+
+async function updateTeacherPartner(courseDateId, newPartner) {
+    const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner }).eq('id', courseDateId);
+    if (!error) {
+        appState.partnerMap[courseDateId] = newPartner;
+        showToast(newPartner ? 'Partner güncellendi ✓' : 'Partner silindi ✓', 'success');
+        // Sadece ilgili ikonu güncelle — tüm tabloyu yeniden çizme!
+        const span = document.querySelector(`.partner-edit[data-date-id="${courseDateId}"]`);
+        if (span) {
+            span.dataset.partner = newPartner;
+            span.title = newPartner;
+            span.style.color = newPartner ? 'var(--primary)' : 'var(--text-dim)';
+        }
+    } else {
+        showToast('Partner güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
+}
+
+async function addStudent() {
+    openPromptModal('Yeni Öğrenci', 'Adı ve soyadı', async (name) => {
+        if (!name) return;
+        const { error } = await supabase.from('students').insert({ class_id: appState.currentClassId, name });
+        if (error) {
+            showToast('Öğrenci eklenemedi. Bağlantıyı kontrol edin.', 'error');
+        } else {
+            showToast(`${name} sınıfa eklendi ✓`, 'success');
+            await loadAttendanceData();
+            renderAttendanceView();
+        }
+    });
+}
+
+async function addWeek() {
+    const lastDate = appState.courseDates.length ? new Date(appState.courseDates[appState.courseDates.length-1].date) : new Date();
+    const newDate = new Date(lastDate.getTime() + 7*24*60*60*1000);
+    const newDateStr = newDate.toISOString().split('T')[0];
+    const { error } = await supabase.from('course_dates').insert({ class_id: appState.currentClassId, date: newDateStr, teacher_partner: null });
+    if (!error) {
+        showToast('Yeni hafta eklendi ✓', 'success');
+        await loadAttendanceData();
+        renderAttendanceView();
+    } else {
+        showToast('Hafta eklenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
+}
+
+async function deleteWeek(courseDateId) {
+    try {
+        const { error: attError } = await supabase.from('attendance').delete().eq('course_date_id', courseDateId);
+        if (attError) throw attError;
+        const { error: vidError } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
+        if (vidError) throw vidError;
+        const { error: dateError } = await supabase.from('course_dates').delete().eq('id', courseDateId);
+        if (dateError) throw dateError;
+        showToast('Hafta silindi ✓', 'success');
+        await loadAttendanceData();
+        renderAttendanceView();
+    } catch (err) {
+        showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
+    }
+}
+
+// ---------------------------------------------------------------
+// ADIM 6.4 — ÖĞRENCİ PROFİL MODALI
+// Öğrenci adına tıklanınca şunları hesaplayıp gösterir:
+//   - Toplam ders sayısı (sınıftaki tüm haftalar)
+//   - Katılım oranı (gelen / (gelen + gitmeyen) × 100)
+//   - Devamsızlık sayısı ('-' statüsündeki kayıtlar)
+//   - Toplam ödenen tutar (tüm payments.amount toplamı)
+//   - Son ödeme tarihi (ödemelerin başlangıç tarihine göre en son)
+// appState içindeki mevcut veriyi kullanır — ekstra DB sorgusu yok.
+// ---------------------------------------------------------------
+async function openStudentProfileModal(student) {
+    const modal   = document.getElementById('studentProfileModal');
+    const loading = document.getElementById('profileLoadingMsg');
+    const content = document.getElementById('profileContent');
+
+    // İsmi yaz, içeriği gizle, modalı aç
+    document.getElementById('profileStudentName').textContent = student.name;
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    modal.style.display = 'flex';
+    refreshIcons();
+
+    // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
+    const totalDates = appState.courseDates.length;
+
+    let presentCount  = 0; // '+' statüsü
+    let absentCount   = 0; // '-' statüsü
+
+    appState.courseDates.forEach(d => {
+        const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
+        if (status === '+') presentCount++;
+        else if (status === '-') absentCount++;
+    });
+
+    // Katılım oranı: sadece işaretlenmiş hücreler üzerinden hesapla
+    const markedCount = presentCount + absentCount;
+    const attendanceRate = markedCount > 0
+        ? Math.round((presentCount / markedCount) * 100)
+        : 0;
+
+    // Ödeme bilgileri
+    const studentPayments = appState.payments.filter(p => p.student_id === student.id);
+    const totalPaid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    // Son ödemenin başlangıç tarihi: start_date_id → courseDates içinde bul
+    let lastPaymentDateStr = null;
+    if (studentPayments.length > 0) {
+        // En yüksek start_date_id'ye sahip ödemeyi bul (sırayla eklendiği varsayılır)
+        const lastPayment = studentPayments.reduce((latest, p) => {
+            const latestDate = appState.courseDates.find(d => d.id === latest.start_date_id);
+            const curDate    = appState.courseDates.find(d => d.id === p.start_date_id);
+            if (!latestDate) return p;
+            if (!curDate)    return latest;
+            return curDate.date > latestDate.date ? p : latest;
+        });
+        const dateObj = appState.courseDates.find(d => d.id === lastPayment.start_date_id);
+        if (dateObj) lastPaymentDateStr = formatDate(dateObj.date);
+    }
+
+    // ---- DOM güncelleme ----
+    document.getElementById('profileTotalDates').textContent    = totalDates;
+    document.getElementById('profileAttendanceRate').textContent = `%${attendanceRate}`;
+    document.getElementById('profileAbsenceCount').textContent  = absentCount;
+    document.getElementById('profileTotalPaid').textContent     = `${totalPaid.toLocaleString('tr-TR')}₺`;
+
+    const lastPaymentRow = document.getElementById('profileLastPaymentRow');
+    if (lastPaymentDateStr) {
+        document.getElementById('profileLastPaymentDate').textContent = lastPaymentDateStr;
+        lastPaymentRow.style.display = 'flex';
+    } else {
+        lastPaymentRow.style.display = 'none';
+    }
+
+    loading.style.display = 'none';
+    content.style.display = 'block';
+
+    // ---- Kapat butonu ----
+    const closeBtn = document.getElementById('profileCloseBtn');
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    // Modalın dışına tıklayınca da kapat
+    const outsideHandler = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            modal.removeEventListener('click', outsideHandler);
+        }
+    };
+    modal.removeEventListener('click', outsideHandler);
+    modal.addEventListener('click', outsideHandler);
 }
