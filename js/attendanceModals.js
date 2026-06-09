@@ -41,7 +41,7 @@ export function openStudentActionModal(studentId, currentName) {
     const editTitle    = document.getElementById('studentEditModeTitle');
 
     editBtn.onclick       = null;
-    phoneBtn.onclick      = null;
+    if (phoneBtn) phoneBtn.onclick = null;
     deleteBtn.onclick     = null;
     closeBtn.onclick      = null;
     saveBtn.onclick       = null;
@@ -54,26 +54,30 @@ export function openStudentActionModal(studentId, currentName) {
 
     // Kalem ikonu → sadece ad düzenleme alanı açılır
     editBtn.onclick = () => {
-        viewMode.style.display   = 'none';
-        editMode.style.display   = 'block';
+        viewMode.style.display  = 'none';
+        editMode.style.display  = 'block';
         if (editTitle) editTitle.textContent = 'Ad Düzenle';
-        editInput.style.display  = 'block';
-        phoneInput.style.display = 'none';
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'none';
         editInput.value = currentName;
         editInput.focus();
     };
 
-    // Telefon ikonu → sadece telefon düzenleme alanı açılır
-    phoneBtn.onclick = () => {
-        viewMode.style.display   = 'none';
-        editMode.style.display   = 'block';
-        if (editTitle) editTitle.textContent = 'Telefon Düzenle';
-        editInput.style.display  = 'none';
-        phoneInput.style.display = 'block';
-        const studentObj = appState.students.find(s => s.id === studentId);
-        phoneInput.value = (studentObj && studentObj.phone) || '';
-        phoneInput.focus();
-    };
+    // Telefon ikonu → sadece telefon düzenleme alanı açılır (element varsa)
+    if (phoneBtn) {
+        phoneBtn.onclick = () => {
+            viewMode.style.display  = 'none';
+            editMode.style.display  = 'block';
+            if (editTitle) editTitle.textContent = 'Telefon Düzenle';
+            editInput.style.display = 'none';
+            if (phoneInput) {
+                phoneInput.style.display = 'block';
+                const studentObj = appState.students.find(s => s.id === studentId);
+                phoneInput.value = (studentObj && studentObj.phone) || '';
+                phoneInput.focus();
+            }
+        };
+    }
 
     deleteBtn.onclick = (e) => {
         e.stopPropagation();
@@ -94,7 +98,7 @@ export function openStudentActionModal(studentId, currentName) {
     };
 
     saveBtn.onclick = async () => {
-        const isNameMode = editInput.style.display !== 'none';
+        const isNameMode = !phoneInput || editInput.style.display !== 'none';
         if (isNameMode) {
             const newName = editInput.value.trim();
             if (!newName) return;
@@ -105,16 +109,15 @@ export function openStudentActionModal(studentId, currentName) {
             // Telefon modu — adı değiştirme, sadece telefonu kaydet
             await updateStudentName(studentId, currentName, phoneInput.value.trim());
         }
-        // Her iki inputu sonraki açılış için sıfırla
-        editInput.style.display  = 'block';
-        phoneInput.style.display = 'block';
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'block';
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
 
     cancelEditBtn.onclick = () => {
-        editInput.style.display  = 'block';
-        phoneInput.style.display = 'block';
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'block';
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
