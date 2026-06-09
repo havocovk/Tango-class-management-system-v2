@@ -1,0 +1,173 @@
+/* ================================================================
+   base.css
+   İçerik: CSS değişkenleri (:root), reset, body, container,
+           animasyonlar, tipografi (.main-title, .sub-header),
+           nav-buttons, buton sınıfları, ikon butonları, back-link,
+           hidden yardımcısı
+   ================================================================ */
+
+:root { 
+    --bg-pure: #000000;
+    --card-bg: #121412;
+    --primary: #2DD4BF; 
+    --accent: #FBBF24;  
+    --text-main: #E2E8F0;
+    --text-dim: #64748B;
+    --border: rgba(255, 255, 255, 0.1);
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --glass: rgba(18, 20, 18, 0.8);
+    --neon-green: #2DD4BF;   /* değiştirildi */
+    --dim-forest: #2a5c4a; 
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-pure);
+    color: var(--text-main);
+    margin: 0;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    background: var(--glass);
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    margin: 0 auto;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.view {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.main-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--primary);
+    text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+}
+
+.sub-header {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 15px 0 10px;
+    color: var(--accent);
+    border-left: 4px solid var(--primary);
+    padding-left: 12px;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 14px 12px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    background: var(--primary);
+    color: #000;
+    font-weight: 700;
+    font-size: 13px;
+    transition: 0.3s;
+    flex: 1;
+    min-width: 90px;
+}
+
+.btn-info {
+    background: #2DD4BF !important;
+    color: #000 !important;
+}
+
+.btn-secondary {
+    background: #334155;
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-success {
+    background: #2DD4BF !important;
+    color: #000 !important;
+    border: none;
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);
+}
+
+.btn-success:hover {
+    background: #25c982 !important;
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.4);
+}
+
+.btn-icon-edit {
+    color: var(--primary);
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    vertical-align: middle;
+}
+.btn-icon-edit:hover { color: #ccffed; }
+
+.btn-icon-delete {
+    color: var(--danger);
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    vertical-align: middle;
+}
+.btn-icon-delete:hover { color: #ff8080; }
+
+.icon-present { color: #2DD4BF; }
+.icon-absent { color: var(--dim-forest); opacity: 0.8; }
+
+.hidden {
+    display: none !important;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 15px;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.class-card {
+    background: var(--card-bg);
+    padding: 18px;
+    margin: 12px 0;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+    transition: transform 0.2s;
+}
+.class-card:active { transform: scale(0.98); }

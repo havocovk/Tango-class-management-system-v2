@@ -1,0 +1,198 @@
+/* ================================================================
+   chart.css
+   İçerik: Haftalık istatistikler tablosu (.stats-table),
+           sınıf linkleri (.class-item-link, .class-multi-line),
+           dinamik font boyutları, bar grafik sistemi
+           (#chartSection, .chart-container, .chart-bars-zone,
+           .bar-col, .bar-count, .bar, .chart-xaxis,
+           .chart-dates-zone, .bar-date)
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   HAFTALİK İSTATİSTİKLER TABLOSU
+   Not: .stats-table ilk tanımı aşağıda, eski kısmi tanım
+   (satır 198-232) bu dosyada tek ve tam tanım olarak birleştirildi.
+--------------------------------------------------------------- */
+
+/* === Haftalık İstatistikler Tablosu === */
+.stats-table {
+    width: 100%;
+    table-layout: fixed; /* Tüm hücreler eşit genişlikte */
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: var(--card-bg);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.stats-table th,
+.stats-table td {
+    width: 14.285%; /* 100% / 7 */
+    border: 1px solid var(--border);
+    padding: 8px 4px;
+    text-align: center;
+    vertical-align: top;
+    background: #000000;
+    height: 80px; /* Minimum yükseklik, içerik artarsa otomatik büyür */
+}
+
+.stats-table th {
+    background: #1a1f1a;
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 4px;
+}
+
+/* Boş hücrelerin de aynı yükseklikte kalması için */
+.stats-table td:empty::before {
+    content: "\00a0"; /* &nbsp; */
+    visibility: hidden;
+}
+
+/* ---------------------------------------------------------------
+   SINIF LİNKLERİ (stats tablosunun içindeki tıklanabilir öğeler)
+--------------------------------------------------------------- */
+
+/* Sınıf öğeleri için genel stiller */
+.class-item-link {
+    display: block;
+    background: rgba(45, 212, 191, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--accent);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    margin: 4px auto;
+    padding: 4px 2px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.class-item-link:hover {
+    background: rgba(45, 212, 191, 0.2);
+    transform: scale(0.98);
+}
+
+/* İki satırlı gösterim için yardımcı (isteğe bağlı, flex yönü) */
+.class-multi-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+}
+
+/* Dinamik font boyutları */
+.dynamic-font-size-1 {
+    font-size: 13px;
+}
+.dynamic-font-size-2 {
+    font-size: 11px;
+}
+.dynamic-font-size-3 {
+    font-size: 9px;
+}
+
+/* ---------------------------------------------------------------
+   BAR GRAFİĞİ
+   3-katmanlı yapı:
+     chart-container (sütun)
+       ├── chart-bars-zone  → sadece çubuklar (flex-row, align-bottom)
+       ├── chart-xaxis      → 1px x ekseni çizgisi
+       └── chart-dates-zone → sadece tarihler (flex-row, hizalı)
+   Bu yapıyla çubuklar ve tarihler ASLA üst üste gelemez.
+--------------------------------------------------------------- */
+
+/* Bar grafik container – yatay kaydırma */
+#chartSection {
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card-bg);
+    overflow-x: auto;  /* Yatay kaydırma */
+    overflow-y: hidden;
+    padding: 10px 0;
+}
+
+/* Dıştaki kaydırılabilir çerçeve (flex sütun) */
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    min-width: max-content;
+    padding: 16px 16px 16px 16px;
+}
+
+/* Çubuk alanı: sabit yükseklik, çubuklar alttan büyür */
+.chart-bars-zone {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+    height: 300px;
+    padding-bottom: 0;
+}
+
+/* Her sütun: sayı + çubuk */
+.bar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: 44px;
+    gap: 5px;
+}
+
+/* Çubuk üstündeki sayı */
+.bar-count {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    line-height: 1;
+}
+
+/* Renkli çubuk */
+.bar {
+    background: linear-gradient(to top, var(--primary), #5eead4);
+    width: 32px;
+    border-radius: 6px 6px 0 0;
+    transition: height 0.4s ease-out;
+    min-height: 4px;
+}
+
+/* X ekseni çizgisi */
+.chart-xaxis {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    margin: 0;
+    min-width: max-content;
+}
+
+/* Tarih etiketi alanı: çubuk sütunlarıyla hizalı */
+.chart-dates-zone {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    padding-top: 10px;
+    padding-bottom: 16px;
+}
+
+/* Tek tarih etiketi: döndürülmüş, sabit genişlik */
+.bar-date {
+    width: 44px;
+    color: var(--text-dim);
+    font-size: 10px;
+    white-space: nowrap;
+    transform: rotate(45deg);
+    transform-origin: top left;
+    height: 60px;
+    position: relative;
+    left: 6px;
+    overflow: visible;
+}
