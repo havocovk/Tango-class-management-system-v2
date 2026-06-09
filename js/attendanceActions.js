@@ -18,6 +18,7 @@ import { supabase } from './supabaseClient.js';
 import { refreshIcons, openPromptModal, showToast } from './utils.js';
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
+import { savePendingChange, clearPendingChange, refreshPendingBadge } from './offlineStore.js';
 
 // ---------------------------------------------------------------
 // ADIM 5.1 — YOKLAMA DEĞİŞİMİNDE SADECE İLGİLİ HÜCREYİ GÜNCELLE
@@ -40,6 +41,28 @@ export async function toggleAttendance(studentId, courseDateId) {
     else if (current === '+') newStatus = '-';
     else if (current === '-') newStatus = 'S';
     else newStatus = '';
+
+    // ADIM 7.2 — ÇEVRİMDIŞIYSA: Supabase'e gitmeyiz. Değişikliği bellekte
+    // güncelleriz, gönderilmek üzere sıraya koyarız, hücreyi anında
+    // güncelleriz ve "N kayıt bekleniyor" rozetini tazeleriz.
+    if (!navigator.onLine) {
+        if (newStatus === '') delete appState.attendanceMap[`${studentId}_${courseDateId}`];
+        else appState.attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
+
+        await savePendingChange(studentId, courseDateId, newStatus);
+        await refreshPendingBadge();
+
+        const offlineCell = document.querySelector(`.att-cell[data-student-id="${studentId}"][data-date-id="${courseDateId}"]`);
+        if (offlineCell) {
+            let offlineIcon = '';
+            if (newStatus === '+') offlineIcon = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
+            else if (newStatus === '-') offlineIcon = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
+            else if (newStatus === 'S') offlineIcon = '<span style="color:var(--info); font-weight:800;">S</span>';
+            offlineCell.innerHTML = offlineIcon;
+            refreshIcons();
+        }
+        return;
+    }
 
     if (newStatus === '') {
         const { error } = await supabase
@@ -82,6 +105,12 @@ export async function toggleAttendance(studentId, courseDateId) {
         cell.innerHTML = iconHtml;
         refreshIcons();
     }
+
+    // ADIM 7.2 — Çevrimiçi yazma başarılı oldu. Bu hücre için bekleyen
+    // (eski, çevrimdışı) bir kayıt kalmışsa onu temizle ki sonraki
+    // senkronizasyonda eski değer geri yazılmasın. Ardından rozeti tazele.
+    await clearPendingChange(`${studentId}_${courseDateId}`);
+    await refreshPendingBadge();
 }
 
 // ---------------------------------------------------------------

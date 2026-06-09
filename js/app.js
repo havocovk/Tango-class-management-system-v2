@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient.js';
 import { navigateTo } from './router.js';
 import { showToast } from './utils.js';
+import { syncPendingChanges, refreshPendingBadge } from './offlineStore.js';
 
 // ---------------------------------------------------------------
 // ADIM 1.2 — KULLANICI GİRİŞ SİSTEMİ
@@ -46,9 +47,22 @@ window.addEventListener('offline', () => {
     showOfflineBanner();
 });
 
-window.addEventListener('online', () => {
+// ADIM 7.2 — Bağlantı gelince bekleyen çevrimdışı yoklamaları Supabase'e gönder.
+async function trySyncPending() {
+    const { synced, failed } = await syncPendingChanges();
+    await refreshPendingBadge();
+    if (synced > 0) {
+        showToast(`${synced} çevrimdışı kayıt senkronize edildi ✓`, 'success');
+    }
+    if (failed > 0) {
+        showToast(`${failed} kayıt gönderilemedi, tekrar denenecek.`, 'warning');
+    }
+}
+
+window.addEventListener('online', async () => {
     hideOfflineBanner();
     showToast('Bağlantı geri geldi ✓', 'success');
+    await trySyncPending();
 });
 
 // "Tekrar Dene" butonu: okullar sayfasını yeniden yükle
@@ -57,6 +71,7 @@ retryBtn.onclick = async () => {
         showToast('Hâlâ çevrimdışısınız. Bağlantıyı kontrol edin.', 'warning');
         return;
     }
+    await trySyncPending();
     await navigateTo('schools');
 };
 
@@ -87,6 +102,14 @@ async function startApp() {
     appContainer.style.display = 'block';
     logoutBtn.style.display = 'block';
     await navigateTo('schools');
+
+    // ADIM 7.2 — Açılışta: internet varsa bekleyen kayıtları gönder,
+    // yoksa "N kayıt bekleniyor" rozetini göster.
+    if (navigator.onLine) {
+        await trySyncPending();
+    } else {
+        await refreshPendingBadge();
+    }
 }
 
 async function handleLogin() {
