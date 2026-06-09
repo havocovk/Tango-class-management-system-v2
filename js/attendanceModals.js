@@ -31,16 +31,20 @@ export function openStudentActionModal(studentId, currentName) {
     const editMode     = document.getElementById('studentEditMode');
     const nameDisplay  = document.getElementById('studentNameDisplay');
     const editInput    = document.getElementById('studentEditInput');
+    const phoneInput   = document.getElementById('studentPhoneInput');
     const editBtn      = document.getElementById('studentEditBtn');
+    const phoneBtn     = document.getElementById('studentPhoneBtn');
     const deleteBtn    = document.getElementById('studentDeleteBtn');
     const closeBtn     = document.getElementById('studentModalCloseView');
     const saveBtn      = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
+    const editTitle    = document.getElementById('studentEditModeTitle');
 
-    editBtn.onclick     = null;
-    deleteBtn.onclick   = null;
-    closeBtn.onclick    = null;
-    saveBtn.onclick     = null;
+    editBtn.onclick       = null;
+    phoneBtn.onclick      = null;
+    deleteBtn.onclick     = null;
+    closeBtn.onclick      = null;
+    saveBtn.onclick       = null;
     cancelEditBtn.onclick = null;
 
     nameDisplay.innerText      = currentName;
@@ -48,17 +52,27 @@ export function openStudentActionModal(studentId, currentName) {
     editMode.style.display     = 'none';
     modal.style.display        = 'flex';
 
+    // Kalem ikonu → sadece ad düzenleme alanı açılır
     editBtn.onclick = () => {
-        viewMode.style.display = 'none';
-        editMode.style.display = 'block';
+        viewMode.style.display   = 'none';
+        editMode.style.display   = 'block';
+        if (editTitle) editTitle.textContent = 'Ad Düzenle';
+        editInput.style.display  = 'block';
+        phoneInput.style.display = 'none';
         editInput.value = currentName;
-        // ADIM 8.1 — Telefon alanını mevcut değerle doldur
-        const phoneInput = document.getElementById('studentPhoneInput');
-        if (phoneInput) {
-            const studentObj = appState.students.find(s => s.id === studentId);
-            phoneInput.value = (studentObj && studentObj.phone) || '';
-        }
         editInput.focus();
+    };
+
+    // Telefon ikonu → sadece telefon düzenleme alanı açılır
+    phoneBtn.onclick = () => {
+        viewMode.style.display   = 'none';
+        editMode.style.display   = 'block';
+        if (editTitle) editTitle.textContent = 'Telefon Düzenle';
+        editInput.style.display  = 'none';
+        phoneInput.style.display = 'block';
+        const studentObj = appState.students.find(s => s.id === studentId);
+        phoneInput.value = (studentObj && studentObj.phone) || '';
+        phoneInput.focus();
     };
 
     deleteBtn.onclick = (e) => {
@@ -80,19 +94,27 @@ export function openStudentActionModal(studentId, currentName) {
     };
 
     saveBtn.onclick = async () => {
-        const newName = editInput.value.trim();
-        // ADIM 8.1 — Ad ile birlikte telefon numarasını da kaydet
-        const phoneInput = document.getElementById('studentPhoneInput');
-        const newPhone   = phoneInput ? phoneInput.value.trim() : '';
-        if (!newName) return;
-        await updateStudentName(studentId, newName, newPhone);
-        nameDisplay.innerText = newName;
-        currentName = newName;
+        const isNameMode = editInput.style.display !== 'none';
+        if (isNameMode) {
+            const newName = editInput.value.trim();
+            if (!newName) return;
+            await updateStudentName(studentId, newName, undefined);
+            nameDisplay.innerText = newName;
+            currentName = newName;
+        } else {
+            // Telefon modu — adı değiştirme, sadece telefonu kaydet
+            await updateStudentName(studentId, currentName, phoneInput.value.trim());
+        }
+        // Her iki inputu sonraki açılış için sıfırla
+        editInput.style.display  = 'block';
+        phoneInput.style.display = 'block';
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
 
     cancelEditBtn.onclick = () => {
+        editInput.style.display  = 'block';
+        phoneInput.style.display = 'block';
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
     };
@@ -190,6 +212,7 @@ export async function openStudentProfileModal(student) {
 
     loading.style.display = 'none';
     content.style.display = 'block';
+    refreshIcons(); // Profil içindeki Lucide ikonlarını render et
 
     // ---- Kapat butonu ----
     const closeBtn = document.getElementById('profileCloseBtn');
