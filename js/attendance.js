@@ -245,7 +245,9 @@ export function renderAttendanceView() {
                 if (isPastDate(dateObj.date)) {
                     openConfirmModal(
                         'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?',
-                        async () => { await actions.toggleAttendance(studentId, dateId); }
+                        async () => { await actions.toggleAttendance(studentId, dateId); },
+                        null,
+                        'Evet'
                     );
                     return;
                 }

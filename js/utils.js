@@ -202,7 +202,7 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-export function openConfirmModal(message, onConfirm, onCancel) {
+export function openConfirmModal(message, onConfirm, onCancel, confirmLabel = 'Evet, sil') {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
     const msgSpan = document.getElementById('confirmMessage');
@@ -211,6 +211,7 @@ export function openConfirmModal(message, onConfirm, onCancel) {
     if (!yesBtn || !noBtn) return;
 
     msgSpan.innerText = message;
+    yesBtn.innerText = confirmLabel;
 
     yesBtn.onclick = () => {
         modal.style.display = 'none';
