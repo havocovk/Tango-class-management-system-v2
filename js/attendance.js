@@ -128,9 +128,9 @@ export function renderAttendanceView() {
         <div class="view">
             <div class="back-link" id="backToClassesBtn">← Sınıflar</div>
             <div class="nav-buttons" style="margin-bottom:10px;">
-                <button id="addStudentBtn">👤 Add Student</button>
-                <button id="addWeekBtn">📅 Add Week</button>
-                <button id="paymentsBtn" class="btn-info">💰 Payments</button>
+                <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Add Student</button>
+                <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Add Week</button>
+                <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Payments</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
             <div class="table-wrapper">

@@ -31,7 +31,7 @@ function renderSchoolsView() {
             <div class="sub-header">Okul Listesi</div>
             <div id="schoolsList"></div>
             <div class="nav-buttons" style="margin-top:30px;">
-                <button class="btn-success" id="addSchoolBtn">➕ Okul Ekle</button>
+                <button class="btn-success" id="addSchoolBtn"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Okul Ekle</button>
             </div>
         </div>
     `;

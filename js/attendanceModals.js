@@ -478,14 +478,15 @@ export function openWeekActionModal(dateId, dateStr, isCancelled) {
 
     // İptal/geri-al butonunun metnini ve rengini duruma göre ayarla
     if (isCancelled) {
-        cancelBtn.innerHTML = '✓ İptali Geri Al';
+        cancelBtn.innerHTML = '<i data-lucide="check-circle" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>İptali Geri Al';
         cancelBtn.className  = 'btn-success';
     } else {
-        cancelBtn.innerHTML = '🚫 Dersi İptal Et';
+        cancelBtn.innerHTML = '<i data-lucide="ban" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Dersi İptal Et';
         cancelBtn.className  = 'btn-secondary';
     }
 
     modal.style.display = 'flex';
+    refreshIcons();
 
     const cleanup = () => {
         cancelBtn.onclick = null;

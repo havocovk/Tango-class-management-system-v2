@@ -170,7 +170,7 @@ function buildMonthlyChart() {
 
     return `
         <div style="margin-top:16px;">
-            <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px; padding-left:4px;">📊 Aylık Gelir</div>
+            <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px; padding-left:4px;"><i data-lucide="bar-chart-2" size="14" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Aylık Gelir</div>
             <div style="border:1px solid var(--border); border-radius:14px; background:var(--card-bg); overflow-x:auto; overflow-y:hidden; padding:10px 0;">
                 <div class="chart-container">
                     <div class="chart-bars-zone" style="height:220px;">${barsHtml}</div>

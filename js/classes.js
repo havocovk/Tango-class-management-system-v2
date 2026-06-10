@@ -38,8 +38,8 @@ function renderClassesView() {
             <div class="sub-header">Sınıf Listesi - ${escapeHtml(appState.currentSchoolName)}</div>
             <div id="classesListContainer"></div>
             <div class="nav-buttons">
-                <button id="newClassBtn" class="btn-success">➕ Yeni Sınıf</button>
-                <button id="weeklyStatsBtn" class="btn-info">📊 Haftalık İstatistikler</button>
+                <button id="newClassBtn" class="btn-success"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Yeni Sınıf</button>
+                <button id="weeklyStatsBtn" class="btn-info"><i data-lucide="bar-chart-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Haftalık İstatistikler</button>
             </div>
         </div>
     `;
