@@ -26,25 +26,25 @@
 <!-- ========== İNTERNET BAĞLANTI UYARI BANDI ========== -->
 <!-- Yalnızca internet kesilince görünür, otomatik olarak kaybolur -->
 <div id="offlineBanner" style="display:none;">
-    <span>📡 İnternet bağlantısı yok — değişiklikler kaydedilemiyor</span>
-    <button id="retryBtn">↺ Tekrar Dene</button>
+    <span data-i18n="banner.offline">📡 İnternet bağlantısı yok — değişiklikler kaydedilemiyor</span>
+    <button id="retryBtn" data-i18n="banner.retry">↺ Tekrar Dene</button>
 </div>
 
 <!-- ========== GİRİŞ (LOGIN) EKRANI ========== -->
 <div id="loginScreen" style="display:none;">
     <div class="login-card">
         <img class="login-logo" src="/favicon.png" alt="logo" width="72" height="72">
-        <h2 class="login-title">Tango Class Management</h2>
-        <p class="login-subtitle">Devam etmek için giriş yapın</p>
-        <input type="email" id="loginEmail" placeholder="E-posta" autocomplete="username">
-        <input type="password" id="loginPassword" placeholder="Şifre" autocomplete="current-password">
-        <button class="btn-success" id="loginBtn">Giriş Yap</button>
+        <h2 class="login-title" data-i18n="login.title">Tango Class Management</h2>
+        <p class="login-subtitle" data-i18n="login.subtitle">Devam etmek için giriş yapın</p>
+        <input type="email" id="loginEmail" placeholder="E-posta" data-i18n-placeholder="login.email" autocomplete="username">
+        <input type="password" id="loginPassword" placeholder="Şifre" data-i18n-placeholder="login.password" autocomplete="current-password">
+        <button class="btn-success" id="loginBtn" data-i18n="login.button">Giriş Yap</button>
         <p id="loginError"></p>
     </div>
 </div>
 
 <!-- Çıkış butonu (yalnızca giriş yapınca görünür) -->
-<button id="logoutBtn" style="display:none;">⎋ Çıkış</button>
+<button id="logoutBtn" style="display:none;" data-i18n="nav.logout">⎋ Çıkış</button>
 
 <div class="container" id="appContainer" style="display:none;">
     <div id="dynamicView"></div>
@@ -55,18 +55,18 @@
 <!-- Yeni Sınıf Oluştur Modalı -->
 <div id="newClassModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0;">Yeni Sınıf Oluştur</h3>
-        <input type="text" id="newClassName" placeholder="Sınıf adını giriniz" autocomplete="off" style="width:100%; margin-bottom:15px;">
+        <h3 style="margin-top:0;" data-i18n="newClass.title">Yeni Sınıf Oluştur</h3>
+        <input type="text" id="newClassName" placeholder="Sınıf adını giriniz" data-i18n-placeholder="newClass.namePlaceholder" autocomplete="off" style="width:100%; margin-bottom:15px;">
         <div style="display:flex; align-items: center; gap: 8px; margin-bottom:20px;">
-            <input type="text" id="newClassDateDisplay" readonly placeholder="Gün/Ay/Yıl" style="flex:1; background:#1e293b; color:white;" value="">
+            <input type="text" id="newClassDateDisplay" readonly placeholder="Gün/Ay/Yıl" data-i18n-placeholder="newClass.datePlaceholder" style="flex:1; background:#1e293b; color:white;" value="">
             <span id="calendarIconBtn" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
         </div>
         <input type="date" id="hiddenDatePicker" style="display:none;">
         <div style="display:flex; gap:10px;">
-            <button class="btn-success" id="newClassConfirmBtn">Oluştur</button>
-            <button class="btn-secondary" id="newClassCancelBtn">İptal</button>
+            <button class="btn-success" id="newClassConfirmBtn" data-i18n="newClass.create">Oluştur</button>
+            <button class="btn-secondary" id="newClassCancelBtn" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -77,8 +77,8 @@
         <h3 id="dynamicModalTitle">Başlık</h3>
         <input type="text" id="dynamicInput" placeholder="" autocomplete="off">
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-success" id="dynamicModalConfirm">Tamam</button>
-            <button class="btn-secondary" id="dynamicModalCancel">İptal</button>
+            <button class="btn-success" id="dynamicModalConfirm" data-i18n="common.ok">Tamam</button>
+            <button class="btn-secondary" id="dynamicModalCancel" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -90,8 +90,8 @@
         <input type="text" id="doubleInput1" placeholder="" autocomplete="off">
         <input type="text" id="doubleInput2" placeholder="" autocomplete="off">
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-success" id="doubleModalConfirm">Tamam</button>
-            <button class="btn-secondary" id="doubleModalCancel">İptal</button>
+            <button class="btn-success" id="doubleModalConfirm" data-i18n="common.ok">Tamam</button>
+            <button class="btn-secondary" id="doubleModalCancel" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -99,11 +99,11 @@
 <!-- Onay modalı -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
-        <h3>Emin misiniz?</h3>
-        <p id="confirmMessage">Bu işlem geri alınamaz.</p>
+        <h3 data-i18n="confirm.title">Emin misiniz?</h3>
+        <p id="confirmMessage" data-i18n="confirm.default">Bu işlem geri alınamaz.</p>
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-danger" id="confirmModalYes">Evet, sil</button>
-            <button class="btn-secondary" id="confirmModalNo">İptal</button>
+            <button class="btn-danger" id="confirmModalYes" data-i18n="confirm.yesDelete">Evet, sil</button>
+            <button class="btn-secondary" id="confirmModalNo" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -120,16 +120,16 @@
                     <span id="studentDeleteBtn" style="cursor:pointer; color:var(--danger);"><i data-lucide="trash-2" size="22"></i></span>
                 </div>
             </div>
-            <button class="btn-secondary" id="studentModalCloseView" style="width:100%; margin-top:25px;">Kapat</button>
+            <button class="btn-secondary" id="studentModalCloseView" style="width:100%; margin-top:25px;" data-i18n="common.close">Kapat</button>
         </div>
         <div id="studentEditMode" style="display:none;">
-            <h3 id="studentEditModeTitle" style="margin-top:0;">Düzenle</h3>
-            <input type="text" id="studentEditInput" placeholder="Ad Soyad" style="width:100%; margin:15px 0 10px;" autocomplete="off">
+            <h3 id="studentEditModeTitle" style="margin-top:0;" data-i18n="common.edit">Düzenle</h3>
+            <input type="text" id="studentEditInput" placeholder="Ad Soyad" data-i18n-placeholder="student.namePlaceholder" style="width:100%; margin:15px 0 10px;" autocomplete="off">
             <!-- ADIM 8.1 — Telefon numarası (WhatsApp için) -->
-            <input type="tel" id="studentPhoneInput" placeholder="Telefon: 905XX... veya 05XX..." style="width:100%; margin:0 0 15px;" autocomplete="tel">
+            <input type="tel" id="studentPhoneInput" placeholder="Telefon: 905XX... veya 05XX..." data-i18n-placeholder="student.phonePlaceholder" style="width:100%; margin:0 0 15px;" autocomplete="tel">
             <div style="display:flex; gap:10px;">
-                <button class="btn-success" id="studentSaveBtn">Kaydet</button>
-                <button class="btn-secondary" id="studentCancelEditBtn">İptal</button>
+                <button class="btn-success" id="studentSaveBtn" data-i18n="common.save">Kaydet</button>
+                <button class="btn-secondary" id="studentCancelEditBtn" data-i18n="common.cancel">İptal</button>
             </div>
         </div>
     </div>
@@ -138,21 +138,21 @@
 <!-- Sınıf düzenleme modalı (GÜNCELLENDİ: tarih seçici artık readonly + takvim ikonu) -->
 <div id="editClassModal" class="modal">
     <div class="modal-content">
-        <h3>Sınıf Düzenle</h3>
-        <input type="text" id="editClassNameInput" placeholder="Sınıf adı" autocomplete="off" style="width:100%; margin-bottom:12px;">
+        <h3 data-i18n="editClass.title">Sınıf Düzenle</h3>
+        <input type="text" id="editClassNameInput" placeholder="Sınıf adı" data-i18n-placeholder="editClass.namePlaceholder" autocomplete="off" style="width:100%; margin-bottom:12px;">
         <!-- Yeni tarih seçici (readonly + ikon) -->
         <div style="display:flex; align-items: center; gap: 8px; margin-bottom:12px;">
-            <input type="text" id="editClassNewDateDisplay" readonly placeholder="GG/AA/YYYY" style="flex:1; background:#1e293b; color:white;">
+            <input type="text" id="editClassNewDateDisplay" readonly placeholder="GG/AA/YYYY" data-i18n-placeholder="editClass.datePlaceholder" style="flex:1; background:#1e293b; color:white;">
             <span id="editClassCalendarIcon" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
         </div>
         <!-- Gizli date picker -->
         <input type="date" id="hiddenEditClassDatePicker" style="display:none;">
-        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
+        <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;" data-i18n="editClass.info">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
         <div style="display:flex; gap:10px;">
-            <button class="btn-success" id="editClassSaveBtn">Kaydet</button>
-            <button class="btn-secondary" id="editClassCancelBtn">İptal</button>
+            <button class="btn-success" id="editClassSaveBtn" data-i18n="common.save">Kaydet</button>
+            <button class="btn-secondary" id="editClassCancelBtn" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -166,28 +166,28 @@
                 <span id="profileStudentName" style="font-size:18px; font-weight:800; color:var(--text-main);"></span>
             </div>
         </div>
-        <div id="profileLoadingMsg" style="text-align:center; color:var(--text-dim); padding:20px 0;">Yükleniyor...</div>
+        <div id="profileLoadingMsg" style="text-align:center; color:var(--text-dim); padding:20px 0;" data-i18n="common.loading">Yükleniyor...</div>
         <div id="profileContent" style="display:none;">
             <div class="profile-stats-grid">
                 <div class="profile-stat-card" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;">Toplam Ders</div>
+                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.totalDates">Toplam Ders</div>
                     <div class="profile-stat-value" id="profileTotalDates" style="font-size:20px; font-weight:800;">—</div>
                 </div>
                 <div class="profile-stat-card profile-stat-present" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;">Katılım Oranı</div>
+                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.attendanceRate">Katılım Oranı</div>
                     <div class="profile-stat-value" id="profileAttendanceRate" style="font-size:20px; font-weight:800;">—</div>
                 </div>
                 <div class="profile-stat-card profile-stat-absent" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;">Devamsızlık</div>
+                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.absence">Devamsızlık</div>
                     <div class="profile-stat-value" id="profileAbsenceCount" style="font-size:20px; font-weight:800;">—</div>
                 </div>
                 <div class="profile-stat-card profile-stat-payment" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;">Toplam Ödeme</div>
+                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.totalPaid">Toplam Ödeme</div>
                     <div class="profile-stat-value" id="profileTotalPaid" style="font-size:20px; font-weight:800;">—</div>
                 </div>
             </div>
             <div class="profile-last-payment" id="profileLastPaymentRow" style="display:none;">
-                <span style="color:var(--text-dim); font-size:12px;">Son Ödeme:</span>
+                <span style="color:var(--text-dim); font-size:12px;" data-i18n="profile.lastPayment">Son Ödeme:</span>
                 <span id="profileLastPaymentDate" style="font-size:13px; font-weight:700; color:var(--accent); margin-left:6px;"></span>
             </div>
             <!-- ADIM 8.1 — Telefon ve WhatsApp butonu -->
@@ -196,10 +196,10 @@
                     <span style="color:var(--primary); display:inline-flex;"><i data-lucide="phone" size="16"></i></span>
                     <span id="profilePhoneDisplay" style="font-size:13px; font-weight:600; color:var(--text-main);"></span>
                 </div>
-                <a id="profileWhatsAppBtn" href="#" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#128C7E; color:white; text-decoration:none; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:700;">💬 WhatsApp'ta Yaz</a>
+                <a id="profileWhatsAppBtn" href="#" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#128C7E; color:white; text-decoration:none; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:700;" data-i18n="profile.whatsapp">💬 WhatsApp'ta Yaz</a>
             </div>
         </div>
-        <button class="btn-secondary" id="profileCloseBtn" style="width:100%; margin-top:22px;">Kapat</button>
+        <button class="btn-secondary" id="profileCloseBtn" style="width:100%; margin-top:22px;" data-i18n="common.close">Kapat</button>
     </div>
 </div>
 
@@ -207,7 +207,7 @@
 <div id="weekActionModal" class="modal">
     <div class="modal-content" style="max-width:320px;">
         <h3 id="weekActionTitle" style="margin-top:0; color:var(--primary); text-align:center; font-size:18px;"></h3>
-        <p style="font-size:13px; color:var(--text-dim); margin:6px 0 20px; text-align:center;">Bu hafta için ne yapmak istersiniz?</p>
+        <p style="font-size:13px; color:var(--text-dim); margin:6px 0 20px; text-align:center;" data-i18n="week.question">Bu hafta için ne yapmak istersiniz?</p>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
             <button id="weekActionCancelToggleBtn" style="flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
                 <i data-lucide="ban" size="15"></i>Haftayı İptal Et
@@ -216,7 +216,7 @@
                 <i data-lucide="trash-2" size="15"></i>Haftayı Sil
             </button>
         </div>
-        <button id="weekActionCloseBtn" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:12px; padding:11px; font-size:13px; font-weight:600; cursor:pointer;">Kapat</button>
+        <button id="weekActionCloseBtn" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:12px; padding:11px; font-size:13px; font-weight:600; cursor:pointer;" data-i18n="common.close">Kapat</button>
     </div>
 </div>
 
@@ -225,7 +225,7 @@
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <h3 style="margin-top:0; text-align: center;">
             <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i> 
-            <span style="vertical-align: middle;">Lesson Recap</span>
+            <span style="vertical-align: middle;" data-i18n="video.title">Lesson Recap</span>
         </h3>
         <!-- ADIM 8.2 — Bu haftanın ders notu (varsa video modalında gösterilir) -->
         <p id="videoNoteDisplay" style="display:none; font-size:12px; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; margin:0 0 8px; text-align:left; border:1px solid var(--border); line-height:1.5;"></p>
@@ -242,7 +242,7 @@
                 <i data-lucide="message-circle" size="32"></i>
             </a>
         </div>
-        <button id="closeVideoModalBtn" class="btn-secondary" style="margin-top: 20px; width: 100%;">Kapat</button>
+        <button id="closeVideoModalBtn" class="btn-secondary" style="margin-top: 20px; width: 100%;" data-i18n="common.close">Kapat</button>
     </div>
 </div>
 

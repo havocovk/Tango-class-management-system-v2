@@ -2,6 +2,14 @@ import { supabase } from './supabaseClient.js';
 import { navigateTo } from './router.js';
 import { showToast } from './utils.js';
 import { syncPendingChanges, refreshPendingBadge, getPendingCount } from './offlineStore.js';
+import { initLang, applyTranslations, t } from './i18n.js';
+
+// ---------------------------------------------------------------
+// ÇOK DİLLİ DESTEK — uygulama açılır açılmaz dili başlat ve sabit
+// (HTML) metinleri çevir. Kayıtlı dil yoksa Türkçe gelir.
+// ---------------------------------------------------------------
+initLang();
+applyTranslations();
 
 // ---------------------------------------------------------------
 // ADIM 1.2 — KULLANICI GİRİŞ SİSTEMİ
@@ -60,10 +68,10 @@ async function trySyncPending() {
         const { synced, failed } = await syncPendingChanges();
         await refreshPendingBadge();
         if (synced > 0) {
-            showToast(`${synced} çevrimdışı kayıt senkronize edildi ✓`, 'success');
+            showToast(t('sync.done', { n: synced }), 'success');
         }
         if (failed > 0) {
-            showToast(`${failed} kayıt gönderilemedi, tekrar denenecek.`, 'warning');
+            showToast(t('sync.fail', { n: failed }), 'warning');
         }
     } finally {
         isSyncing = false;
@@ -72,7 +80,7 @@ async function trySyncPending() {
 
 window.addEventListener('online', async () => {
     hideOfflineBanner();
-    showToast('Bağlantı geri geldi ✓', 'success');
+    showToast(t('sync.connectionBack'), 'success');
     await trySyncPending();
 });
 
@@ -106,7 +114,7 @@ setInterval(async () => {
 // "Tekrar Dene" butonu: okullar sayfasını yeniden yükle
 retryBtn.onclick = async () => {
     if (!navigator.onLine) {
-        showToast('Hâlâ çevrimdışısınız. Bağlantıyı kontrol edin.', 'warning');
+        showToast(t('sync.stillOffline'), 'warning');
         return;
     }
     await trySyncPending();
@@ -159,22 +167,22 @@ async function handleLogin() {
     loginError.innerText = '';
 
     if (!email || !password) {
-        loginError.innerText = 'Lütfen e-posta ve şifrenizi girin.';
+        loginError.innerText = t('login.errorEmpty');
         return;
     }
 
     loginBtn.disabled = true;
-    loginBtn.innerText = 'Giriş yapılıyor...';
+    loginBtn.innerText = t('login.buttonLoading');
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     loginBtn.disabled = false;
-    loginBtn.innerText = 'Giriş Yap';
+    loginBtn.innerText = t('login.button');
 
     if (error) {
         loginError.innerText = navigator.onLine
-            ? 'Giriş başarısız. E-posta veya şifre hatalı.'
-            : 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
+            ? t('login.errorFail')
+            : t('login.errorOffline');
     }
 }
 

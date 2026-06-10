@@ -13,7 +13,7 @@
 //   3. Cache'te yoksa ağa git, cevabı cache'e ekle
 // ---------------------------------------------------------------
 
-const CACHE_NAME = 'tcms-v22';
+const CACHE_NAME = 'tcms-v23';
 
 // İlk kurulumda cache'lenecek dosyalar (uygulama kabuğu)
 const SHELL_FILES = [
@@ -30,6 +30,7 @@ const SHELL_FILES = [
     '/js/classes.js',
     '/js/classStats.js',
     '/js/config.js',
+    '/js/i18n.js',
     '/js/offlineStore.js',
     '/js/payments.js',
     '/js/router.js',
@@ -37,6 +38,8 @@ const SHELL_FILES = [
     '/js/state.js',
     '/js/supabaseClient.js',
     '/js/utils.js',
+    '/locales/tr.js',
+    '/locales/en.js',
     '/favicon.png'
 ];
 
