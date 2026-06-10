@@ -152,7 +152,13 @@ export function renderAttendanceView() {
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '';
     appState.students.forEach((student, idx) => {
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${escapeHtml(student.name)}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
+        const nameParts   = student.name.trim().split(' ');
+        const firstName   = escapeHtml(nameParts[0] || student.name);
+        const lastName    = escapeHtml(nameParts.slice(1).join(' '));
+        const nameHtml    = lastName
+            ? `<div style="line-height:1.35;">${firstName}<br><span style="color:var(--text-dim);">${lastName}</span></div>`
+            : firstName;
+        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
             const cancelled = date.is_cancelled;
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';

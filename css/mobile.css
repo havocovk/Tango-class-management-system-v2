@@ -278,3 +278,22 @@
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);
     white-space: nowrap;
 }
+
+/* ================================================================
+   MOBİL TABLO ALAN OPTİMİZASYONU
+   Mobilde iç içe çerçeve ve padding'ler tablo alanını daraltıyor.
+   480px altında container padding'i ve table-wrapper boşluklarını
+   azaltarak tablonun kullanabileceği ekran alanını genişletiyoruz.
+   ================================================================ */
+
+@media (max-width: 500px) {
+    .container {
+        padding: 10px 4px !important;
+        border-radius: 10px !important;
+    }
+
+    .table-wrapper {
+        margin-top: 8px !important;
+        border-radius: 8px !important;
+    }
+}
