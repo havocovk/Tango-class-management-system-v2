@@ -188,15 +188,11 @@ export function renderAttendanceView() {
     noteRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
     noteRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Ders Notu</td>`;
     appState.courseDates.forEach(date => {
-        const noteText   = appState.notesMap[date.id] || '';
-        const iconColor  = noteText ? 'var(--primary)' : 'var(--dim-forest)';
-        const glowStyle  = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
-        const preview    = noteText
-            ? `<div style="font-size:9px;color:var(--text-dim);margin-top:3px;word-break:break-word;white-space:normal;max-width:44px;line-height:1.3;">${escapeHtml(noteText.substring(0,30))}${noteText.length > 30 ? '…' : ''}</div>`
-            : '';
-        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; vertical-align:top; padding:8px 4px;">
+        const noteText  = appState.notesMap[date.id] || '';
+        const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
+        const glowStyle = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
+        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; padding:8px 4px;">
             <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
-            ${preview}
         </td>`;
     });
     noteRow += `</tr>`;

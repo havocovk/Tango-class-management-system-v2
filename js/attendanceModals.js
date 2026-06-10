@@ -448,12 +448,8 @@ export async function updateNote(courseDateId, newNote) {
             const noteText  = newNote || '';
             const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
             const glowStyle = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
-            const preview   = noteText
-                ? `<div style="font-size:9px;color:var(--text-dim);margin-top:3px;word-break:break-word;white-space:normal;max-width:44px;line-height:1.3;">${escapeHtml(noteText.substring(0, 30))}${noteText.length > 30 ? '…' : ''}</div>`
-                : '';
             cell.innerHTML = `
                 <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
-                ${preview}
             `;
             refreshIcons();
         }
