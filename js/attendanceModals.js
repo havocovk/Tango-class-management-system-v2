@@ -18,7 +18,7 @@ import { supabase } from './supabaseClient.js';
 import { formatDate, refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
-import { updateStudentName, deleteStudent } from './attendanceActions.js';
+import { updateStudentName, deleteStudent, deleteWeek, toggleWeekCancel } from './attendanceActions.js';
 
 // ---------------------------------------------------------------
 // Öğrenci adına tıklanınca açılan aksiyom modalı
@@ -456,4 +456,62 @@ export async function updateNote(courseDateId, newNote) {
     } else {
         showToast('Not kaydedilemedi. Bağlantıyı kontrol edin.', 'error');
     }
+}
+
+// ---------------------------------------------------------------
+// HAFTA AKSİYON MENÜSÜ
+// Tablo başlığındaki tarihe tıklayınca açılır. Üç seçenek sunar:
+//   - Dersi İptal Et / İptali Geri Al (is_cancelled bayrağı)
+//   - Haftayı Sil (kalıcı silme — onaylı)
+//   - Kapat
+// index.html'deki #weekActionModal öğesini kullanır.
+// ---------------------------------------------------------------
+export function openWeekActionModal(dateId, dateStr, isCancelled) {
+    const modal     = document.getElementById('weekActionModal');
+    const titleEl   = document.getElementById('weekActionTitle');
+    const cancelBtn = document.getElementById('weekActionCancelToggleBtn');
+    const deleteBtn = document.getElementById('weekActionDeleteBtn');
+    const closeBtn  = document.getElementById('weekActionCloseBtn');
+    if (!modal) return;
+
+    titleEl.textContent = formatDate(dateStr);
+
+    // İptal/geri-al butonunun metnini ve rengini duruma göre ayarla
+    if (isCancelled) {
+        cancelBtn.innerHTML = '✓ İptali Geri Al';
+        cancelBtn.className  = 'btn-success';
+    } else {
+        cancelBtn.innerHTML = '🚫 Dersi İptal Et';
+        cancelBtn.className  = 'btn-secondary';
+    }
+
+    modal.style.display = 'flex';
+
+    const cleanup = () => {
+        cancelBtn.onclick = null;
+        deleteBtn.onclick = null;
+        closeBtn.onclick  = null;
+    };
+
+    cancelBtn.onclick = async () => {
+        modal.style.display = 'none';
+        cleanup();
+        await toggleWeekCancel(dateId, !isCancelled);
+    };
+
+    deleteBtn.onclick = () => {
+        modal.style.display = 'none';
+        cleanup();
+        openConfirmModal(
+            `${formatDate(dateStr)} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
+            async () => {
+                await deleteWeek(dateId);
+            }
+        );
+    };
+
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
 }

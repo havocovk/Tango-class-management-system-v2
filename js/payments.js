@@ -21,6 +21,14 @@ async function loadPaymentsData() {
         .eq('class_id', appState.currentClassId).order('date');
     appState.courseDates = datesData || [];
 
+    // ADIM: Borç hesabı "S" (user-x, henüz kayıtlı değil) haftalarını
+    // ayırt edebilmek için yoklama verisine ihtiyaç duyar.
+    const { data: attData } = await supabase
+        .from('attendance').select('*')
+        .in('course_date_id', appState.courseDates.map(d => d.id));
+    appState.attendanceMap = {};
+    if (attData) attData.forEach(a => { appState.attendanceMap[`${a.student_id}_${a.course_date_id}`] = a.status; });
+
     const { data: paymentsData } = await supabase
         .from('payments').select('*')
         .in('student_id', appState.students.map(s => s.id));
@@ -30,42 +38,64 @@ async function loadPaymentsData() {
 // ---------------------------------------------------------------
 // Bir öğrencinin belirli bir hafta indeksinde ödeme kapsamında
 // olup olmadığını kontrol eder.
+// ADIM: İptal edilen haftalar bir ders hakkı TÜKETMEZ. Yani ödeme
+// kapsamı (weeks_covered) yalnızca iptal OLMAYAN haftalar üzerinden
+// sayılır; iptal haftaları atlanır ve kapsam bir sonraki gerçek
+// derse kayar.
 // ---------------------------------------------------------------
 function checkIsPaid(studentId, dateIndex) {
     const dateObj = appState.courseDates[dateIndex];
     if (!dateObj) return false;
+    if (dateObj.is_cancelled) return false; // İptal haftası asla "ödenmiş" sayılmaz
+
     for (const p of appState.payments) {
         if (p.student_id !== studentId) continue;
         const startIdx = appState.courseDates.findIndex(d => d.id === p.start_date_id);
-        if (startIdx === -1) continue;
-        if (dateIndex >= startIdx && dateIndex < startIdx + p.weeks_covered) return true;
+        if (startIdx === -1 || dateIndex < startIdx) continue;
+
+        // startIdx'ten dateIndex'e kadar (dahil) iptal OLMAYAN hafta sayısı.
+        // Bu sayı, dateIndex'in kaçıncı gerçek ders olduğunu verir (1-tabanlı).
+        let validOrdinal = 0;
+        for (let i = startIdx; i <= dateIndex; i++) {
+            if (!appState.courseDates[i].is_cancelled) validOrdinal++;
+        }
+        if (validOrdinal >= 1 && validOrdinal <= p.weeks_covered) return true;
     }
     return false;
 }
 
 // ---------------------------------------------------------------
-// ADIM 6.1 — BORÇ TAKİBİ
-// Her öğrenci için:
-//   - Toplam ödenen hafta sayısı hesaplanır
-//   - Toplam ders sayısıyla kıyaslanır
-//   - Kalan ders sayısı (artı = avans, eksi = borç) bulunur
+// ADIM 6.1 — BORÇ TAKİBİ (güncellendi)
+// Her öğrenci için "geçerli ders sayısı" şu kurallarla hesaplanır:
+//   - İptal edilen haftalar (is_cancelled) HİÇ KİMSE için sayılmaz.
+//   - Öğrencinin "S" (user-x, henüz kayıtlı değil) işaretli olduğu
+//     haftalar O ÖĞRENCİ için sayılmaz.
+// Böylece derse sonradan başlayan veya iptal olan haftalar borç
+// olarak yansımaz.
 // ---------------------------------------------------------------
 function calcStudentDebt(student) {
-    const totalDates = appState.courseDates.length;
+    // Bu öğrenci için geçerli (borç doğuran) ders sayısını say
+    let studentValidDates = 0;
+    appState.courseDates.forEach(d => {
+        if (d.is_cancelled) return; // iptal → kimseye sayılmaz
+        const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
+        if (status === 'S') return; // bu öğrenci o hafta henüz kayıtlı değildi
+        studentValidDates++;
+    });
 
     // Bu öğrenciye ait tüm ödemelerin toplam hafta kapsamını topla
     const studentPayments = appState.payments.filter(p => p.student_id === student.id);
     const totalPaidWeeks = studentPayments.reduce((sum, p) => sum + p.weeks_covered, 0);
 
-    // Kaç ders ödendi, kaç ders gerçekleşti?
-    const remaining = totalPaidWeeks - totalDates;
+    // Kaç ders ödendi, kaç geçerli ders gerçekleşti?
+    const remaining = totalPaidWeeks - studentValidDates;
     // remaining > 0  → avans (fazla ödedi)
     // remaining === 0 → tam ödedi
     // remaining < 0  → borçlu (eksik ödedi)
 
     const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
 
-    return { remaining, totalPaidWeeks, totalDates, totalAmount };
+    return { remaining, totalPaidWeeks, totalDates: studentValidDates, totalAmount };
 }
 
 // ---------------------------------------------------------------
@@ -153,7 +183,8 @@ function buildMonthlyChart() {
 
 function renderPaymentsView() {
     const container = document.getElementById('dynamicView');
-    const totalDates = appState.courseDates.length;
+    // "Toplam Ders" kartı: iptal edilen haftalar hariç gerçekleşen ders sayısı
+    const totalDates = appState.courseDates.filter(d => !d.is_cancelled).length;
 
     // ---- Özet hesaplamaları ----
     let totalCollected = 0;

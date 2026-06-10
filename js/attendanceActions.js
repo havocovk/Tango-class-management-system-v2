@@ -206,3 +206,25 @@ export async function deleteWeek(courseDateId) {
         showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
     }
 }
+
+// ---------------------------------------------------------------
+// Dersi İptal Et / İptali Geri Al
+// İptal edilen hafta veritabanında durur (silinmez), sadece
+// is_cancelled bayrağı değişir. Yoklama ve ödeme hesaplarında bu
+// hafta sayılmaz; tablo yeniden çizilince soluk/üstü çizili görünür.
+// renderAttendanceView'daki hafta aksiyon menüsünden çağırılır.
+// ---------------------------------------------------------------
+export async function toggleWeekCancel(courseDateId, makeCancelled) {
+    const { error } = await supabase
+        .from('course_dates')
+        .update({ is_cancelled: makeCancelled })
+        .eq('id', courseDateId);
+
+    if (!error) {
+        showToast(makeCancelled ? 'Ders iptal edildi ✓' : 'İptal geri alındı ✓', 'success');
+        await loadAttendanceData();
+        renderAttendanceView();
+    } else {
+        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+    }
+}

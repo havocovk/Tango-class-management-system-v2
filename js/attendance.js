@@ -135,7 +135,13 @@ export function renderAttendanceView() {
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${appState.courseDates.map((d) => `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;" data-date-id="${d.id}" data-date="${d.date}" title="Bu haftayı silmek için tıklayın">${formatDate(d.date)}</th>`).join('')}</tr></thead>
+                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${appState.courseDates.map((d) => {
+                        const cancelled = d.is_cancelled;
+                        const thStyle = `writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;` +
+                            (cancelled ? ' color:var(--danger); background:rgba(239,68,68,0.14); text-decoration:line-through;' : '');
+                        const thTitle = cancelled ? 'İPTAL EDİLDİ — işlem menüsü için tıklayın' : 'Bu hafta için işlem menüsü (sil / iptal)';
+                        return `<th style="${thStyle}" data-date-id="${d.id}" data-date="${d.date}" data-cancelled="${cancelled ? '1' : '0'}" title="${thTitle}">${formatDate(d.date)}</th>`;
+                    }).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
                 </table>
@@ -148,12 +154,14 @@ export function renderAttendanceView() {
     appState.students.forEach((student, idx) => {
         let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${escapeHtml(student.name)}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
+            const cancelled = date.is_cancelled;
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
             let iconHtml = '';
             if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
             else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
-            row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}">${iconHtml}</td>`;
+            const cellStyle = cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
+            row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}" style="${cellStyle}">${iconHtml}</td>`;
         });
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
@@ -168,7 +176,8 @@ export function renderAttendanceView() {
     videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Class Recaps</td>`;
     appState.courseDates.forEach(date => {
         const hasVideo = appState.videoMap[date.id];
-        videoRow += `<td><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
+        const tdStyle  = date.is_cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
+        videoRow += `<td style="${tdStyle}"><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
     videoRow += `</tr>`;
 
@@ -179,7 +188,8 @@ export function renderAttendanceView() {
     appState.courseDates.forEach(date => {
         const partner = appState.partnerMap[date.id] || '';
         const iconColor = partner ? 'var(--primary)' : 'var(--text-dim)';
-        partnerRow += `<td><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" title="${escapeHtml(partner)}" style="cursor:pointer; display:inline-flex; color:${iconColor};"><i data-lucide="notebook-pen" size="18"></i></span></td>`;
+        const tdStyle = date.is_cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
+        partnerRow += `<td style="${tdStyle}"><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" title="${escapeHtml(partner)}" style="cursor:pointer; display:inline-flex; color:${iconColor};"><i data-lucide="notebook-pen" size="18"></i></span></td>`;
     });
     partnerRow += `</tr>`;
 
@@ -191,7 +201,8 @@ export function renderAttendanceView() {
         const noteText  = appState.notesMap[date.id] || '';
         const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
         const glowStyle = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
-        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; padding:8px 4px;">
+        const tdExtra   = date.is_cancelled ? ' opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
+        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; padding:8px 4px;${tdExtra}">
             <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
         </td>`;
     });
@@ -224,6 +235,7 @@ export function renderAttendanceView() {
                 const dateId    = parseInt(cell.dataset.dateId);
                 const dateObj   = appState.courseDates.find(d => d.id === dateId);
                 if (!dateObj) return;
+                if (dateObj.is_cancelled) return; // İptal edilen hafta: yoklama değiştirilemez
                 if (isPastDate(dateObj.date) && !confirm('Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinizden emin misiniz?')) return;
                 await actions.toggleAttendance(studentId, dateId);
             });
@@ -290,15 +302,10 @@ export function renderAttendanceView() {
         document.querySelectorAll('#headerRow th[data-date-id]').forEach(th => {
             th.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const dateId    = parseInt(th.dataset.dateId);
-                const dateStr   = th.dataset.date;
-                const formatted = formatDate(dateStr);
-                openConfirmModal(
-                    `${formatted} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
-                    async () => {
-                        await actions.deleteWeek(dateId);
-                    }
-                );
+                const dateId      = parseInt(th.dataset.dateId);
+                const dateStr     = th.dataset.date;
+                const isCancelled = th.dataset.cancelled === '1';
+                modals.openWeekActionModal(dateId, dateStr, isCancelled);
             });
         });
 
