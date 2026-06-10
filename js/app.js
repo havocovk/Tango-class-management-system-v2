@@ -129,6 +129,7 @@ function showLogin() {
     loginScreen.style.display = 'flex';
     appContainer.style.display = 'none';
     logoutBtn.style.display = 'none';
+    document.body.style.paddingBottom = '0';
     loginError.innerText = '';
     passwordInput.value = '';
 }
@@ -139,6 +140,8 @@ async function startApp() {
     loginScreen.style.display = 'none';
     appContainer.style.display = 'block';
     logoutBtn.style.display = 'block';
+    // Alttaki sabit logout butonu içeriği örtmesin
+    document.body.style.paddingBottom = '54px';
     await navigateTo('schools');
 
     // ADIM 7.2 — Açılışta: internet varsa bekleyen kayıtları gönder,

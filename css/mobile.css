@@ -83,24 +83,26 @@
 
 #logoutBtn {
     position: fixed;
-    top: 14px;
-    right: 14px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 90000;
+    width: 100%;
     flex: none;
-    min-width: auto;
-    width: auto;
-    padding: 8px 14px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #334155;
-    color: var(--text-main);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    min-width: unset;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--primary);
+    color: #000;
+    border: none;
+    border-radius: 0;
+    box-shadow: 0 -4px 16px rgba(45, 212, 191, 0.15);
+    letter-spacing: 0.3px;
 }
 
 #logoutBtn:hover {
-    background: #475569;
+    background: #25c9b4;
 }
 
 /* ---------------------------------------------------------------

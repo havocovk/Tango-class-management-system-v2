@@ -169,5 +169,23 @@ button {
     align-items: center;
     border: 1px solid var(--border);
     transition: transform 0.2s;
+    /* Mobilde parmakla basınca metin seçilmesin */
+    -webkit-user-select: none;
+    user-select: none;
 }
 .class-card:active { transform: scale(0.98); }
+
+/* Tıklanabilir metin alanlarında metin seçimini engelle */
+.class-card [style*="cursor:pointer"],
+.back-link,
+.class-item-link,
+.student-name-link,
+.btn-icon-edit,
+.btn-icon-delete,
+.att-cell,
+.vid-icon,
+.partner-edit,
+.note-cell {
+    -webkit-user-select: none;
+    user-select: none;
+}
