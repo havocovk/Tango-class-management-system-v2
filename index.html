@@ -206,12 +206,16 @@
 <!-- ========== ADIM: HAFTA AKSİYON MENÜSÜ (Sil / İptal Et / Geri Al) ========== -->
 <div id="weekActionModal" class="modal">
     <div class="modal-content" style="max-width:320px;">
-        <h3 id="weekActionTitle" style="margin-top:0; color:var(--primary);">Hafta</h3>
-        <p style="font-size:13px; color:var(--text-dim); margin:8px 0 18px;">Bu hafta için ne yapmak istersiniz?</p>
+        <h3 id="weekActionTitle" style="margin-top:0; color:var(--primary); text-align:center; font-size:18px;"></h3>
+        <p style="font-size:13px; color:var(--text-dim); margin:6px 0 20px; text-align:center;">Bu hafta için ne yapmak istersiniz?</p>
         <div style="display:flex; flex-direction:column; gap:10px;">
-            <button id="weekActionCancelToggleBtn" class="btn-secondary" style="width:100%;"><i data-lucide="ban" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Dersi İptal Et</button>
-            <button id="weekActionDeleteBtn" class="btn-danger" style="width:100%;"><i data-lucide="trash-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Haftayı Sil</button>
-            <button id="weekActionCloseBtn" class="btn-secondary" style="width:100%;">Kapat</button>
+            <button id="weekActionCancelToggleBtn" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-main); border-radius:12px; padding:12px; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+                <i data-lucide="ban" size="16"></i>Dersi İptal Et
+            </button>
+            <button id="weekActionDeleteBtn" style="width:100%; background:transparent; border:1px solid rgba(239,68,68,0.4); color:var(--danger); border-radius:12px; padding:12px; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+                <i data-lucide="trash-2" size="16"></i>Haftayı Sil
+            </button>
+            <button id="weekActionCloseBtn" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:12px; padding:12px; font-size:13px; font-weight:600; cursor:pointer;">Kapat</button>
         </div>
     </div>
 </div>
