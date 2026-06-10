@@ -235,8 +235,14 @@ export function renderAttendanceView() {
                 const dateId    = parseInt(cell.dataset.dateId);
                 const dateObj   = appState.courseDates.find(d => d.id === dateId);
                 if (!dateObj) return;
-                if (dateObj.is_cancelled) return; // İptal edilen hafta: yoklama değiştirilemez
-                if (isPastDate(dateObj.date) && !confirm('Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinizden emin misiniz?')) return;
+                if (dateObj.is_cancelled) return;
+                if (isPastDate(dateObj.date)) {
+                    openConfirmModal(
+                        'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?',
+                        async () => { await actions.toggleAttendance(studentId, dateId); }
+                    );
+                    return;
+                }
                 await actions.toggleAttendance(studentId, dateId);
             });
         });

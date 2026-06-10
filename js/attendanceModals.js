@@ -478,11 +478,11 @@ export function openWeekActionModal(dateId, dateStr, isCancelled) {
 
     // İptal/geri-al butonunun metnini ve rengini duruma göre ayarla
     if (isCancelled) {
-        cancelBtn.innerHTML = '<i data-lucide="check-circle" size="16"></i>İptali Geri Al';
-        cancelBtn.style.cssText = 'width:100%; background:transparent; border:1px solid rgba(45,212,191,0.5); color:var(--primary); border-radius:12px; padding:12px; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;';
+        cancelBtn.innerHTML = '<i data-lucide="check-circle" size="15"></i>İptali Geri Al';
+        cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     } else {
-        cancelBtn.innerHTML = '<i data-lucide="ban" size="16"></i>Dersi İptal Et';
-        cancelBtn.style.cssText = 'width:100%; background:transparent; border:1px solid var(--border); color:var(--text-main); border-radius:12px; padding:12px; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;';
+        cancelBtn.innerHTML = '<i data-lucide="ban" size="15"></i>Haftayı İptal Et';
+        cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     }
 
     modal.style.display = 'flex';
