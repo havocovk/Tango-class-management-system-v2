@@ -57,7 +57,7 @@ export async function toggleAttendance(studentId, courseDateId) {
             let offlineIcon = '';
             if (newStatus === '+') offlineIcon = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (newStatus === '-') offlineIcon = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
-            else if (newStatus === 'S') offlineIcon = '<span style="color:var(--info); font-weight:800;">S</span>';
+            else if (newStatus === 'S') offlineIcon = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
             offlineCell.innerHTML = offlineIcon;
             refreshIcons();
         }
@@ -101,7 +101,7 @@ export async function toggleAttendance(studentId, courseDateId) {
         let iconHtml = '';
         if (newStatus === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
         else if (newStatus === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
-        else if (newStatus === 'S') iconHtml = '<span style="color:var(--info); font-weight:800;">S</span>';
+        else if (newStatus === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
         cell.innerHTML = iconHtml;
         refreshIcons();
     }

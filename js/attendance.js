@@ -152,7 +152,7 @@ export function renderAttendanceView() {
             let iconHtml = '';
             if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
-            else if (status === 'S') iconHtml = '<span style="color:var(--info); font-weight:800;">S</span>';
+            else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
             row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}">${iconHtml}</td>`;
         });
         row += `</tr>`;
