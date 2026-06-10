@@ -66,6 +66,7 @@ export async function loadAttendanceData() {
         appState.attendanceMap = (cached && cached.attendanceMap) || {};
         appState.videoMap      = (cached && cached.videoMap)      || {};
         appState.partnerMap    = (cached && cached.partnerMap)    || {};
+        appState.notesMap      = (cached && cached.notesMap)      || {};
         appState.payments      = (cached && cached.payments)      || [];
 
         const pending = await getPendingChanges();
@@ -92,6 +93,9 @@ export async function loadAttendanceData() {
     if (videoData) videoData.forEach(v => { appState.videoMap[v.course_date_id] = v.url; });
     appState.partnerMap = {};
     appState.courseDates.forEach(d => { appState.partnerMap[d.id] = d.teacher_partner || ''; });
+    // ADIM 8.2 — Ders notları
+    appState.notesMap = {};
+    appState.courseDates.forEach(d => { appState.notesMap[d.id] = d.notes || ''; });
     // ADIM 6.4: Öğrenci profil modalı ödeme bilgisine ihtiyaç duyuyor
     const { data: paymentsData } = await supabase.from('payments').select('*').in('student_id', appState.students.map(s => s.id));
     appState.payments = paymentsData || [];
@@ -106,6 +110,7 @@ export async function loadAttendanceData() {
             attendanceMap: appState.attendanceMap,
             videoMap:      appState.videoMap,
             partnerMap:    appState.partnerMap,
+            notesMap:      appState.notesMap,
             payments:      appState.payments
         });
     }
@@ -178,7 +183,25 @@ export function renderAttendanceView() {
     });
     partnerRow += `</tr>`;
 
-    footer.innerHTML = videoRow + partnerRow;
+    // ADIM 8.2 — Ders Notu satırı
+    let noteRow = `<tr>`;
+    noteRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
+    noteRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Ders Notu</td>`;
+    appState.courseDates.forEach(date => {
+        const noteText   = appState.notesMap[date.id] || '';
+        const iconColor  = noteText ? 'var(--primary)' : 'var(--dim-forest)';
+        const glowStyle  = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
+        const preview    = noteText
+            ? `<div style="font-size:9px;color:var(--text-dim);margin-top:3px;word-break:break-word;white-space:normal;max-width:44px;line-height:1.3;">${escapeHtml(noteText.substring(0,30))}${noteText.length > 30 ? '…' : ''}</div>`
+            : '';
+        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; vertical-align:top; padding:8px 4px;">
+            <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
+            ${preview}
+        </td>`;
+    });
+    noteRow += `</tr>`;
+
+    footer.innerHTML = videoRow + partnerRow + noteRow;
 
     // ---------------------------------------------------------------
     // Event listener'lar — attendanceActions ve attendanceModals
@@ -228,6 +251,22 @@ export function renderAttendanceView() {
                     'İsim girin (boş bırakıp Tamam derseniz silinir)',
                     async (newPartner) => {
                         await modals.updateTeacherPartner(dateId, newPartner);
+                    }
+                );
+            });
+        });
+
+        // ADIM 8.2 — Ders notu hücresine tıklayınca not ekle/düzenle
+        document.querySelectorAll('.note-cell').forEach(cell => {
+            cell.addEventListener('click', async () => {
+                const dateId  = parseInt(cell.dataset.dateId);
+                const current = appState.notesMap[dateId] || '';
+                openPromptModalWithValue(
+                    'Ders Notu',
+                    current,
+                    'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
+                    async (newNote) => {
+                        await modals.updateNote(dateId, newNote);
                     }
                 );
             });

@@ -35,6 +35,7 @@ export const appState = {
     attendanceMap: {},
     videoMap: {},
     partnerMap: {},
+    notesMap: {},
 
     // --- Ödeme ekranı verileri ---
     payments: []

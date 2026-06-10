@@ -304,6 +304,18 @@ export async function handleVideo(courseDateId) {
             waVideoBtn.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
         }
 
+        // ADIM 8.2 — Bu haftanın ders notunu video modalında göster
+        const noteDisplay = document.getElementById('videoNoteDisplay');
+        if (noteDisplay) {
+            const weekNote = (appState.notesMap && appState.notesMap[courseDateId]) || '';
+            if (weekNote) {
+                noteDisplay.textContent = '📝 ' + weekNote;
+                noteDisplay.style.display = 'block';
+            } else {
+                noteDisplay.style.display = 'none';
+            }
+        }
+
         refreshIcons();
 
         const watchHandler = () => {
@@ -344,6 +356,9 @@ export async function handleVideo(courseDateId) {
                     <span style="vertical-align: middle;">Lesson Recap</span>
                 `;
             }
+            // ADIM 8.2 — Not göstergesini sıfırla
+            const noteDisplay = document.getElementById('videoNoteDisplay');
+            if (noteDisplay) noteDisplay.style.display = 'none';
             cleanup();
         };
 
@@ -409,5 +424,40 @@ export async function updateTeacherPartner(courseDateId, newPartner) {
         }
     } else {
         showToast('Partner güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+    }
+}
+
+// ---------------------------------------------------------------
+// ADIM 8.2 — Ders notu güncelleme
+// renderAttendanceView'daki .note-cell click'ten çağırılır.
+// Surgical update: sadece ilgili hücreyi günceller, tabloyu yeniden çizmez.
+// ---------------------------------------------------------------
+export async function updateNote(courseDateId, newNote) {
+    const { error } = await supabase
+        .from('course_dates')
+        .update({ notes: newNote || null })
+        .eq('id', courseDateId);
+
+    if (!error) {
+        appState.notesMap[courseDateId] = newNote || '';
+        showToast(newNote ? 'Ders notu kaydedildi ✓' : 'Ders notu silindi ✓', 'success');
+
+        // Sadece ilgili not hücresini güncelle — tüm tabloyu yeniden çizme!
+        const cell = document.querySelector(`.note-cell[data-date-id="${courseDateId}"]`);
+        if (cell) {
+            const noteText  = newNote || '';
+            const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
+            const glowStyle = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
+            const preview   = noteText
+                ? `<div style="font-size:9px;color:var(--text-dim);margin-top:3px;word-break:break-word;white-space:normal;max-width:44px;line-height:1.3;">${escapeHtml(noteText.substring(0, 30))}${noteText.length > 30 ? '…' : ''}</div>`
+                : '';
+            cell.innerHTML = `
+                <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
+                ${preview}
+            `;
+            refreshIcons();
+        }
+    } else {
+        showToast('Not kaydedilemedi. Bağlantıyı kontrol edin.', 'error');
     }
 }
