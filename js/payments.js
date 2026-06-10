@@ -99,6 +99,58 @@ function getDebtBadge(remaining) {
     }
 }
 
+// ---------------------------------------------------------------
+// ADIM 8.4 — AYLIK GELİR GRAFİĞİ
+// Her ödemenin başlangıç tarihini ay olarak gruplar ve toplam
+// tutarı bar grafik olarak çizer. Grafik CSS sınıfları chart.css'ten
+// gelir (classStats.js'teki katılım grafiğiyle aynı altyapı).
+// ---------------------------------------------------------------
+function buildMonthlyChart() {
+    const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+
+    // start_date_id → course_dates.date üzerinden ay-yıl grupla
+    const monthlyMap = {};
+    appState.payments.forEach(p => {
+        const dateObj = appState.courseDates.find(d => d.id === p.start_date_id);
+        if (!dateObj) return;
+        const [year, month] = dateObj.date.split('-').map(Number);
+        const key = `${year}-${String(month).padStart(2, '0')}`;
+        monthlyMap[key] = (monthlyMap[key] || 0) + p.amount;
+    });
+
+    const sorted = Object.entries(monthlyMap).sort((a, b) => a[0].localeCompare(b[0]));
+    if (sorted.length === 0) return '';
+
+    const maxAmount = Math.max(...sorted.map(([, v]) => v));
+
+    let barsHtml  = '';
+    let datesHtml = '';
+
+    sorted.forEach(([key, amount]) => {
+        const [year, month] = key.split('-').map(Number);
+        const label      = `${MONTHS_TR[month - 1]} ${String(year).slice(2)}`;
+        const barHeight  = Math.min(200, Math.max(4, Math.round((amount / maxAmount) * 200)));
+        barsHtml += `
+            <div class="bar-col">
+                <div class="bar-count" style="font-size:10px;">${amount.toLocaleString('tr-TR')}₺</div>
+                <div class="bar" style="height:${barHeight}px;"></div>
+            </div>`;
+        datesHtml += `<div class="bar-date">${label}</div>`;
+    });
+
+    return `
+        <div style="margin-top:16px;">
+            <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px; padding-left:4px;">📊 Aylık Gelir</div>
+            <div style="border:1px solid var(--border); border-radius:14px; background:var(--card-bg); overflow-x:auto; overflow-y:hidden; padding:10px 0;">
+                <div class="chart-container">
+                    <div class="chart-bars-zone" style="height:220px;">${barsHtml}</div>
+                    <div class="chart-xaxis"></div>
+                    <div class="chart-dates-zone">${datesHtml}</div>
+                </div>
+            </div>
+        </div>`;
+}
+
 function renderPaymentsView() {
     const container = document.getElementById('dynamicView');
     const totalDates = appState.courseDates.length;
@@ -139,6 +191,9 @@ function renderPaymentsView() {
         </div>
     `;
 
+    // ADIM 8.4 — Aylık gelir grafiği
+    const monthlyChartHtml = buildMonthlyChart();
+
     // ---- Tablo HTML ----
     container.innerHTML = `
         <div class="view">
@@ -149,6 +204,7 @@ function renderPaymentsView() {
             </div>
 
             ${summaryHtml}
+            ${monthlyChartHtml}
 
             <div class="table-wrapper" style="margin-top:20px;">
                 <table>
