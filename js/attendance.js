@@ -156,7 +156,7 @@ export function renderAttendanceView() {
         const firstName   = escapeHtml(nameParts[0] || student.name);
         const lastName    = escapeHtml(nameParts.slice(1).join(' '));
         const nameHtml    = lastName
-            ? `<div style="line-height:1.35;">${firstName}<br><span style="color:var(--text-dim);">${lastName}</span></div>`
+            ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
             : firstName;
         let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
@@ -190,7 +190,7 @@ export function renderAttendanceView() {
     // Partner/Teacher satırı
     let partnerRow = `<tr>`;
     partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner/Teacher</td>`;
+    partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner</td>`;
     appState.courseDates.forEach(date => {
         const partner = appState.partnerMap[date.id] || '';
         const iconColor = partner ? 'var(--primary)' : 'var(--text-dim)';
