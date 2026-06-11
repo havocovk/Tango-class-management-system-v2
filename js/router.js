@@ -20,23 +20,14 @@
 //   navigateTo('stats');
 // ---------------------------------------------------------------
 
-// ÇOK DİLLİ DESTEK — En son gidilen sayfa burada saklanır. Dil
-// değiştiğinde reloadCurrentView() bu sayfayı yeni dilde yeniden çizer.
+// En son gidilen sayfa — dil değişiminde yeniden çizmek için saklanır.
 let currentRoute = { screen: 'schools', params: {} };
 
-export async function navigateTo(screen, params = {}) {
-    currentRoute = { screen, params };
-
-    // Android geri tuşu desteği: her sayfa geçişinde tarayıcı
-    // geçmişine bir kayıt ekle. 'schools' ekranına her zaman
-    // replaceState (üzerine yaz) yaparız ki ana sayfada geri tuşuna
-    // basınca uygulama çıkış onayı çıksın, tarayıcı dışına çıkmasın.
-    if (screen === 'schools') {
-        history.replaceState({ screen, params }, '');
-    } else {
-        history.pushState({ screen, params }, '');
-    }
-
+// ---------------------------------------------------------------
+// renderScreen — sadece ekranı çizer, history'e DOKUNMAZ.
+// Hem navigateTo hem reloadCurrentView tarafından kullanılır.
+// ---------------------------------------------------------------
+async function renderScreen(screen, params) {
     switch (screen) {
         case 'schools': {
             const module = await import('./schools.js');
@@ -69,10 +60,33 @@ export async function navigateTo(screen, params = {}) {
 }
 
 // ---------------------------------------------------------------
-// reloadCurrentView() — bulunduğun sayfayı (en son navigateTo edilen)
-// yeniden çizer. Dil değişiminde app.js bunu çağırır; böylece hangi
-// ekranda olursan ol, yazılar anında yeni dile döner.
+// navigateTo — kullanıcı bir butona/linke tıkladığında çağrılır.
+// History'e kayıt EKLER ve ekranı çizer.
+//
+// ANDROID GERİ TUŞU MANTIĞI:
+//   Uygulama ilk açıldığında history boştur. startApp() içinde
+//   schools için pushState yapılır → stack: [schools]
+//
+//   Kullanıcı okula tıklar → navigateTo('classes') → pushState
+//   stack: [schools, classes]
+//
+//   Kullanıcı sınıfa tıklar → navigateTo('attendance') → pushState
+//   stack: [schools, classes, attendance]
+//
+//   Geri tuşu → popstate → classes state'i gelir → renderScreen('classes')
+//   Geri tuşu → popstate → schools state'i gelir → renderScreen('schools')
+//   Geri tuşu → popstate → history bitti → state null gelir → çıkış onayı
+// ---------------------------------------------------------------
+export async function navigateTo(screen, params = {}) {
+    currentRoute = { screen, params };
+    history.pushState({ screen, params }, '');
+    await renderScreen(screen, params);
+}
+
+// ---------------------------------------------------------------
+// reloadCurrentView — DİL DEĞİŞİMİNDE çağrılır.
+// History'e DOKUNMAZ, sadece mevcut ekranı yeni dilde yeniden çizer.
 // ---------------------------------------------------------------
 export async function reloadCurrentView() {
-    await navigateTo(currentRoute.screen, currentRoute.params);
+    await renderScreen(currentRoute.screen, currentRoute.params);
 }

@@ -155,12 +155,14 @@ async function startApp() {
     loginScreen.style.display = 'none';
     appContainer.style.display = 'block';
     logoutBtn.style.display = 'block';
-    // Alttaki sabit logout butonu içeriği örtmesin
     document.body.style.paddingBottom = '54px';
+
+    // Android geri tuşu için history stack'ini sıfırla.
+    // İlk kayıt: schools. Bundan sonra navigateTo her geçişte pushState yapar.
+    // Kullanıcı geri tuşuyla buraya gelince e.state null olur → çıkış onayı.
+    history.replaceState(null, '');
     await navigateTo('schools');
 
-    // ADIM 7.2 — Açılışta: internet varsa bekleyen kayıtları gönder,
-    // yoksa "N kayıt bekleniyor" rozetini göster.
     if (navigator.onLine) {
         await trySyncPending();
     } else {
@@ -205,26 +207,76 @@ logoutBtn.onclick = handleLogout;
 // ---------------------------------------------------------------
 // ANDROID GERİ TUŞU DESTEĞİ
 // ---------------------------------------------------------------
-// Kullanıcı geri tuşuna basınca tarayıcı 'popstate' olayını tetikler.
-// history state'i inceliyoruz:
-//   - 'schools' → Ana sayfadayız: çıkış onayı göster.
-//   - Başka bir ekran → O ekrana geri dön (router üzerinden).
-//   - state yoksa → Ana sayfaya git.
+// ÇALIŞMA MANTIĞI:
+//
+// startApp() çağrıldığında history'e schools için bir pushState yapılır.
+// Bu, stack'in [schools] ile başlamasını sağlar.
+//
+// Kullanıcı ilerledikçe navigateTo her seferinde pushState yapar:
+//   [schools] → [schools, classes] → [schools, classes, attendance] → ...
+//
+// Geri tuşuna basılınca popstate tetiklenir, e.state bir önceki
+// sayfanın bilgisini taşır. O sayfayı renderScreen ile çizeriz
+// (history'e yeni kayıt EKLEMEYIZ — zaten geri gidiyoruz).
+//
+// Özel durum — e.state null gelirse: history tükendi, uygulama
+// en başına geldi demektir → çıkış onayı göster.
 // ---------------------------------------------------------------
+
+// popstate gelince renderScreen'i çağırmak için router'ın iç
+// fonksiyonunu kullanmak yerine, navigateTo'yu çağırmadan sadece
+// ekranı çizeceğiz. Bunun için router'dan ayrı bir export lazım.
+// reloadCurrentView bunu yapıyor ama currentRoute'u güncellemez.
+// Bu yüzden burada doğrudan dinamik import kullanıyoruz.
+async function renderScreenFromState(state) {
+    const { screen, params = {} } = state;
+    // reloadCurrentView sadece currentRoute'u çizer; biz burada
+    // farklı bir state'i çizmek istiyoruz. Dinamik import ile
+    // router'ın renderScreen'ini doğrudan çağırıyoruz.
+    // Router'da renderScreen export edilmediği için navigateTo'yu
+    // history'e eklemeden çağıramayız. Bunun yerine her modülü
+    // doğrudan import ediyoruz.
+    switch (screen) {
+        case 'schools': {
+            const m = await import('./schools.js');
+            await m.loadSchools();
+            break;
+        }
+        case 'classes': {
+            const m = await import('./classes.js');
+            await m.showClassesView(params.schoolId, params.schoolName);
+            break;
+        }
+        case 'attendance': {
+            const m = await import('./attendance.js');
+            await m.showAttendanceView(params.classId, params.className);
+            break;
+        }
+        case 'payments': {
+            const m = await import('./payments.js');
+            await m.showPaymentsView(params.classId, params.className);
+            break;
+        }
+        case 'stats': {
+            const m = await import('./classStats.js');
+            await m.showWeeklyStats();
+            break;
+        }
+    }
+}
+
 window.addEventListener('popstate', async (e) => {
     // Giriş ekranı açıksa geri tuşuna cevap verme
     if (!appStarted) return;
 
-    const state = e.state;
-
-    if (!state || state.screen === 'schools') {
-        // Ana sayfadayız — çıkış onayı sor
-        showExitModal();
-        // Geri gidilmesini engelle: state'i yeniden ekle
+    if (!e.state) {
+        // History tükendi → çıkış onayı göster
+        // Çıkış iptal edilirse geri dönmek için schools'u tekrar ekle
         history.pushState({ screen: 'schools', params: {} }, '');
+        showExitModal();
     } else {
-        // Bir önceki sayfaya dön
-        await navigateTo(state.screen, state.params || {});
+        // History'deki önceki sayfayı çiz (yeni history kaydı EKLEME)
+        await renderScreenFromState(e.state);
     }
 });
 
@@ -237,16 +289,13 @@ function showExitModal() {
     const noBtn  = document.getElementById('exitModalNo');
     if (!modal) return;
 
-    // data-i18n etiketleri applyTranslations ile zaten çevrilmiş durumdadır.
-    // Modal açılırken ek bir şey yapmaya gerek yok.
     modal.style.display = 'flex';
 
     yesBtn.onclick = () => {
         modal.style.display = 'none';
-        // PWA / tarayıcı sekmesini kapat
+        // Android Chrome'da PWA olarak açıldıysa window.close() çalışır.
+        // Normal tarayıcıda çalışmazsa kullanıcı ana sayfada kalır — sorun olmaz.
         window.close();
-        // window.close() bazı tarayıcılarda çalışmaz (güvenlik kısıtı).
-        // Bu durumda kullanıcı zaten modalı kapattı, ana sayfada kalır.
     };
 
     noBtn.onclick = () => {
