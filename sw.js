@@ -13,7 +13,7 @@
 //   3. Cache'te yoksa ağa git, cevabı cache'e ekle
 // ---------------------------------------------------------------
 
-const CACHE_NAME = 'tcms-v37';
+const CACHE_NAME = 'tcms-v38';
 
 // İlk kurulumda cache'lenecek dosyalar (uygulama kabuğu)
 const SHELL_FILES = [
@@ -111,4 +111,16 @@ self.addEventListener('fetch', (event) => {
             });
         })
     );
+});
+
+// ---------------------------------------------------------------
+// ADIM 2.1 — SW GÜNCELLEME BİLDİRİMİ
+// index.html'deki applyUpdate() bu mesajı gönderir.
+// skipWaiting() ile yeni SW hemen aktif hale geçer ve
+// controllerchange olayı tetiklenerek sayfa yenilenir.
+// ---------------------------------------------------------------
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

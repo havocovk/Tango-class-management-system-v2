@@ -270,10 +270,51 @@
             navigator.serviceWorker.register('/sw.js')
                 .then((reg) => {
                     console.log('[SW] Kayıt başarılı:', reg.scope);
+
+                    // Yeni SW bekliyorsa hemen bildir
+                    if (reg.waiting) showUpdateBanner();
+
+                    // Güncelleme geldiğinde bildir
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showUpdateBanner();
+                            }
+                        });
+                    });
                 })
                 .catch((err) => {
                     console.warn('[SW] Kayıt başarısız:', err);
                 });
+
+            // SW controller değişince (yeni SW aktif olunca) sayfayı yenile
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) { refreshing = true; window.location.reload(); }
+            });
+        });
+    }
+
+    function showUpdateBanner() {
+        const existing = document.getElementById('swUpdateBanner');
+        if (existing) return;
+        const banner = document.createElement('div');
+        banner.id = 'swUpdateBanner';
+        banner.style.cssText = [
+            'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:300000',
+            'background:#1a3a2a', 'border-bottom:2px solid #2DD4BF',
+            'color:#2DD4BF', 'display:flex', 'align-items:center',
+            'justify-content:space-between', 'padding:10px 16px',
+            'font-size:13px', 'font-weight:600', 'gap:12px'
+        ].join(';');
+        banner.innerHTML = '<span>🔄 Güncelleme hazır</span><button onclick="applyUpdate()" style="flex:none;min-width:auto;width:auto;padding:7px 14px;font-size:12px;font-weight:700;background:#2DD4BF;color:#000;border:none;border-radius:8px;cursor:pointer;">Yenile</button>';
+        document.body.prepend(banner);
+    }
+
+    function applyUpdate() {
+        navigator.serviceWorker.ready.then((reg) => {
+            if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         });
     }
 </script>
