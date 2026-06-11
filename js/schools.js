@@ -27,9 +27,42 @@ function renderSchoolsView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
+    // ADIM 2.3 — Son açılan sınıf kısayolu
+    let lastClassHtml = '';
+    try {
+        const raw = localStorage.getItem('tcms_last_class');
+        if (raw) {
+            const last = JSON.parse(raw);
+            // 7 günden eski kayıtları gösterme
+            if (last && last.classId && (Date.now() - last.timestamp) < 7 * 24 * 60 * 60 * 1000) {
+                lastClassHtml = `
+                <div id="lastClassCard" style="
+                    background:rgba(45,212,191,0.08);
+                    border:1px solid rgba(45,212,191,0.3);
+                    border-radius:14px;
+                    padding:14px 16px;
+                    margin-bottom:16px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    cursor:pointer;
+                    gap:10px;
+                ">
+                    <div style="display:flex;flex-direction:column;gap:2px;">
+                        <div style="font-size:11px;color:var(--text-dim);">⚡ Son açılan sınıf</div>
+                        <div style="font-size:15px;font-weight:700;color:var(--primary);">${escapeHtml(last.className)}</div>
+                        <div style="font-size:11px;color:var(--text-dim);">${escapeHtml(last.schoolName)}</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="color:var(--primary);flex-shrink:0;" size="20"></i>
+                </div>`;
+            }
+        }
+    } catch (e) { /* yoksay */ }
+
     container.innerHTML = `
         <div class="view">
             <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
+            ${lastClassHtml}
             <div class="sub-header">${escapeHtml(t('schools.header'))}</div>
             <div id="schoolsList"></div>
             <div class="nav-buttons" style="margin-top:30px;">
@@ -68,6 +101,22 @@ function renderSchoolsView() {
         });
     }
     document.getElementById('addSchoolBtn').onclick = () => addSchool();
+
+    // ADIM 2.3 — Kısayol kartı tıklama olayı
+    const lastCard = document.getElementById('lastClassCard');
+    if (lastCard) {
+        lastCard.addEventListener('click', () => {
+            try {
+                const last = JSON.parse(localStorage.getItem('tcms_last_class'));
+                if (last && last.classId) {
+                    appState.currentSchoolId   = last.schoolId;
+                    appState.currentSchoolName = last.schoolName;
+                    navigateTo('attendance', { classId: last.classId, className: last.className });
+                }
+            } catch (e) { /* yoksay */ }
+        });
+    }
+
     refreshIcons();
 }
 

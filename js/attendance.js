@@ -42,6 +42,19 @@ import { t } from './i18n.js';
 export async function showAttendanceView(classId, className) {
     appState.currentClassId = classId;
     appState.currentClassName = className;
+
+    // ADIM 2.3 — Son açılan sınıfı localStorage'a kaydet.
+    // Ana ekranda hızlı erişim kartı bu veriyi okur.
+    try {
+        localStorage.setItem('tcms_last_class', JSON.stringify({
+            classId,
+            className,
+            schoolId:   appState.currentSchoolId,
+            schoolName: appState.currentSchoolName,
+            timestamp:  Date.now()
+        }));
+    } catch (e) { /* yoksay */ }
+
     await loadAttendanceData();
     renderAttendanceView();
 }
