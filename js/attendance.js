@@ -138,7 +138,50 @@ export async function loadAttendanceData() {
 export function renderAttendanceView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
-    let html = `
+
+    // ADIM 4.1 — Üç parçaya bölündü:
+    //   1) buildTableHTML()      → tablo iskeletini (string) üretir
+    //   2) satır gövdesi + buildFooterRows() → öğrenci ve footer satırları
+    //   3) attachEventListeners() → tüm tıklama olaylarını bağlar
+    container.innerHTML = buildTableHTML();
+
+    const tbody = document.getElementById('studentRows');
+    tbody.innerHTML = '';
+    appState.students.forEach((student, idx) => {
+        const nameParts   = student.name.trim().split(' ');
+        const firstName   = escapeHtml(nameParts[0] || student.name);
+        const lastName    = escapeHtml(nameParts.slice(1).join(' '));
+        const nameHtml    = lastName
+            ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
+            : firstName;
+        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
+        appState.courseDates.forEach(date => {
+            const cancelled = date.is_cancelled;
+            const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
+            let iconHtml = '';
+            if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
+            else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
+            else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
+            const cellStyle = cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
+            row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}" style="${cellStyle}">${iconHtml}</td>`;
+        });
+        row += `</tr>`;
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    const footer = document.getElementById('footerRow');
+    footer.innerHTML = buildFooterRows();
+
+    attachEventListeners();
+}
+
+// ---------------------------------------------------------------
+// ADIM 4.1 (1/3) — buildTableHTML
+// Yalnızca tablo iskeletini (üst butonlar + thead) string olarak
+// döndürür. DOM'a yazmaz, event bağlamaz. Saf fonksiyon.
+// ---------------------------------------------------------------
+function buildTableHTML() {
+    return `
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToClassesBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToClasses'))}</div>
@@ -165,34 +208,15 @@ export function renderAttendanceView() {
             </div>
         </div>
     `;
-    container.innerHTML = html;
-    const tbody = document.getElementById('studentRows');
-    tbody.innerHTML = '';
-    appState.students.forEach((student, idx) => {
-        const nameParts   = student.name.trim().split(' ');
-        const firstName   = escapeHtml(nameParts[0] || student.name);
-        const lastName    = escapeHtml(nameParts.slice(1).join(' '));
-        const nameHtml    = lastName
-            ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
-            : firstName;
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
-        appState.courseDates.forEach(date => {
-            const cancelled = date.is_cancelled;
-            const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
-            let iconHtml = '';
-            if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
-            else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
-            else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
-            const cellStyle = cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
-            row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}" style="${cellStyle}">${iconHtml}</td>`;
-        });
-        row += `</tr>`;
-        tbody.insertAdjacentHTML('beforeend', row);
-    });
+}
 
-    const footer = document.getElementById('footerRow');
-    footer.innerHTML = '';
-
+// ---------------------------------------------------------------
+// ADIM 4.1 (2/3) — buildFooterRows
+// Video, partner ve ders notu satırlarını (string) döndürür.
+// Yeni bir footer satırı eklemek istendiğinde yalnızca burası
+// değiştirilir.
+// ---------------------------------------------------------------
+function buildFooterRows() {
     // Class Recaps satırı
     let videoRow = `<tr>`;
     videoRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
@@ -231,14 +255,15 @@ export function renderAttendanceView() {
     });
     noteRow += `</tr>`;
 
-    footer.innerHTML = videoRow + partnerRow + noteRow;
+    return videoRow + partnerRow + noteRow;
+}
 
-    // ---------------------------------------------------------------
-    // Event listener'lar — attendanceActions ve attendanceModals
-    // dinamik import ile yüklenir. renderAttendanceView her çağrıldığında
-    // modüller zaten cache'de olduğu için ikinci çağrıdan itibaren
-    // ek ağ isteği olmaz (ES module cache).
-    // ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// ADIM 4.1 (3/3) — attachEventListeners
+// Tüm tıklama olaylarını bağlar. attendanceActions ve
+// attendanceModals dinamik import ile yüklenir.
+// ---------------------------------------------------------------
+function attachEventListeners() {
     (async () => {
         const actions = await import('./attendanceActions.js');
         const modals  = await import('./attendanceModals.js');
