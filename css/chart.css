@@ -69,7 +69,8 @@
     transition: all 0.2s ease;
     width: 100%;
     box-sizing: border-box;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: normal;
     white-space: normal;
 }
 
