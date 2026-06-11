@@ -125,6 +125,13 @@ async function archiveClass(classId, makeArchived) {
         return;
     }
     showToast(makeArchived ? 'Sınıf arşivlendi ✓' : 'Sınıf arşivden çıkarıldı ✓', 'success');
+
+    // ADIM 5.1 — Sınıf arşivlendiğinde "arşivi göster" modunu kapat ki
+    // sınıf listeden hemen gizlensin.
+    if (makeArchived) {
+        appState.showArchivedClasses = false;
+    }
+
     await loadClasses();
     renderClassesView();
 }

@@ -162,6 +162,14 @@ export async function archiveStudent(studentId, makeArchived) {
         return;
     }
     showToast(makeArchived ? 'Öğrenci arşivlendi ✓' : 'Öğrenci arşivden çıkarıldı ✓', 'success');
+
+    // ADIM 5.1 — Bir öğrenci arşivlendiğinde "arşivi göster" modunu kapat
+    // ki öğrenci listeden hemen gizlensin. Arşivden çıkarıldığında ise
+    // mod zaten açıktı (kullanıcı arşivi görüyordu), dokunma.
+    if (makeArchived) {
+        appState.showArchivedStudents = false;
+    }
+
     await loadAttendanceData();
     renderAttendanceView();
 }
