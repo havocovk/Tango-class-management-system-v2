@@ -162,8 +162,8 @@ export function renderAttendanceView() {
             if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
             else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
-            const cellStyle = cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
-            row += `<td class="att-cell" data-student-id="${student.id}" data-date-id="${date.id}" style="${cellStyle}">${iconHtml}</td>`;
+            const cellCancelClass = cancelled ? ' cell-cancelled' : '';
+            row += `<td class="att-cell${cellCancelClass}" data-student-id="${student.id}" data-date-id="${date.id}">${iconHtml}</td>`;
         });
         row += `</tr>`;
         tbody.insertAdjacentHTML('beforeend', row);
@@ -197,10 +197,9 @@ function buildTableHTML() {
                 <table>
                     <thead><tr id="headerRow"><th>#</th><th>${escapeHtml(t('attendance.colStudent'))}</th>${appState.courseDates.map((d) => {
                         const cancelled = d.is_cancelled;
-                        const thStyle = `writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;` +
-                            (cancelled ? ' color:var(--danger); background:rgba(239,68,68,0.14); text-decoration:line-through;' : '');
+                        const thStyle = 'th-date' + (cancelled ? ' th-date-cancelled' : '');
                         const thTitle = cancelled ? t('attendance.thCancelled') : t('attendance.thActive');
-                        return `<th style="${thStyle}" data-date-id="${d.id}" data-date="${d.date}" data-cancelled="${cancelled ? '1' : '0'}" title="${thTitle}">${formatDate(d.date)}</th>`;
+                        return `<th class="${thStyle}" data-date-id="${d.id}" data-date="${d.date}" data-cancelled="${cancelled ? '1' : '0'}" title="${thTitle}">${formatDate(d.date)}</th>`;
                     }).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
                     <tfoot id="footerRow"></tfoot>
@@ -219,37 +218,37 @@ function buildTableHTML() {
 function buildFooterRows() {
     // Class Recaps satırı
     let videoRow = `<tr>`;
-    videoRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowClassRecaps'))}</td>`;
+    videoRow += `<td class="foot-sticky-first">#</td>`;
+    videoRow += `<td class="foot-sticky-label">${escapeHtml(t('attendance.rowClassRecaps'))}</td>`;
     appState.courseDates.forEach(date => {
         const hasVideo = appState.videoMap[date.id];
-        const tdStyle  = date.is_cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
-        videoRow += `<td style="${tdStyle}"><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
+        const tdCancelClass = date.is_cancelled ? ' cell-cancelled' : '';
+        videoRow += `<td class="${tdCancelClass}"><span class="vid-icon ${hasVideo ? 'active' : ''}" data-date-id="${date.id}"><i data-lucide="video" size="20"></i></span></td>`;
     });
     videoRow += `</tr>`;
 
     // Partner/Teacher satırı
     let partnerRow = `<tr>`;
-    partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowPartner'))}</td>`;
+    partnerRow += `<td class="foot-sticky-first">#</td>`;
+    partnerRow += `<td class="foot-sticky-label">${escapeHtml(t('attendance.rowPartner'))}</td>`;
     appState.courseDates.forEach(date => {
         const partner = appState.partnerMap[date.id] || '';
         const iconColor = partner ? 'var(--primary)' : 'var(--text-dim)';
-        const tdStyle = date.is_cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
-        partnerRow += `<td style="${tdStyle}"><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" title="${escapeHtml(partner)}" style="cursor:pointer; display:inline-flex; color:${iconColor};"><i data-lucide="notebook-pen" size="18"></i></span></td>`;
+        const tdCancelClass2 = date.is_cancelled ? ' cell-cancelled' : '';
+        partnerRow += `<td class="${tdCancelClass2}"><span class="partner-edit" data-date-id="${date.id}" data-partner="${escapeHtml(partner)}" title="${escapeHtml(partner)}" style="cursor:pointer; display:inline-flex; color:${iconColor};"><i data-lucide="notebook-pen" size="18"></i></span></td>`;
     });
     partnerRow += `</tr>`;
 
     // ADIM 8.2 — Ders Notu satırı
     let noteRow = `<tr>`;
-    noteRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    noteRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowNote'))}</td>`;
+    noteRow += `<td class="foot-sticky-first">#</td>`;
+    noteRow += `<td class="foot-sticky-label">${escapeHtml(t('attendance.rowNote'))}</td>`;
     appState.courseDates.forEach(date => {
         const noteText  = appState.notesMap[date.id] || '';
         const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
         const glowStyle = noteText ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
-        const tdExtra   = date.is_cancelled ? ' opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
-        noteRow += `<td class="note-cell" data-date-id="${date.id}" style="cursor:pointer; padding:8px 4px;${tdExtra}">
+        const tdCancelClass3 = date.is_cancelled ? ' cell-cancelled' : '';
+        noteRow += `<td class="note-cell${tdCancelClass3}" data-date-id="${date.id}" style="cursor:pointer; padding:8px 4px;">
             <span style="color:${iconColor}; ${glowStyle} display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>
         </td>`;
     });

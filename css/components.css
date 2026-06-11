@@ -333,3 +333,47 @@ tfoot th.sticky-col:nth-child(2) {
     color: var(--info);
     border-color: rgba(59,130,246,0.3);
 }
+
+/* ================================================================
+   ADIM 4.2 — INLINE STİLLERDEN CSS SINIFINA TAŞINAN KURALLAR
+   ================================================================ */
+
+/* Tarih başlığı (th) — yoklama ve ödeme tablolarında dikey yazı */
+.th-date {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    height: 100px;
+    cursor: pointer;
+}
+
+/* İptal haftası başlığı — kırmızı, üstü çizili */
+.th-date-cancelled {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.14);
+    text-decoration: line-through;
+}
+
+/* İptal edilen hafta hücresi — soluk, tıklanamaz, kırmızı arka plan */
+.cell-cancelled {
+    opacity: 0.3;
+    pointer-events: none;
+    background: rgba(239, 68, 68, 0.06);
+}
+
+/* Footer satırı 1. sütun — sticky, sabit arka plan */
+.foot-sticky-first {
+    position: sticky;
+    left: 0;
+    background: var(--card-bg);
+    z-index: 10;
+}
+
+/* Footer satırı 2. sütun — sticky, etiket stili */
+.foot-sticky-label {
+    position: sticky;
+    left: 30px;
+    background: var(--card-bg);
+    z-index: 10;
+    font-weight: 800;
+    color: var(--accent);
+}

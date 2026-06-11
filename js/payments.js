@@ -249,7 +249,7 @@ function renderPaymentsView() {
                             <th>${escapeHtml(t('payments.colStudent'))}</th>
                             <th style="white-space:nowrap; min-width:110px;">${escapeHtml(t('payments.colStatus'))}</th>
                             ${appState.courseDates.map(d =>
-                                `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px;">${formatDate(d.date)}</th>`
+                                `<th class="th-date">${formatDate(d.date)}</th>`
                             ).join('')}
                         </tr>
                     </thead>
