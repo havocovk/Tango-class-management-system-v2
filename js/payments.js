@@ -229,7 +229,10 @@ function renderPaymentsView() {
     // ---- Tablo HTML ----
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToAttendanceBtn">${escapeHtml(t('nav.backToAttendance'))}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                <div class="back-link" id="backToAttendanceBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToAttendance'))}</div>
+                <button id="paymentCsvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>CSV İndir</button>
+            </div>
             <div class="main-title">${escapeHtml(t('payments.title'))}</div>
             <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:16px; font-weight:600;">
                 ${escapeHtml(appState.currentClassName)}
@@ -361,5 +364,41 @@ function renderPaymentsView() {
             className: appState.currentClassName
         });
 
+    document.getElementById('paymentCsvBtn').onclick = () => downloadPaymentsCsv();
+
     refreshIcons();
+}
+
+// ---------------------------------------------------------------
+// ADIM 3.1 — ÖDEME CSV DIŞA AKTARMA
+// ---------------------------------------------------------------
+function downloadPaymentsCsv() {
+    const headers = ['Öğrenci', 'Durum', ...appState.courseDates.map(d => d.date)];
+    const rows = appState.students.map(s => {
+        const studentPayments = appState.payments.filter(p => p.student_id === s.id);
+        const totalWeeks = studentPayments.reduce((sum, p) => sum + (p.weeks_covered || 0), 0);
+        const usedDates  = appState.courseDates.filter(d => !d.is_cancelled).length;
+        const diff = totalWeeks - usedDates;
+        const status = diff < 0 ? `${Math.abs(diff)} ders borçlu` : diff === 0 ? 'Güncel' : `${diff} ders avans`;
+        const cells = appState.courseDates.map(d => {
+            const paid = studentPayments.some(p => {
+                const startIdx = appState.courseDates.findIndex(cd => cd.id === p.start_date_id);
+                const endIdx   = startIdx + (p.weeks_covered || 0) - 1;
+                const thisIdx  = appState.courseDates.findIndex(cd => cd.id === d.id);
+                return thisIdx >= startIdx && thisIdx <= endIdx;
+            });
+            return paid ? '✓' : '';
+        });
+        return [s.name, status, ...cells];
+    });
+    const csv = [headers, ...rows]
+        .map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${appState.currentClassName}_odemeler.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }

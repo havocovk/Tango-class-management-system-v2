@@ -145,6 +145,7 @@ export function renderAttendanceView() {
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
                 <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
+                <button id="csvBtn" class="btn-secondary"><i data-lucide="download" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>CSV İndir</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
             <div class="table-wrapper">
@@ -247,6 +248,7 @@ export function renderAttendanceView() {
             classId:   appState.currentClassId,
             className: appState.currentClassName
         });
+        document.getElementById('csvBtn').onclick = () => downloadAttendanceCsv();
 
         document.querySelectorAll('.att-cell').forEach(cell => {
             cell.addEventListener('click', async (e) => {
@@ -349,4 +351,28 @@ function goBackToClasses() {
         schoolId:   appState.currentSchoolId,
         schoolName: appState.currentSchoolName
     });
+}
+
+// ---------------------------------------------------------------
+// ADIM 3.1 — YOKLAMA CSV DIŞA AKTARMA
+// ---------------------------------------------------------------
+function downloadAttendanceCsv() {
+    const headers = ['Öğrenci', ...appState.courseDates.map(d => d.date)];
+    const rows = appState.students.map(s => {
+        const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', '': '' };
+        return [
+            s.name,
+            ...appState.courseDates.map(d => statusMap[appState.attendanceMap[`${s.id}_${d.id}`] || ''] || '')
+        ];
+    });
+    const csv = [headers, ...rows]
+        .map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${appState.currentClassName}_yoklama.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
