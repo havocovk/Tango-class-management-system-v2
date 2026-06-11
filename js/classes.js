@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml } from './utils.js';
+import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtml, showToast } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet } from './offlineStore.js';
@@ -133,6 +133,8 @@ function openNewClassModal() {
             alert(t('classes.alertNoName'));
             return;
         }
+        const duplicate = appState.classesList.some(c => c.name.trim().toLowerCase() === className.trim().toLowerCase());
+        if (duplicate) { showToast('Bu isimde bir sınıf zaten mevcut.', 'warning'); return; }
         const selectedISO = hiddenDatePicker.value;
         if (!selectedISO) {
             alert(t('classes.alertNoDate'));

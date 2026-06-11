@@ -74,6 +74,8 @@ function renderSchoolsView() {
 async function addSchool() {
     openPromptModal(t('schools.modalAddTitle'), t('schools.modalAddPlaceholder'), async (name) => {
         if (!name) return;
+        const duplicate = appState.currentSchools.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (duplicate) { showToast('Bu isimde bir okul zaten mevcut.', 'warning'); return; }
         const { error } = await supabase.from('schools').insert({ name });
         if (error) showToast(t('schools.toastAddFail'), 'error');
         else {
@@ -86,6 +88,8 @@ async function addSchool() {
 async function editSchool(id, oldName) {
     openPromptModal(t('schools.modalEditTitle'), oldName, async (newName) => {
         if (!newName || newName === oldName) return;
+        const duplicate = appState.currentSchools.some(s => s.id !== id && s.name.trim().toLowerCase() === newName.trim().toLowerCase());
+        if (duplicate) { showToast('Bu isimde bir okul zaten mevcut.', 'warning'); return; }
         const { error } = await supabase.from('schools').update({ name: newName }).eq('id', id);
         if (error) showToast(t('schools.toastEditFail'), 'error');
         else {
