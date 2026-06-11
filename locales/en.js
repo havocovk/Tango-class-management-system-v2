@@ -211,14 +211,6 @@ export const en = {
         yesDelete: 'Yes, delete'
     },
 
-    // --- App exit confirmation (Android back button) ---
-    exit: {
-        title: 'Exit',
-        message: 'Do you want to exit the app?',
-        yes: 'Yes, exit',
-        no: 'No'
-    },
-
     // --- Student edit/delete modal (index.html) ---
     student: {
         namePlaceholder: 'Full Name',

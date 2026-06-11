@@ -157,16 +157,16 @@ async function startApp() {
     logoutBtn.style.display = 'block';
     document.body.style.paddingBottom = '54px';
 
-    // History stack başlangıcı:
-    //   [null]  ← en altta: buraya gelinince e.state null → çıkış onayı
-    //   [schools] ← üstte: ilk gerçek ekran
+    // Android geri tuşu için history stack'ini iki katmanlı başlat:
+    //   Katman 1 (en alt): null  → buraya gelinince Android uygulamayı kapatır
+    //   Katman 2 (üst)   : schools → ilk ekran
     //
-    // Kullanıcı schools'tayken geri basınca null state'e düşer → çıkış onayı.
-    // "Evet" basınca history.back() ile null state'e düşeriz, orada
-    // history.back() tekrar çağrılır → tarayıcı/Android uygulamayı kapatır.
-    history.replaceState(null, '');          // stack: [null]
-    history.pushState({ screen: 'schools', params: {} }, '');  // stack: [null, schools]
-    // schools ekranını render et (history'e kayıt eklemeden)
+    // Kullanıcı ilerledikçe her navigateTo bir katman daha ekler.
+    // Geri tuşuyla schools'a dönünce bir kez daha basılırsa
+    // null state'e düşülür ve history.back() Android'e kontrolü verir.
+    history.replaceState(null, '');
+    history.pushState({ screen: 'schools', params: {} }, '');
+
     const m = await import('./schools.js');
     await m.loadSchools();
 
@@ -214,35 +214,17 @@ logoutBtn.onclick = handleLogout;
 // ---------------------------------------------------------------
 // ANDROID GERİ TUŞU DESTEĞİ
 // ---------------------------------------------------------------
-// ÇALIŞMA MANTIĞI:
+// History stack başlangıcı: [null, schools]
+// Kullanıcı ilerledikçe: [null, schools, classes, attendance, ...]
 //
-// startApp() çağrıldığında history'e schools için bir pushState yapılır.
-// Bu, stack'in [schools] ile başlamasını sağlar.
-//
-// Kullanıcı ilerledikçe navigateTo her seferinde pushState yapar:
-//   [schools] → [schools, classes] → [schools, classes, attendance] → ...
-//
-// Geri tuşuna basılınca popstate tetiklenir, e.state bir önceki
-// sayfanın bilgisini taşır. O sayfayı renderScreen ile çizeriz
-// (history'e yeni kayıt EKLEMEYIZ — zaten geri gidiyoruz).
-//
-// Özel durum — e.state null gelirse: history tükendi, uygulama
-// en başına geldi demektir → çıkış onayı göster.
+// Geri tuşuna basılınca popstate tetiklenir:
+//   e.state = { screen, params } → o sayfayı çiz
+//   e.state = null               → stack'in en altına düştük,
+//                                  history.back() ile Android'e kontrolü ver
+//                                  → Android uygulamayı kapatır
 // ---------------------------------------------------------------
-
-// popstate gelince renderScreen'i çağırmak için router'ın iç
-// fonksiyonunu kullanmak yerine, navigateTo'yu çağırmadan sadece
-// ekranı çizeceğiz. Bunun için router'dan ayrı bir export lazım.
-// reloadCurrentView bunu yapıyor ama currentRoute'u güncellemez.
-// Bu yüzden burada doğrudan dinamik import kullanıyoruz.
 async function renderScreenFromState(state) {
     const { screen, params = {} } = state;
-    // reloadCurrentView sadece currentRoute'u çizer; biz burada
-    // farklı bir state'i çizmek istiyoruz. Dinamik import ile
-    // router'ın renderScreen'ini doğrudan çağırıyoruz.
-    // Router'da renderScreen export edilmediği için navigateTo'yu
-    // history'e eklemeden çağıramayız. Bunun yerine her modülü
-    // doğrudan import ediyoruz.
     switch (screen) {
         case 'schools': {
             const m = await import('./schools.js');
@@ -275,51 +257,16 @@ async function renderScreenFromState(state) {
 window.addEventListener('popstate', async (e) => {
     if (!appStarted) return;
 
-    // Pop up açıksa geri tuşu pop up'ı kapatsın, başka bir şey yapmasın
-    const exitModal = document.getElementById('exitModal');
-    if (exitModal && exitModal.style.display === 'flex') {
-        exitModal.style.display = 'none';
-        // Pop up kapandı, state zaten null'a geçti.
-        // Schools'u tekrar stack'e ekleyerek kullanıcıyı ana sayfada bırak.
-        history.pushState({ screen: 'schools', params: {} }, '');
-        return;
-    }
-
     if (!e.state) {
-        // History'nin en altına (null state) düştük → çıkış onayı göster.
-        // Pop up açılmadan önce schools'u stack'e geri ekle ki
-        // kullanıcı "Hayır" derse ana sayfada kalsın.
-        history.pushState({ screen: 'schools', params: {} }, '');
-        showExitModal();
+        // Stack'in en altına (null) düştük.
+        // history.back() ile bir adım daha geri git →
+        // Android bu noktada uygulamayı kapatır.
+        history.back();
     } else {
-        // Bir önceki sayfayı çiz
+        // Bir önceki uygulama ekranını çiz
         await renderScreenFromState(e.state);
     }
 });
-
-// ---------------------------------------------------------------
-// ÇIKIŞ ONAY MODALI
-// ---------------------------------------------------------------
-function showExitModal() {
-    const modal = document.getElementById('exitModal');
-    const yesBtn = document.getElementById('exitModalYes');
-    const noBtn  = document.getElementById('exitModalNo');
-    if (!modal) return;
-
-    modal.style.display = 'flex';
-
-    yesBtn.onclick = () => {
-        modal.style.display = 'none';
-        // Stack: [null, schools] — schools'u pop edip null'a düş,
-        // sonra null'dan da geri git → Android uygulamayı kapatır.
-        history.go(-2);
-    };
-
-    noBtn.onclick = () => {
-        modal.style.display = 'none';
-        // Ana sayfada kal, ekstra bir şey yapma
-    };
-}
 
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {

@@ -212,14 +212,6 @@ export const tr = {
         yesDelete: 'Evet, sil'
     },
 
-    // --- Uygulama çıkış onayı (Android geri tuşu) ---
-    exit: {
-        title: 'Çıkış',
-        message: 'Uygulamadan çıkmak istiyor musunuz?',
-        yes: 'Evet, çık',
-        no: 'Hayır'
-    },
-
     // --- Öğrenci düzenle/sil modalı (index.html) ---
     student: {
         namePlaceholder: 'Ad Soyad',
