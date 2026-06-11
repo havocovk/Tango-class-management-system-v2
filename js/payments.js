@@ -331,11 +331,17 @@ function renderPaymentsView() {
             } else {
                 openDoubleInputModal(t('payments.addPaymentTitle'), t('payments.amountPlaceholder'), t('payments.weeksPlaceholder'), async (amount, weeks) => {
                     if (!amount || !weeks) return;
+                    const amountNum = parseInt(amount);
+                    const weeksNum  = parseInt(weeks);
+                    if (isNaN(amountNum) || amountNum <= 0 || isNaN(weeksNum) || weeksNum <= 0) {
+                        showToast('Lütfen geçerli pozitif değerler girin.', 'error');
+                        return;
+                    }
                     const { error } = await supabase.from('payments').insert({
                         student_id:    studentId,
                         start_date_id: dateId,
-                        amount:        parseInt(amount),
-                        weeks_covered: parseInt(weeks)
+                        amount:        amountNum,
+                        weeks_covered: weeksNum
                     });
                     if (error) {
                         showToast(t('payments.paymentAddFail'), 'error');
