@@ -39,27 +39,18 @@ function renderSchoolsView() {
         const debtorCount  = debtors.length;
         const warningCount = warning.length;
         if (debtorCount > 0 || warningCount > 0) {
-            const debtorItems = debtors.map(d =>
-                `<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="${d.classId}" data-debt-cname="${escapeHtml(d.className)}">${escapeHtml(d.studentName)}</span>`
-            ).join(', ');
-            const warningItems = warning.map(d =>
-                `<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="${d.classId}" data-debt-cname="${escapeHtml(d.className)}">${escapeHtml(d.studentName)}</span>`
-            ).join(', ');
-
-            debtSummaryHtml = `
-            <div id="debtSummaryPanel" style="
-                background:rgba(239,68,68,0.07);
-                border:1px solid rgba(239,68,68,0.3);
-                border-radius:14px;
-                padding:14px 16px;
-                margin-bottom:16px;
-                font-size:13px;
-                line-height:1.8;
-            ">
-                <div style="font-weight:700; color:#ef4444; margin-bottom:6px;">⚠ Ödeme Durumu</div>
-                ${debtorCount > 0 ? `<div><span style="color:#ef4444; font-weight:700;">${debtorCount} borçlu:</span> ${debtorItems}</div>` : ''}
-                ${warningCount > 0 ? `<div><span style="color:var(--accent); font-weight:700;">${warningCount} bitiyor:</span> ${warningItems}</div>` : ''}
-            </div>`;
+            const debtorItems = debtors.map(function(d) {
+                return '<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
+            }).join(', ');
+            const warningItems = warning.map(function(d) {
+                return '<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
+            }).join(', ');
+            let panelHtml = '<div id="debtSummaryPanel" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;">';
+            panelHtml += '<div style="font-weight:700;color:#ef4444;margin-bottom:6px;">⚠ Ödeme Durumu</div>';
+            if (debtorCount > 0) panelHtml += '<div><span style="color:#ef4444;font-weight:700;">' + debtorCount + ' borçlu:</span> ' + debtorItems + '</div>';
+            if (warningCount > 0) panelHtml += '<div><span style="color:var(--accent);font-weight:700;">' + warningCount + ' bitiyor:</span> ' + warningItems + '</div>';
+            panelHtml += '</div>';
+            debtSummaryHtml = panelHtml;
         }
     }
 
@@ -277,9 +268,10 @@ async function loadDebtSummary() {
             const remaining = totalPaidWeeks - validDates;
 
             if (remaining < 0) {
+                // Borçlu: ödediğinden fazla ders geçmiş
                 debtors.push({ studentName: student.name, classId: cls.id, className: cls.name });
-            } else if (remaining >= 0 && remaining <= 2 && totalPaidWeeks > 0) {
-                // 0, 1 veya 2 ders kaldı → "bitiyor" uyarısı
+            } else if (remaining >= 0 && remaining <= 2 && totalPaidWeeks > 0 && validDates > 0) {
+                // Paketi bitmek üzere: 0, 1 veya 2 ders kaldı
                 warning.push({ studentName: student.name, classId: cls.id, className: cls.name });
             }
         }
