@@ -193,6 +193,9 @@ function buildTableHTML() {
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
+            <div style="margin:8px 0 6px;">
+                <input id="studentSearchInput" type="text" placeholder="Öğrenci ara..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr id="headerRow"><th>#</th><th>${escapeHtml(t('attendance.colStudent'))}</th>${appState.courseDates.map((d) => {
@@ -266,6 +269,21 @@ function attachEventListeners() {
     (async () => {
         const actions = await import('./attendanceActions.js');
         const modals  = await import('./attendanceModals.js');
+
+        // ADIM 4.3 — Öğrenci arama / filtreleme
+        const searchInput = document.getElementById('studentSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                document.querySelectorAll('#studentRows tr').forEach(row => {
+                    // İkinci hücre (td:nth-child(2)) öğrenci adını içeriyor
+                    const nameCell = row.querySelector('td:nth-child(2)');
+                    if (!nameCell) return;
+                    const name = nameCell.textContent.trim().toLowerCase();
+                    row.style.display = name.includes(query) ? '' : 'none';
+                });
+            });
+        }
 
         document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
         document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();

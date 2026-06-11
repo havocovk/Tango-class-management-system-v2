@@ -241,7 +241,10 @@ function renderPaymentsView() {
             ${summaryHtml}
             ${monthlyChartHtml}
 
-            <div class="table-wrapper" style="margin-top:20px;">
+            <div style="margin:8px 0 6px;">
+                <input id="paySearchInput" type="text" placeholder="Öğrenci ara..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+            </div>
+            <div class="table-wrapper" style="margin-top:8px;">
                 <table>
                     <thead>
                         <tr id="payHeader">
@@ -365,6 +368,20 @@ function renderPaymentsView() {
         });
 
     document.getElementById('paymentCsvBtn').onclick = () => downloadPaymentsCsv();
+
+    // ADIM 4.3 — Ödeme tablosu öğrenci arama / filtreleme
+    const paySearch = document.getElementById('paySearchInput');
+    if (paySearch) {
+        paySearch.addEventListener('keyup', () => {
+            const query = paySearch.value.trim().toLowerCase();
+            document.querySelectorAll('#payRows tr').forEach(row => {
+                const nameCell = row.querySelector('td:nth-child(2)');
+                if (!nameCell) return;
+                const name = nameCell.textContent.trim().toLowerCase();
+                row.style.display = name.includes(query) ? '' : 'none';
+            });
+        });
+    }
 
     refreshIcons();
 }
