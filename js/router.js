@@ -26,6 +26,17 @@ let currentRoute = { screen: 'schools', params: {} };
 
 export async function navigateTo(screen, params = {}) {
     currentRoute = { screen, params };
+
+    // Android geri tuşu desteği: her sayfa geçişinde tarayıcı
+    // geçmişine bir kayıt ekle. 'schools' ekranına her zaman
+    // replaceState (üzerine yaz) yaparız ki ana sayfada geri tuşuna
+    // basınca uygulama çıkış onayı çıksın, tarayıcı dışına çıkmasın.
+    if (screen === 'schools') {
+        history.replaceState({ screen, params }, '');
+    } else {
+        history.pushState({ screen, params }, '');
+    }
+
     switch (screen) {
         case 'schools': {
             const module = await import('./schools.js');

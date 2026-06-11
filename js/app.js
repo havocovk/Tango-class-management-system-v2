@@ -202,6 +202,58 @@ emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLo
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 logoutBtn.onclick = handleLogout;
 
+// ---------------------------------------------------------------
+// ANDROID GERİ TUŞU DESTEĞİ
+// ---------------------------------------------------------------
+// Kullanıcı geri tuşuna basınca tarayıcı 'popstate' olayını tetikler.
+// history state'i inceliyoruz:
+//   - 'schools' → Ana sayfadayız: çıkış onayı göster.
+//   - Başka bir ekran → O ekrana geri dön (router üzerinden).
+//   - state yoksa → Ana sayfaya git.
+// ---------------------------------------------------------------
+window.addEventListener('popstate', async (e) => {
+    // Giriş ekranı açıksa geri tuşuna cevap verme
+    if (!appStarted) return;
+
+    const state = e.state;
+
+    if (!state || state.screen === 'schools') {
+        // Ana sayfadayız — çıkış onayı sor
+        showExitModal();
+        // Geri gidilmesini engelle: state'i yeniden ekle
+        history.pushState({ screen: 'schools', params: {} }, '');
+    } else {
+        // Bir önceki sayfaya dön
+        await navigateTo(state.screen, state.params || {});
+    }
+});
+
+// ---------------------------------------------------------------
+// ÇIKIŞ ONAY MODALI
+// ---------------------------------------------------------------
+function showExitModal() {
+    const modal = document.getElementById('exitModal');
+    const yesBtn = document.getElementById('exitModalYes');
+    const noBtn  = document.getElementById('exitModalNo');
+    if (!modal) return;
+
+    // data-i18n etiketleri applyTranslations ile zaten çevrilmiş durumdadır.
+    // Modal açılırken ek bir şey yapmaya gerek yok.
+    modal.style.display = 'flex';
+
+    yesBtn.onclick = () => {
+        modal.style.display = 'none';
+        // PWA / tarayıcı sekmesini kapat
+        window.close();
+        // window.close() bazı tarayıcılarda çalışmaz (güvenlik kısıtı).
+        // Bu durumda kullanıcı zaten modalı kapattı, ana sayfada kalır.
+    };
+
+    noBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+}
+
 supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         startApp();
