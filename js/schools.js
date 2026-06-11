@@ -21,12 +21,47 @@ export async function loadSchools() {
     } else {
         appState.currentSchools = (await cacheGet('schools')) || [];
     }
+
+    // ADIM 3.3 — Borçlu özet paneli için ödeme verisini çek
+    await loadDebtSummary();
+
     renderSchoolsView();
 }
 
 function renderSchoolsView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
+
+    // ADIM 3.3 — Borçlu özet paneli
+    let debtSummaryHtml = '';
+    if (appState._debtSummary) {
+        const { debtors, warning } = appState._debtSummary;
+        const debtorCount  = debtors.length;
+        const warningCount = warning.length;
+        if (debtorCount > 0 || warningCount > 0) {
+            const debtorItems = debtors.map(d =>
+                `<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="${d.classId}" data-debt-cname="${escapeHtml(d.className)}">${escapeHtml(d.studentName)}</span>`
+            ).join(', ');
+            const warningItems = warning.map(d =>
+                `<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="${d.classId}" data-debt-cname="${escapeHtml(d.className)}">${escapeHtml(d.studentName)}</span>`
+            ).join(', ');
+
+            debtSummaryHtml = `
+            <div id="debtSummaryPanel" style="
+                background:rgba(239,68,68,0.07);
+                border:1px solid rgba(239,68,68,0.3);
+                border-radius:14px;
+                padding:14px 16px;
+                margin-bottom:16px;
+                font-size:13px;
+                line-height:1.8;
+            ">
+                <div style="font-weight:700; color:#ef4444; margin-bottom:6px;">⚠ Ödeme Durumu</div>
+                ${debtorCount > 0 ? `<div><span style="color:#ef4444; font-weight:700;">${debtorCount} borçlu:</span> ${debtorItems}</div>` : ''}
+                ${warningCount > 0 ? `<div><span style="color:var(--accent); font-weight:700;">${warningCount} bitiyor:</span> ${warningItems}</div>` : ''}
+            </div>`;
+        }
+    }
 
     // ADIM 2.3 — Son açılan sınıf kısayolu
     let lastClassHtml = '';
@@ -64,6 +99,7 @@ function renderSchoolsView() {
         <div class="view">
             <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
             ${lastClassHtml}
+            ${debtSummaryHtml}
             <div class="sub-header">${escapeHtml(t('schools.header'))}</div>
             <div id="schoolsList"></div>
             <div class="nav-buttons" style="margin-top:30px;">
@@ -108,6 +144,26 @@ function renderSchoolsView() {
     document.getElementById('addSchoolBtn').onclick = () => addSchool();
     document.getElementById('exportBackupBtn').onclick = () => exportBackup();
     document.getElementById('importBackupBtn').onclick = () => importBackup();
+
+    // ADIM 3.3 — Borçlu paneli tıklama olayları
+    document.querySelectorAll('[data-debt-class]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const classId   = parseInt(el.dataset.debtClass);
+            const className = el.dataset.debtCname;
+            // Okul bilgisini bulmak için appState.currentSchools'tan eşleştir
+            const school = appState.currentSchools.find(s =>
+                appState._debtSummary &&
+                appState._debtSummary.classSchoolMap &&
+                appState._debtSummary.classSchoolMap[classId] === s.id
+            );
+            if (school) {
+                appState.currentSchoolId   = school.id;
+                appState.currentSchoolName = school.name;
+            }
+            navigateTo('payments', { classId, className });
+        });
+    });
 
     // ADIM 2.3 — Kısayol kartı tıklama olayı
     const lastCard = document.getElementById('lastClassCard');
@@ -164,4 +220,72 @@ async function deleteSchool(id) {
             await loadSchools();
         }
     });
+}
+
+// ---------------------------------------------------------------
+// ADIM 3.3 — TÜM OKULLARIN BORÇLU ÖĞRENCİLERİNİ HESAPLA
+// Tek sorguda tüm veriyi çeker, borç mantığını (payments.js ile
+// aynı calcStudentDebt algoritması) JavaScript içinde çalıştırır.
+// Sonuç appState._debtSummary içine yazılır.
+// ---------------------------------------------------------------
+async function loadDebtSummary() {
+    appState._debtSummary = null;
+    if (!navigator.onLine) return;
+
+    try {
+        // Tüm sınıfları, öğrencileri, ders tarihlerini ve ödemeleri tek seferde çek
+        const [
+            { data: allClasses },
+            { data: allStudents },
+            { data: allDates },
+            { data: allAttendance },
+            { data: allPayments }
+        ] = await Promise.all([
+            supabase.from('classes').select('id, name, school_id'),
+            supabase.from('students').select('id, name, class_id'),
+            supabase.from('course_dates').select('id, class_id, is_cancelled'),
+            supabase.from('attendance').select('student_id, course_date_id, status'),
+            supabase.from('payments').select('student_id, weeks_covered, start_date_id')
+        ]);
+
+        if (!allClasses || !allStudents || !allDates || !allPayments) return;
+
+        const attMap = {};
+        (allAttendance || []).forEach(a => { attMap[`${a.student_id}_${a.course_date_id}`] = a.status; });
+
+        const classSchoolMap = {};
+        (allClasses || []).forEach(c => { classSchoolMap[c.id] = c.school_id; });
+
+        const debtors  = [];
+        const warning  = [];
+
+        for (const student of (allStudents || [])) {
+            const cls = (allClasses || []).find(c => c.id === student.class_id);
+            if (!cls) continue;
+
+            const dates = (allDates || []).filter(d => d.class_id === student.class_id);
+            let validDates = 0;
+            dates.forEach(d => {
+                if (d.is_cancelled) return;
+                const status = attMap[`${student.id}_${d.id}`] || '';
+                if (status === 'S') return;
+                validDates++;
+            });
+
+            const studentPayments = (allPayments || []).filter(p => p.student_id === student.id);
+            const totalPaidWeeks  = studentPayments.reduce((sum, p) => sum + (p.weeks_covered || 0), 0);
+            const remaining = totalPaidWeeks - validDates;
+
+            if (remaining < 0) {
+                debtors.push({ studentName: student.name, classId: cls.id, className: cls.name });
+            } else if (remaining >= 0 && remaining <= 2 && totalPaidWeeks > 0) {
+                // 0, 1 veya 2 ders kaldı → "bitiyor" uyarısı
+                warning.push({ studentName: student.name, classId: cls.id, className: cls.name });
+            }
+        }
+
+        appState._debtSummary = { debtors, warning, classSchoolMap };
+    } catch (e) {
+        console.warn('[debtSummary] hata:', e);
+    }
 }
