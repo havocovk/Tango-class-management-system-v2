@@ -188,21 +188,27 @@ function renderLangSwitcher() {
         'padding:7px 12px', 'border-radius:10px', 'cursor:pointer',
         'font-size:12px', 'font-weight:700', 'letter-spacing:0.3px',
         'background:var(--card-bg)', 'color:var(--primary)',
-        'border:1px solid var(--primary)', 'box-shadow:0 4px 14px rgba(0,0,0,0.35)'
+        'border:1px solid var(--primary)', 'box-shadow:0 4px 14px rgba(0,0,0,0.35)',
+        'flex:none', 'min-width:auto', 'width:auto'
     ].join(';');
 
     const menuStyle = [
         'display:none', 'position:absolute', 'top:calc(100% + 6px)', 'right:0',
         'min-width:150px', 'background:var(--card-bg)',
         'border:1px solid var(--border)', 'border-radius:12px',
-        'overflow:hidden', 'box-shadow:0 10px 30px rgba(0,0,0,0.5)'
+        'overflow:hidden', 'box-shadow:0 10px 30px rgba(0,0,0,0.5)',
+        'z-index:9999'
     ].join(';');
 
+    // Wrapper: position:relative gerekli ki menü butona göre konumlansın.
+    // display:flex + justify-content:flex-end ile buton her zaman sağa yaslanır.
     container.innerHTML = `
-        <button id="langSwitchBtn" type="button" style="${btnStyle}">
-            <span>🌐</span><span>${active.short}</span><span style="font-size:10px;">▾</span>
-        </button>
-        <div id="langSwitchMenu" style="${menuStyle}">${optionsHtml}</div>
+        <div style="position:relative; display:flex; justify-content:flex-end; width:100%;">
+            <button id="langSwitchBtn" type="button" style="${btnStyle}">
+                <span>🌐</span><span>${active.short}</span><span style="font-size:10px;">▾</span>
+            </button>
+            <div id="langSwitchMenu" style="${menuStyle}">${optionsHtml}</div>
+        </div>
     `;
 
     const btn  = container.querySelector('#langSwitchBtn');
