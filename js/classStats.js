@@ -109,12 +109,10 @@ export async function showWeeklyStats() {
                 let firstPart = displayName;
                 let secondPart = '';
                 const spaceIndex = displayName.indexOf(' ');
-                if (spaceIndex !== -1) {
-                    // Boşluk varsa her zaman oradan böl
+                if (spaceIndex !== -1 && displayName.length > 8) {
                     firstPart  = displayName.substring(0, spaceIndex);
                     secondPart = displayName.substring(spaceIndex + 1);
-                } else if (displayName.length > 6) {
-                    // Boşluk yoksa 6 karakterden kes
+                } else if (displayName.length > 8) {
                     firstPart  = displayName.substring(0, 6);
                     secondPart = displayName.substring(6);
                 }
