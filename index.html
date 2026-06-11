@@ -23,10 +23,6 @@
 </head>
 <body>
 
-<!-- ========== DİL SEÇİCİ (tüm sayfalarda sağ üstte sabit) ========== -->
-<!-- İçeriği js/i18n.js tarafından doldurulur (tek buton + açılır menü) -->
-<div id="langSwitcher" style="position:fixed; top:12px; right:14px; z-index:95000;"></div>
-
 <!-- ========== İNTERNET BAĞLANTI UYARI BANDI ========== -->
 <!-- Yalnızca internet kesilince görünür, otomatik olarak kaybolur -->
 <div id="offlineBanner" style="display:none;">
@@ -51,6 +47,10 @@
 <button id="logoutBtn" style="display:none;" data-i18n="nav.logout">⎋ Çıkış</button>
 
 <div class="container" id="appContainer" style="display:none;">
+    <!-- DİL SEÇİCİ — sayfanın sağ üstünde, içerik akışı içinde -->
+    <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+        <div id="langSwitcher" style="position:relative;"></div>
+    </div>
     <div id="dynamicView"></div>
 </div>
 
