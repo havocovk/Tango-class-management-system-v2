@@ -147,14 +147,21 @@ export function renderAttendanceView() {
 
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '';
-    appState.students.forEach((student, idx) => {
+    // ADIM 5.1 — Arşiv filtresi: showArchivedStudents kapalıyken
+    // yalnızca arşivlenmemiş öğrencileri göster.
+    const visibleStudents = appState.students.filter(s =>
+        appState.showArchivedStudents ? true : !s.is_archived
+    );
+    visibleStudents.forEach((student, idx) => {
         const nameParts   = student.name.trim().split(' ');
         const firstName   = escapeHtml(nameParts[0] || student.name);
         const lastName    = escapeHtml(nameParts.slice(1).join(' '));
         const nameHtml    = lastName
             ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
             : firstName;
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
+        const archiveIcon = student.is_archived ? 'archive-restore' : 'archive';
+        const rowOpacity  = student.is_archived ? 'opacity:0.5;' : '';
+        let row = `<tr style="${rowOpacity}"><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span style="display:flex;gap:8px;"><span class="btn-icon-archive-student" data-student-id="${student.id}" data-archived="${student.is_archived ? '1' : '0'}" style="color:var(--accent);cursor:pointer;display:inline-flex;"><i data-lucide="${archiveIcon}" size="16"></i></span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></span></div></td>`;
         appState.courseDates.forEach(date => {
             const cancelled = date.is_cancelled;
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
@@ -193,8 +200,9 @@ function buildTableHTML() {
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
-            <div style="margin:8px 0 6px;">
-                <input id="studentSearchInput" type="text" placeholder="Öğrenci ara..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+            <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
+                <input id="studentSearchInput" type="text" placeholder="Öğrenci ara..." style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="Arşivlenmiş öğrenciler"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -284,6 +292,25 @@ function attachEventListeners() {
                 });
             });
         }
+
+        // ADIM 5.1 — Arşivlenmiş öğrencileri göster/gizle
+        const toggleArchStudentsBtn = document.getElementById('toggleArchivedStudentsBtn');
+        if (toggleArchStudentsBtn) {
+            toggleArchStudentsBtn.addEventListener('click', () => {
+                appState.showArchivedStudents = !appState.showArchivedStudents;
+                renderAttendanceView();
+            });
+        }
+
+        // ADIM 5.1 — Öğrenciyi arşivle / arşivden çıkar
+        document.querySelectorAll('.btn-icon-archive-student').forEach(icon => {
+            icon.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const studentId  = parseInt(icon.dataset.studentId);
+                const isArchived = icon.dataset.archived === '1';
+                await actions.archiveStudent(studentId, !isArchived);
+            });
+        });
 
         document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
         document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();

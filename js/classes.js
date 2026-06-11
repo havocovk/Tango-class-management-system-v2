@@ -42,6 +42,9 @@ function renderClassesView() {
                 <button id="newClassBtn" class="btn-success"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.newClass'))}</button>
                 <button id="weeklyStatsBtn" class="btn-info"><i data-lucide="bar-chart-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.weeklyStats'))}</button>
             </div>
+            <div class="nav-buttons" style="margin-top:10px;">
+                <button id="toggleArchivedClassesBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedClasses ? 'Arşivi Gizle' : 'Arşivi Göster'}</button>
+            </div>
         </div>
     `;
     document.getElementById('backToSchoolsBtn').onclick = () => {
@@ -49,16 +52,26 @@ function renderClassesView() {
     };
     const listDiv = document.getElementById('classesListContainer');
     listDiv.innerHTML = '';
-    if (appState.classesList.length === 0) {
+
+    // ADIM 5.1 — Arşiv filtresi: showArchivedClasses kapalıyken
+    // yalnızca arşivlenmemiş sınıfları göster.
+    const visibleClasses = appState.classesList.filter(cls =>
+        appState.showArchivedClasses ? true : !cls.is_archived
+    );
+
+    if (visibleClasses.length === 0) {
         listDiv.innerHTML = `<div style="text-align:center; color:var(--text-dim); padding:20px;">${escapeHtml(t('classes.empty'))}</div>`;
     } else {
-        appState.classesList.forEach(cls => {
+        visibleClasses.forEach(cls => {
             const card = document.createElement('div');
             card.className = 'class-card';
+            if (cls.is_archived) card.style.opacity = '0.5';
+            const archiveIcon = cls.is_archived ? 'archive-restore' : 'archive';
             card.innerHTML = `
-                <div style="flex:1; cursor:pointer; font-weight:600;" data-id="${cls.id}">${escapeHtml(cls.name)}</div>
+                <div style="flex:1; cursor:pointer; font-weight:600;" data-id="${cls.id}">${escapeHtml(cls.name)}${cls.is_archived ? ' <span style="font-size:11px;color:var(--text-dim);">(arşiv)</span>' : ''}</div>
                 <div style="display:flex; gap:15px;">
                     <span class="btn-icon-edit" data-id="${cls.id}" data-name="${escapeHtml(cls.name)}"><i data-lucide="pencil" size="20"></i></span>
+                    <span class="btn-icon-archive" data-id="${cls.id}" style="color:var(--accent); cursor:pointer; display:inline-flex;"><i data-lucide="${archiveIcon}" size="20"></i></span>
                     <span class="btn-icon-delete" data-id="${cls.id}"><i data-lucide="trash-2" size="20"></i></span>
                 </div>
             `;
@@ -66,6 +79,10 @@ function renderClassesView() {
             card.querySelector('.btn-icon-edit').addEventListener('click', (e) => {
                 e.stopPropagation();
                 editClass(cls.id, cls.name);
+            });
+            card.querySelector('.btn-icon-archive').addEventListener('click', (e) => {
+                e.stopPropagation();
+                archiveClass(cls.id, !cls.is_archived);
             });
             card.querySelector('.btn-icon-delete').addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -85,7 +102,31 @@ function renderClassesView() {
         navigateTo('stats');
     };
 
+    // ADIM 5.1 — Arşivi Göster/Gizle
+    document.getElementById('toggleArchivedClassesBtn').onclick = () => {
+        appState.showArchivedClasses = !appState.showArchivedClasses;
+        renderClassesView();
+    };
+
     refreshIcons();
+}
+
+// ---------------------------------------------------------------
+// ADIM 5.1 — SINIFI ARŞİVLE / ARŞİVDEN ÇIKAR
+// Silmez; yalnızca is_archived bayrağını değiştirir.
+// ---------------------------------------------------------------
+async function archiveClass(classId, makeArchived) {
+    const { error } = await supabase
+        .from('classes')
+        .update({ is_archived: makeArchived })
+        .eq('id', classId);
+    if (error) {
+        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+        return;
+    }
+    showToast(makeArchived ? 'Sınıf arşivlendi ✓' : 'Sınıf arşivden çıkarıldı ✓', 'success');
+    await loadClasses();
+    renderClassesView();
 }
 
 function openNewClassModal() {

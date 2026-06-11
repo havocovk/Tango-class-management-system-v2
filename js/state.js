@@ -38,5 +38,10 @@ export const appState = {
     notesMap: {},
 
     // --- Ödeme ekranı verileri ---
-    payments: []
+    payments: [],
+
+    // --- ADIM 5.1 — Arşiv görünürlük bayrakları ---
+    // true ise arşivlenmiş kayıtlar da listede gösterilir.
+    showArchivedClasses: false,
+    showArchivedStudents: false
 };

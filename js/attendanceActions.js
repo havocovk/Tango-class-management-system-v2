@@ -149,6 +149,24 @@ export async function deleteStudent(studentId) {
 }
 
 // ---------------------------------------------------------------
+// ADIM 5.1 — ÖĞRENCİYİ ARŞİVLE / ARŞİVDEN ÇIKAR
+// Silmez; yalnızca is_archived bayrağını değiştirir. Veriler korunur.
+// ---------------------------------------------------------------
+export async function archiveStudent(studentId, makeArchived) {
+    const { error } = await supabase
+        .from('students')
+        .update({ is_archived: makeArchived })
+        .eq('id', studentId);
+    if (error) {
+        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+        return;
+    }
+    showToast(makeArchived ? 'Öğrenci arşivlendi ✓' : 'Öğrenci arşivden çıkarıldı ✓', 'success');
+    await loadAttendanceData();
+    renderAttendanceView();
+}
+
+// ---------------------------------------------------------------
 // Yeni öğrenci ekleme — renderAttendanceView addStudentBtn'den çağırır
 // ---------------------------------------------------------------
 export async function addStudent() {

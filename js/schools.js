@@ -251,8 +251,11 @@ async function loadDebtSummary() {
         const warning  = [];
 
         for (const student of (allStudents || [])) {
+            // ADIM 5.1 — Arşivlenmiş öğrenci ve sınıfları borç özetine alma
+            if (student.is_archived) continue;
             const cls = (allClasses || []).find(c => c.id === student.class_id);
             if (!cls) continue;
+            if (cls.is_archived) continue;
 
             const dates = (allDates || []).filter(d => d.class_id === student.class_id);
             let validDates = 0;
