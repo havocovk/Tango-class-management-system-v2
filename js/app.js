@@ -157,11 +157,18 @@ async function startApp() {
     logoutBtn.style.display = 'block';
     document.body.style.paddingBottom = '54px';
 
-    // Android geri tuşu için history stack'ini sıfırla.
-    // İlk kayıt: schools. Bundan sonra navigateTo her geçişte pushState yapar.
-    // Kullanıcı geri tuşuyla buraya gelince e.state null olur → çıkış onayı.
-    history.replaceState(null, '');
-    await navigateTo('schools');
+    // History stack başlangıcı:
+    //   [null]  ← en altta: buraya gelinince e.state null → çıkış onayı
+    //   [schools] ← üstte: ilk gerçek ekran
+    //
+    // Kullanıcı schools'tayken geri basınca null state'e düşer → çıkış onayı.
+    // "Evet" basınca history.back() ile null state'e düşeriz, orada
+    // history.back() tekrar çağrılır → tarayıcı/Android uygulamayı kapatır.
+    history.replaceState(null, '');          // stack: [null]
+    history.pushState({ screen: 'schools', params: {} }, '');  // stack: [null, schools]
+    // schools ekranını render et (history'e kayıt eklemeden)
+    const m = await import('./schools.js');
+    await m.loadSchools();
 
     if (navigator.onLine) {
         await trySyncPending();
@@ -266,16 +273,26 @@ async function renderScreenFromState(state) {
 }
 
 window.addEventListener('popstate', async (e) => {
-    // Giriş ekranı açıksa geri tuşuna cevap verme
     if (!appStarted) return;
 
+    // Pop up açıksa geri tuşu pop up'ı kapatsın, başka bir şey yapmasın
+    const exitModal = document.getElementById('exitModal');
+    if (exitModal && exitModal.style.display === 'flex') {
+        exitModal.style.display = 'none';
+        // Pop up kapandı, state zaten null'a geçti.
+        // Schools'u tekrar stack'e ekleyerek kullanıcıyı ana sayfada bırak.
+        history.pushState({ screen: 'schools', params: {} }, '');
+        return;
+    }
+
     if (!e.state) {
-        // History tükendi → çıkış onayı göster
-        // Çıkış iptal edilirse geri dönmek için schools'u tekrar ekle
+        // History'nin en altına (null state) düştük → çıkış onayı göster.
+        // Pop up açılmadan önce schools'u stack'e geri ekle ki
+        // kullanıcı "Hayır" derse ana sayfada kalsın.
         history.pushState({ screen: 'schools', params: {} }, '');
         showExitModal();
     } else {
-        // History'deki önceki sayfayı çiz (yeni history kaydı EKLEME)
+        // Bir önceki sayfayı çiz
         await renderScreenFromState(e.state);
     }
 });
@@ -293,13 +310,14 @@ function showExitModal() {
 
     yesBtn.onclick = () => {
         modal.style.display = 'none';
-        // Android Chrome'da PWA olarak açıldıysa window.close() çalışır.
-        // Normal tarayıcıda çalışmazsa kullanıcı ana sayfada kalır — sorun olmaz.
-        window.close();
+        // Stack: [null, schools] — schools'u pop edip null'a düş,
+        // sonra null'dan da geri git → Android uygulamayı kapatır.
+        history.go(-2);
     };
 
     noBtn.onclick = () => {
         modal.style.display = 'none';
+        // Ana sayfada kal, ekstra bir şey yapma
     };
 }
 
