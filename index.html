@@ -131,6 +131,7 @@
                 <div style="display:flex; gap:12px;">
                     <span id="studentEditBtn" style="cursor:pointer; color:var(--primary);"><i data-lucide="pencil" size="22"></i></span>
                     <span id="studentPhoneBtn" style="cursor:pointer; color:var(--primary);"><i data-lucide="phone" size="22"></i></span>
+                    <span id="studentArchiveBtn" style="cursor:pointer; color:var(--accent);"><i data-lucide="archive" size="22"></i></span>
                     <span id="studentDeleteBtn" style="cursor:pointer; color:var(--danger);"><i data-lucide="trash-2" size="22"></i></span>
                 </div>
             </div>
@@ -283,6 +284,11 @@
                             }
                         });
                     });
+
+                    // Her 30 saniyede bir SW güncellemesini zorla kontrol et
+                    setInterval(() => {
+                        fetch('/sw.js', { cache: 'no-store' }).then(() => reg.update());
+                    }, 30000);
                 })
                 .catch((err) => {
                     console.warn('[SW] Kayıt başarısız:', err);

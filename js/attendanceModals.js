@@ -18,7 +18,7 @@ import { supabase } from './supabaseClient.js';
 import { formatDate, refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
-import { updateStudentName, deleteStudent, deleteWeek, toggleWeekCancel } from './attendanceActions.js';
+import { updateStudentName, deleteStudent, archiveStudent, deleteWeek, toggleWeekCancel } from './attendanceActions.js';
 import { t } from './i18n.js';
 
 // ---------------------------------------------------------------
@@ -36,6 +36,7 @@ export function openStudentActionModal(studentId, currentName) {
     const editBtn      = document.getElementById('studentEditBtn');
     const phoneBtn     = document.getElementById('studentPhoneBtn');
     const deleteBtn    = document.getElementById('studentDeleteBtn');
+    const archiveBtn   = document.getElementById('studentArchiveBtn');
     const closeBtn     = document.getElementById('studentModalCloseView');
     const saveBtn      = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
@@ -44,6 +45,7 @@ export function openStudentActionModal(studentId, currentName) {
     editBtn.onclick       = null;
     if (phoneBtn) phoneBtn.onclick = null;
     deleteBtn.onclick     = null;
+    if (archiveBtn) archiveBtn.onclick = null;
     closeBtn.onclick      = null;
     saveBtn.onclick       = null;
     cancelEditBtn.onclick = null;
@@ -77,6 +79,23 @@ export function openStudentActionModal(studentId, currentName) {
                 phoneInput.value = (studentObj && studentObj.phone) || '';
                 phoneInput.focus();
             }
+        };
+    }
+
+    // ADIM 5.1 — Arşivle / arşivden çıkar butonu
+    if (archiveBtn) {
+        const studentObj = appState.students.find(s => s.id === studentId);
+        const isArchived = studentObj ? !!studentObj.is_archived : false;
+        // Arşivdeyse "geri al" ikonu, değilse "arşivle" ikonu göster
+        archiveBtn.innerHTML = isArchived
+            ? '<i data-lucide="archive-restore" size="22"></i>'
+            : '<i data-lucide="archive" size="22"></i>';
+        archiveBtn.title = isArchived ? 'Arşivden çıkar' : 'Arşivle';
+        if (window.lucide) window.lucide.createIcons();
+        archiveBtn.onclick = async (e) => {
+            e.stopPropagation();
+            modal.style.display = 'none';
+            await archiveStudent(studentId, !isArchived);
         };
     }
 

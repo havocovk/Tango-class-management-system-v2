@@ -238,6 +238,7 @@
 /* --- Öğrenci profil modalı: kalem, telefon ve çöp ikonları --- */
 #studentEditBtn,
 #studentPhoneBtn,
+#studentArchiveBtn,
 #studentDeleteBtn {
     display: inline-flex;
     align-items: center;

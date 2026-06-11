@@ -159,9 +159,8 @@ export function renderAttendanceView() {
         const nameHtml    = lastName
             ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
             : firstName;
-        const archiveIcon = student.is_archived ? 'archive-restore' : 'archive';
         const rowOpacity  = student.is_archived ? 'opacity:0.5;' : '';
-        let row = `<tr style="${rowOpacity}"><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span style="display:flex;gap:8px;"><span class="btn-icon-archive-student" data-student-id="${student.id}" data-archived="${student.is_archived ? '1' : '0'}" style="color:var(--accent);cursor:pointer;display:inline-flex;"><i data-lucide="${archiveIcon}" size="16"></i></span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></span></div></td>`;
+        let row = `<tr style="${rowOpacity}"><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}" data-archived="${student.is_archived ? '1' : '0'}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
             const cancelled = date.is_cancelled;
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
@@ -301,16 +300,6 @@ function attachEventListeners() {
                 renderAttendanceView();
             });
         }
-
-        // ADIM 5.1 — Öğrenciyi arşivle / arşivden çıkar
-        document.querySelectorAll('.btn-icon-archive-student').forEach(icon => {
-            icon.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const studentId  = parseInt(icon.dataset.studentId);
-                const isArchived = icon.dataset.archived === '1';
-                await actions.archiveStudent(studentId, !isArchived);
-            });
-        });
 
         document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
         document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();

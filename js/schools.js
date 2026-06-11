@@ -232,8 +232,8 @@ async function loadDebtSummary() {
             { data: allAttendance },
             { data: allPayments }
         ] = await Promise.all([
-            supabase.from('classes').select('id, name, school_id'),
-            supabase.from('students').select('id, name, class_id'),
+            supabase.from('classes').select('id, name, school_id, is_archived'),
+            supabase.from('students').select('id, name, class_id, is_archived'),
             supabase.from('course_dates').select('id, class_id, is_cancelled'),
             supabase.from('attendance').select('student_id, course_date_id, status'),
             supabase.from('payments').select('student_id, weeks_covered, start_date_id')
