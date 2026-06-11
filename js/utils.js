@@ -18,11 +18,6 @@ export function formatDate(dateStr) {
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
-export function formatDateForDisplay(dateStr) {
-    if (!dateStr) return '';
-    const d = parseDateLocal(dateStr);
-    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-}
 
 export function isoToDisplayDate(isoDate) {
     if (!isoDate) return '';
