@@ -331,12 +331,9 @@ export function renderAttendanceView() {
 // ---------------------------------------------------------------
 // Geri: bu sınıfın hangi okula ait olduğunu DB'den çekip yönlendirir
 // ---------------------------------------------------------------
-async function goBackToClasses() {
-    const { data: cls } = await supabase.from('classes').select('school_id').eq('id', appState.currentClassId).single();
-    if (cls) {
-        const { data: school } = await supabase.from('schools').select('name').eq('id', cls.school_id).single();
-        if (school) {
-            navigateTo('classes', { schoolId: cls.school_id, schoolName: school.name });
-        }
-    }
+function goBackToClasses() {
+    navigateTo('classes', {
+        schoolId:   appState.currentSchoolId,
+        schoolName: appState.currentSchoolName
+    });
 }
