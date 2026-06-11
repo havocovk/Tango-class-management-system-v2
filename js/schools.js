@@ -4,6 +4,7 @@ import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet } from './offlineStore.js';
 import { t } from './i18n.js';
+import { exportBackup, importBackup } from './backup.js';
 
 export async function loadSchools() {
     // ADIM 7.2 — Çevrimiçiyken Supabase'den çek + çevrimdışı için kaydet.
@@ -68,6 +69,10 @@ function renderSchoolsView() {
             <div class="nav-buttons" style="margin-top:30px;">
                 <button class="btn-success" id="addSchoolBtn"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('schools.add'))}</button>
             </div>
+            <div class="nav-buttons" style="margin-top:10px;">
+                <button class="btn-secondary" id="exportBackupBtn"><i data-lucide="hard-drive-download" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Yedekle</button>
+                <button class="btn-secondary" id="importBackupBtn"><i data-lucide="hard-drive-upload" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Geri Yükle</button>
+            </div>
         </div>
     `;
 
@@ -101,6 +106,8 @@ function renderSchoolsView() {
         });
     }
     document.getElementById('addSchoolBtn').onclick = () => addSchool();
+    document.getElementById('exportBackupBtn').onclick = () => exportBackup();
+    document.getElementById('importBackupBtn').onclick = () => importBackup();
 
     // ADIM 2.3 — Kısayol kartı tıklama olayı
     const lastCard = document.getElementById('lastClassCard');
