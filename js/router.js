@@ -17,9 +17,15 @@
 //   navigateTo('classes',    { schoolId, schoolName });
 //   navigateTo('attendance', { classId, className });
 //   navigateTo('payments',   { classId, className });
+//   navigateTo('stats');
 // ---------------------------------------------------------------
 
+// ÇOK DİLLİ DESTEK — En son gidilen sayfa burada saklanır. Dil
+// değiştiğinde reloadCurrentView() bu sayfayı yeni dilde yeniden çizer.
+let currentRoute = { screen: 'schools', params: {} };
+
 export async function navigateTo(screen, params = {}) {
+    currentRoute = { screen, params };
     switch (screen) {
         case 'schools': {
             const module = await import('./schools.js');
@@ -41,7 +47,21 @@ export async function navigateTo(screen, params = {}) {
             await module.showPaymentsView(params.classId, params.className);
             break;
         }
+        case 'stats': {
+            const module = await import('./classStats.js');
+            await module.showWeeklyStats();
+            break;
+        }
         default:
             console.error('Bilinmeyen ekran adı:', screen);
     }
+}
+
+// ---------------------------------------------------------------
+// reloadCurrentView() — bulunduğun sayfayı (en son navigateTo edilen)
+// yeniden çizer. Dil değişiminde app.js bunu çağırır; böylece hangi
+// ekranda olursan ol, yazılar anında yeni dile döner.
+// ---------------------------------------------------------------
+export async function reloadCurrentView() {
+    await navigateTo(currentRoute.screen, currentRoute.params);
 }

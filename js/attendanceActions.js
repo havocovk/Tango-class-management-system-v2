@@ -19,6 +19,7 @@ import { refreshIcons, openPromptModal, showToast } from './utils.js';
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
 import { savePendingChange, clearPendingChange, refreshPendingBadge } from './offlineStore.js';
+import { t } from './i18n.js';
 
 // ---------------------------------------------------------------
 // ADIM 5.1 — YOKLAMA DEĞİŞİMİNDE SADECE İLGİLİ HÜCREYİ GÜNCELLE
@@ -73,7 +74,7 @@ export async function toggleAttendance(studentId, courseDateId) {
         if (!error) {
             delete appState.attendanceMap[`${studentId}_${courseDateId}`];
         } else {
-            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+            showToast(t('actions.attUpdateFail'), 'error');
             return;
         }
     } else {
@@ -90,7 +91,7 @@ export async function toggleAttendance(studentId, courseDateId) {
         if (!error) {
             appState.attendanceMap[`${studentId}_${courseDateId}`] = newStatus;
         } else {
-            showToast('Yoklama güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+            showToast(t('actions.attUpdateFail'), 'error');
             return;
         }
     }
@@ -123,11 +124,11 @@ export async function updateStudentName(studentId, newName, phone) {
     if (phone !== undefined) updateData.phone = phone || null;
     const { error } = await supabase.from('students').update(updateData).eq('id', studentId);
     if (!error) {
-        showToast('Öğrenci bilgileri güncellendi ✓', 'success');
+        showToast(t('actions.studentUpdated'), 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } else {
-        showToast('Güncelleme başarısız. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.studentUpdateFail'), 'error');
     }
 }
 
@@ -138,10 +139,10 @@ export async function updateStudentName(studentId, newName, phone) {
 export async function deleteStudent(studentId) {
     const { error } = await supabase.from('students').delete().eq('id', studentId);
     if (error) {
-        showToast('Öğrenci silinemedi. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.studentDeleteFail'), 'error');
         return false;
     }
-    showToast('Öğrenci silindi ✓', 'success');
+    showToast(t('actions.studentDeleted'), 'success');
     await loadAttendanceData();
     renderAttendanceView();
     return true;
@@ -151,13 +152,13 @@ export async function deleteStudent(studentId) {
 // Yeni öğrenci ekleme — renderAttendanceView addStudentBtn'den çağırır
 // ---------------------------------------------------------------
 export async function addStudent() {
-    openPromptModal('Yeni Öğrenci', 'Adı ve soyadı', async (name) => {
+    openPromptModal(t('actions.newStudentTitle'), t('actions.newStudentPlaceholder'), async (name) => {
         if (!name) return;
         const { error } = await supabase.from('students').insert({ class_id: appState.currentClassId, name });
         if (error) {
-            showToast('Öğrenci eklenemedi. Bağlantıyı kontrol edin.', 'error');
+            showToast(t('actions.studentAddFail'), 'error');
         } else {
-            showToast(`${name} sınıfa eklendi ✓`, 'success');
+            showToast(t('actions.studentAdded', { name }), 'success');
             await loadAttendanceData();
             renderAttendanceView();
         }
@@ -179,11 +180,11 @@ export async function addWeek() {
         teacher_partner: null
     });
     if (!error) {
-        showToast('Yeni hafta eklendi ✓', 'success');
+        showToast(t('actions.weekAdded'), 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } else {
-        showToast('Hafta eklenemedi. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.weekAddFail'), 'error');
     }
 }
 
@@ -199,11 +200,11 @@ export async function deleteWeek(courseDateId) {
         if (vidError) throw vidError;
         const { error: dateError } = await supabase.from('course_dates').delete().eq('id', courseDateId);
         if (dateError) throw dateError;
-        showToast('Hafta silindi ✓', 'success');
+        showToast(t('actions.weekDeleted'), 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } catch (err) {
-        showToast('Hafta silinirken sorun oluştu. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.weekDeleteFail'), 'error');
     }
 }
 
@@ -221,10 +222,10 @@ export async function toggleWeekCancel(courseDateId, makeCancelled) {
         .eq('id', courseDateId);
 
     if (!error) {
-        showToast(makeCancelled ? 'Ders iptal edildi ✓' : 'İptal geri alındı ✓', 'success');
+        showToast(makeCancelled ? t('actions.weekCancelled') : t('actions.weekUncancelled'), 'success');
         await loadAttendanceData();
         renderAttendanceView();
     } else {
-        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.weekToggleFail'), 'error');
     }
 }

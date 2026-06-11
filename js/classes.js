@@ -3,6 +3,7 @@ import { refreshIcons, formatDate, openConfirmModal, isoToDisplayDate, escapeHtm
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet } from './offlineStore.js';
+import { t } from './i18n.js';
 
 export async function showClassesView(schoolId, schoolName) {
     appState.currentSchoolId = schoolId;
@@ -33,13 +34,13 @@ function renderClassesView() {
     const container = document.getElementById('dynamicView');
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToSchoolsBtn">← Okullar</div>
-            <div class="main-title">Tango Class Management System</div>
-            <div class="sub-header">Sınıf Listesi - ${escapeHtml(appState.currentSchoolName)}</div>
+            <div class="back-link" id="backToSchoolsBtn">${escapeHtml(t('nav.backToSchools'))}</div>
+            <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
+            <div class="sub-header">${escapeHtml(t('classes.header', { school: appState.currentSchoolName }))}</div>
             <div id="classesListContainer"></div>
             <div class="nav-buttons">
-                <button id="newClassBtn" class="btn-success"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Yeni Sınıf</button>
-                <button id="weeklyStatsBtn" class="btn-info"><i data-lucide="bar-chart-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Haftalık İstatistikler</button>
+                <button id="newClassBtn" class="btn-success"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.newClass'))}</button>
+                <button id="weeklyStatsBtn" class="btn-info"><i data-lucide="bar-chart-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.weeklyStats'))}</button>
             </div>
         </div>
     `;
@@ -49,7 +50,7 @@ function renderClassesView() {
     const listDiv = document.getElementById('classesListContainer');
     listDiv.innerHTML = '';
     if (appState.classesList.length === 0) {
-        listDiv.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">Henüz sınıf yok. Yeni sınıf ekleyin.</div>';
+        listDiv.innerHTML = `<div style="text-align:center; color:var(--text-dim); padding:20px;">${escapeHtml(t('classes.empty'))}</div>`;
     } else {
         appState.classesList.forEach(cls => {
             const card = document.createElement('div');
@@ -76,14 +77,12 @@ function renderClassesView() {
     document.getElementById('newClassBtn').onclick = () => openNewClassModal();
 
     // ---------------------------------------------------------------
-    // Haftalık İstatistikler butonu — classStats.js dinamik import ile
-    // yükleniyor. classes.js, classStats.js'i statik olarak import
-    // etmiyor; böylece aralarında döngüsel bağımlılık oluşmuyor.
-    // Bu pattern router.js'in kullandığı tekniğin aynısıdır.
+    // Haftalık İstatistikler — router üzerinden 'stats' ekranına git.
+    // Router üzerinden gitmek, dil değişiminde reloadCurrentView'ın bu
+    // ekranı doğru şekilde yeniden çizebilmesini sağlar.
     // ---------------------------------------------------------------
-    document.getElementById('weeklyStatsBtn').onclick = async () => {
-        const module = await import('./classStats.js');
-        await module.showWeeklyStats();
+    document.getElementById('weeklyStatsBtn').onclick = () => {
+        navigateTo('stats');
     };
 
     refreshIcons();
@@ -111,7 +110,7 @@ function openNewClassModal() {
         if (hiddenDatePicker.showPicker) {
             hiddenDatePicker.showPicker();
         } else {
-            alert('Tarayıcınız bu özelliği desteklemiyor.');
+            alert(t('classes.browserUnsupported'));
         }
     };
     calendarIcon.addEventListener('click', openDatePicker);
@@ -131,12 +130,12 @@ function openNewClassModal() {
     const saveHandler = async () => {
         const className = nameInput.value.trim();
         if (!className) {
-            alert('Lütfen bir sınıf adı giriniz.');
+            alert(t('classes.alertNoName'));
             return;
         }
         const selectedISO = hiddenDatePicker.value;
         if (!selectedISO) {
-            alert('Lütfen geçerli bir başlangıç tarihi seçiniz.');
+            alert(t('classes.alertNoDate'));
             return;
         }
 
@@ -147,7 +146,7 @@ function openNewClassModal() {
             .single();
 
         if (classError) {
-            alert('Sınıf eklenemedi: ' + classError.message);
+            alert(t('classes.alertAddFail', { msg: classError.message }));
             return;
         }
 
@@ -157,7 +156,7 @@ function openNewClassModal() {
 
         if (dateError) {
             console.error('Tarih eklenirken hata:', dateError);
-            alert('Sınıf oluşturuldu ancak başlangıç tarihi eklenirken hata oluştu.');
+            alert(t('classes.alertDateFail'));
         }
 
         modal.style.display = 'none';
@@ -202,7 +201,7 @@ async function editClass(classId, oldName) {
         if (hiddenDatePicker.showPicker) {
             hiddenDatePicker.showPicker();
         } else {
-            alert('Tarayıcınız bu özelliği desteklemiyor.');
+            alert(t('classes.browserUnsupported'));
         }
     };
     calendarIcon.addEventListener('click', openDatePicker);
@@ -223,7 +222,7 @@ async function editClass(classId, oldName) {
 
         if (newName && newName !== oldName) {
             const { error } = await supabase.from('classes').update({ name: newName }).eq('id', classId);
-            if (error) alert('Ad güncellenemedi: ' + error.message);
+            if (error) alert(t('classes.editNameFail', { msg: error.message }));
         }
 
         if (newDateISO) {
@@ -240,7 +239,7 @@ async function editClass(classId, oldName) {
             const newDate = new Date(newDateISO);
 
             if (lastDate && newDate <= lastDate) {
-                alert(`Yeni tarih, son ders tarihinden (${formatDate(lastDate.toISOString().split('T')[0])}) sonra olmalıdır. Eklenmedi.`);
+                alert(t('classes.editDateMustBeAfter', { date: formatDate(lastDate.toISOString().split('T')[0]) }));
             } else {
                 const { data: alreadyExists } = await supabase
                     .from('course_dates')
@@ -250,13 +249,13 @@ async function editClass(classId, oldName) {
                     .maybeSingle();
 
                 if (alreadyExists) {
-                    alert('Bu tarih zaten mevcut. Eklenmedi.');
+                    alert(t('classes.editDateExists'));
                 } else {
                     const { error: insertError } = await supabase
                         .from('course_dates')
                         .insert({ class_id: classId, date: newDateISO, teacher_partner: null });
                     if (insertError) {
-                        alert('Tarih eklenirken hata: ' + insertError.message);
+                        alert(t('classes.editDateInsertFail', { msg: insertError.message }));
                     }
                 }
             }
@@ -285,9 +284,9 @@ async function editClass(classId, oldName) {
 }
 
 async function deleteClass(classId) {
-    openConfirmModal('Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?', async () => {
+    openConfirmModal(t('classes.deleteConfirm'), async () => {
         const { error } = await supabase.from('classes').delete().eq('id', classId);
-        if (error) alert('Hata: ' + error.message);
+        if (error) alert(t('classes.deleteFail', { msg: error.message }));
         else await loadClasses();
         renderClassesView();
     });

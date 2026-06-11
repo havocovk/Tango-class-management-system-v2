@@ -1,5 +1,7 @@
 // Ortak yardımcı fonksiyonlar
 
+import { t } from './i18n.js';
+
 // ---------------------------------------------------------------
 // TARİH YARDIMCILARI
 // ---------------------------------------------------------------
@@ -202,7 +204,7 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     document.getElementById('doubleModalCancel').onclick = cancelHandler;
 }
 
-export function openConfirmModal(message, onConfirm, onCancel, confirmLabel = 'Evet, sil') {
+export function openConfirmModal(message, onConfirm, onCancel, confirmLabel) {
     const modal = document.getElementById('confirmModal');
     if (!modal) return;
     const msgSpan = document.getElementById('confirmMessage');
@@ -211,7 +213,12 @@ export function openConfirmModal(message, onConfirm, onCancel, confirmLabel = 'E
     if (!yesBtn || !noBtn) return;
 
     msgSpan.innerText = message;
-    yesBtn.innerText = confirmLabel;
+    // Onay butonu metni verilmemişse seçili dile göre "Evet, sil" / "Yes, delete"
+    yesBtn.innerText = (confirmLabel !== undefined && confirmLabel !== null)
+        ? confirmLabel
+        : t('confirm.yesDelete');
+    // İptal butonu her zaman seçili dile göre
+    noBtn.innerText = t('common.cancel');
 
     yesBtn.onclick = () => {
         modal.style.display = 'none';

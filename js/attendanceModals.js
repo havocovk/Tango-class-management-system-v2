@@ -19,6 +19,7 @@ import { formatDate, refreshIcons, openPromptModal, openConfirmModal, showToast,
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
 import { updateStudentName, deleteStudent, deleteWeek, toggleWeekCancel } from './attendanceActions.js';
+import { t } from './i18n.js';
 
 // ---------------------------------------------------------------
 // Öğrenci adına tıklanınca açılan aksiyom modalı
@@ -56,7 +57,7 @@ export function openStudentActionModal(studentId, currentName) {
     editBtn.onclick = () => {
         viewMode.style.display  = 'none';
         editMode.style.display  = 'block';
-        if (editTitle) editTitle.textContent = 'Ad Düzenle';
+        if (editTitle) editTitle.textContent = t('modals.editName');
         editInput.style.display = 'block';
         if (phoneInput) phoneInput.style.display = 'none';
         editInput.value = currentName;
@@ -68,7 +69,7 @@ export function openStudentActionModal(studentId, currentName) {
         phoneBtn.onclick = () => {
             viewMode.style.display  = 'none';
             editMode.style.display  = 'block';
-            if (editTitle) editTitle.textContent = 'Telefon Düzenle';
+            if (editTitle) editTitle.textContent = t('modals.editPhone');
             editInput.style.display = 'none';
             if (phoneInput) {
                 phoneInput.style.display = 'block';
@@ -83,7 +84,7 @@ export function openStudentActionModal(studentId, currentName) {
         e.stopPropagation();
         modal.style.display = 'none';
         openConfirmModal(
-            'Öğrenciyi silmek istediğinize emin misiniz? Tüm yoklamaları ve ödemeleri de silinecek.',
+            t('modals.deleteStudentConfirm'),
             async () => {
                 await deleteStudent(studentId);
             },
@@ -240,7 +241,7 @@ export async function openStudentProfileModal(student) {
 // Desteklenen platformlar: YouTube, Vimeo, Google Drive, Diğer
 // ---------------------------------------------------------------
 function detectVideoPlatform(url) {
-    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    if (!url) return { name: t('modals.platformOther'), color: '#94a3b8' };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
         return { name: 'YouTube', color: '#FF0000' };
@@ -251,7 +252,7 @@ function detectVideoPlatform(url) {
     if (lower.includes('drive.google.com')) {
         return { name: 'Google Drive', color: '#34A853' };
     }
-    return { name: 'Diğer', color: '#94a3b8' };
+    return { name: t('modals.platformOther'), color: '#94a3b8' };
 }
 
 // ---------------------------------------------------------------
@@ -276,7 +277,7 @@ export async function handleVideo(courseDateId) {
         if (modalTitle) {
             modalTitle.innerHTML = `
                 <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
-                <span style="vertical-align:middle;">Lesson Recap</span>
+                <span style="vertical-align:middle;">${escapeHtml(t('modals.videoTitle'))}</span>
                 <span style="
                     display:inline-block;
                     vertical-align:middle;
@@ -300,7 +301,7 @@ export async function handleVideo(courseDateId) {
         // ADIM 8.1 — WhatsApp paylaşım butonunu ayarla (alıcıyı WhatsApp'tan seçer)
         const waVideoBtn = document.getElementById('whatsappVideoShareBtn');
         if (waVideoBtn) {
-            const waMsg   = `Merhaba! Bu haftanın ders videosu hazır 🎵\n${existingUrl}`;
+            const waMsg   = t('modals.whatsappVideoMsg', { url: existingUrl });
             waVideoBtn.href = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
         }
 
@@ -325,17 +326,17 @@ export async function handleVideo(courseDateId) {
         const deleteHandler = () => {
             modal.style.display = 'none';
             openConfirmModal(
-                'Bu video bağlantısını silmek istediğinize emin misiniz?',
+                t('modals.videoDeleteConfirm'),
                 async () => {
                     const { error } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
                     if (!error) {
-                        showToast('Video bağlantısı silindi ✓', 'success');
+                        showToast(t('modals.videoDeleted'), 'success');
                         delete appState.videoMap[courseDateId];
                         // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
                         const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
                         if (icon) icon.classList.remove('active');
                     } else {
-                        showToast('Video silinemedi. Bağlantıyı kontrol edin.', 'error');
+                        showToast(t('modals.videoDeleteFail'), 'error');
                     }
                     cleanup();
                 },
@@ -353,7 +354,7 @@ export async function handleVideo(courseDateId) {
             if (modalTitle) {
                 modalTitle.innerHTML = `
                     <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i>
-                    <span style="vertical-align: middle;">Lesson Recap</span>
+                    <span style="vertical-align: middle;">${escapeHtml(t('modals.videoTitle'))}</span>
                 `;
             }
             // ADIM 8.2 — Not göstergesini sıfırla
@@ -386,20 +387,20 @@ export async function handleVideo(courseDateId) {
         closeBtn.addEventListener('click', closeHandler);
         modal.addEventListener('click', outsideClickHandler);
     } else {
-        openPromptModal('Video Linki', 'https://...', async (url) => {
+        openPromptModal(t('modals.videoLinkTitle'), 'https://...', async (url) => {
             if (url && url.startsWith('http')) {
                 const { error } = await supabase.from('videos').insert({ course_date_id: courseDateId, url });
                 if (!error) {
-                    showToast('Video bağlantısı eklendi ✓', 'success');
+                    showToast(t('modals.videoAdded'), 'success');
                     appState.videoMap[courseDateId] = url;
                     // Sadece bu sütunun video ikonunu güncelle — tüm tabloyu yeniden çizme!
                     const icon = document.querySelector(`.vid-icon[data-date-id="${courseDateId}"]`);
                     if (icon) icon.classList.add('active');
                 } else {
-                    showToast('Video eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                    showToast(t('modals.videoAddFail'), 'error');
                 }
             } else {
-                showToast('Geçerli bir URL girin (http ile başlamalı)', 'warning');
+                showToast(t('modals.videoUrlInvalid'), 'warning');
             }
         });
     }
@@ -414,7 +415,7 @@ export async function updateTeacherPartner(courseDateId, newPartner) {
     const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner }).eq('id', courseDateId);
     if (!error) {
         appState.partnerMap[courseDateId] = newPartner;
-        showToast(newPartner ? 'Partner güncellendi ✓' : 'Partner silindi ✓', 'success');
+        showToast(newPartner ? t('modals.partnerUpdated') : t('modals.partnerDeleted'), 'success');
         // Sadece ilgili ikonu güncelle — tüm tabloyu yeniden çizme!
         const span = document.querySelector(`.partner-edit[data-date-id="${courseDateId}"]`);
         if (span) {
@@ -423,7 +424,7 @@ export async function updateTeacherPartner(courseDateId, newPartner) {
             span.style.color     = newPartner ? 'var(--primary)' : 'var(--text-dim)';
         }
     } else {
-        showToast('Partner güncellenemedi. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('modals.partnerUpdateFail'), 'error');
     }
 }
 
@@ -440,7 +441,7 @@ export async function updateNote(courseDateId, newNote) {
 
     if (!error) {
         appState.notesMap[courseDateId] = newNote || '';
-        showToast(newNote ? 'Ders notu kaydedildi ✓' : 'Ders notu silindi ✓', 'success');
+        showToast(newNote ? t('modals.noteSaved') : t('modals.noteDeleted'), 'success');
 
         // Sadece ilgili not hücresini güncelle — tüm tabloyu yeniden çizme!
         const cell = document.querySelector(`.note-cell[data-date-id="${courseDateId}"]`);
@@ -454,7 +455,7 @@ export async function updateNote(courseDateId, newNote) {
             refreshIcons();
         }
     } else {
-        showToast('Not kaydedilemedi. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('modals.noteSaveFail'), 'error');
     }
 }
 
@@ -478,12 +479,15 @@ export function openWeekActionModal(dateId, dateStr, isCancelled) {
 
     // İptal/geri-al butonunun metnini ve rengini duruma göre ayarla
     if (isCancelled) {
-        cancelBtn.innerHTML = '<i data-lucide="check-circle" size="15"></i>İptali Geri Al';
+        cancelBtn.innerHTML = `<i data-lucide="check-circle" size="15"></i>${escapeHtml(t('modals.weekCancelToggleUndo'))}`;
         cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     } else {
-        cancelBtn.innerHTML = '<i data-lucide="ban" size="15"></i>Haftayı İptal Et';
+        cancelBtn.innerHTML = `<i data-lucide="ban" size="15"></i>${escapeHtml(t('modals.weekCancelToggleCancel'))}`;
         cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     }
+
+    // "Haftayı Sil" butonu metnini de seçili dile göre ayarla
+    deleteBtn.innerHTML = `<i data-lucide="trash-2" size="15"></i>${escapeHtml(t('week.deleteWeek'))}`;
 
     modal.style.display = 'flex';
     refreshIcons();
@@ -504,7 +508,7 @@ export function openWeekActionModal(dateId, dateStr, isCancelled) {
         modal.style.display = 'none';
         cleanup();
         openConfirmModal(
-            `${formatDate(dateStr)} tarihli haftayı silmek istediğinize emin misiniz?\nTüm yoklama ve video kayıtları da silinecektir.`,
+            t('modals.weekDeleteConfirm', { date: formatDate(dateStr) }),
             async () => {
                 await deleteWeek(dateId);
             }

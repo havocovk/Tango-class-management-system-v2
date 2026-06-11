@@ -1,15 +1,22 @@
 import { supabase } from './supabaseClient.js';
-import { navigateTo } from './router.js';
+import { navigateTo, reloadCurrentView } from './router.js';
 import { showToast } from './utils.js';
 import { syncPendingChanges, refreshPendingBadge, getPendingCount } from './offlineStore.js';
-import { initLang, applyTranslations, t } from './i18n.js';
+import { initLang, applyTranslations, t, mountLangSwitcher, onLangChange } from './i18n.js';
 
 // ---------------------------------------------------------------
-// ÇOK DİLLİ DESTEK — uygulama açılır açılmaz dili başlat ve sabit
-// (HTML) metinleri çevir. Kayıtlı dil yoksa Türkçe gelir.
+// ÇOK DİLLİ DESTEK — uygulama açılır açılmaz dili başlat, sabit
+// (HTML) metinleri çevir, sağ üstteki dil seçici menüyü yerleştir.
+// Kayıtlı dil yoksa Türkçe gelir.
 // ---------------------------------------------------------------
 initLang();
 applyTranslations();
+mountLangSwitcher('langSwitcher');
+
+// Dil değiştiğinde: bulunulan sayfayı yeni dilde yeniden çiz.
+// (Sabit HTML zaten setLang içinde çevrildi; bu satır dinamik
+//  ekranları — okullar, sınıflar, yoklama, ödeme, istatistik — tazeler.)
+onLangChange(() => { reloadCurrentView(); });
 
 // ---------------------------------------------------------------
 // ADIM 1.2 — KULLANICI GİRİŞ SİSTEMİ

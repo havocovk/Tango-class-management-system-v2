@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient.js';
 import { formatDate, refreshIcons, openPromptModal, openDoubleInputModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+import { t, tList } from './i18n.js';
 
 export async function showPaymentsView(classId, className) {
     appState.currentClassId = classId;
@@ -106,25 +107,25 @@ function getDebtBadge(remaining) {
         // Borçlu: kırmızı
         return {
             cls: 'debt-badge debt-danger',
-            text: `${Math.abs(remaining)} ders borçlu`
+            text: t('payments.badgeDebt', { n: Math.abs(remaining) })
         };
     } else if (remaining === 0) {
         // Tam ödedi: yeşil
         return {
             cls: 'debt-badge debt-ok',
-            text: 'Güncel ✓'
+            text: t('payments.badgeCurrent')
         };
     } else if (remaining <= 2) {
         // 1-2 ders kaldı: turuncu uyarı
         return {
             cls: 'debt-badge debt-warning',
-            text: `${remaining} ders kaldı`
+            text: t('payments.badgeRemaining', { n: remaining })
         };
     } else {
         // Avans: mavi/gri bilgi
         return {
             cls: 'debt-badge debt-info',
-            text: `${remaining} ders avans`
+            text: t('payments.badgeAdvance', { n: remaining })
         };
     }
 }
@@ -136,7 +137,7 @@ function getDebtBadge(remaining) {
 // gelir (classStats.js'teki katılım grafiğiyle aynı altyapı).
 // ---------------------------------------------------------------
 function buildMonthlyChart() {
-    const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+    const MONTHS_TR = tList('payments.months');
 
     // start_date_id → course_dates.date üzerinden ay-yıl grupla
     const monthlyMap = {};
@@ -170,7 +171,7 @@ function buildMonthlyChart() {
 
     return `
         <div style="margin-top:16px;">
-            <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px; padding-left:4px;"><i data-lucide="bar-chart-2" size="14" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Aylık Gelir</div>
+            <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:8px; padding-left:4px;"><i data-lucide="bar-chart-2" size="14" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>${escapeHtml(t('payments.monthlyIncome'))}</div>
             <div style="border:1px solid var(--border); border-radius:14px; background:var(--card-bg); overflow-x:auto; overflow-y:hidden; padding:10px 0;">
                 <div class="chart-container">
                     <div class="chart-bars-zone" style="height:220px;">${barsHtml}</div>
@@ -205,19 +206,19 @@ function renderPaymentsView() {
         <div class="payment-summary">
             <div class="summary-card summary-total">
                 <div class="summary-value">${totalCollected.toLocaleString('tr-TR')} ₺</div>
-                <div class="summary-label">Toplam Tahsilat</div>
+                <div class="summary-label">${escapeHtml(t('payments.summaryTotal'))}</div>
             </div>
             <div class="summary-card summary-danger">
                 <div class="summary-value">${debtorCount}</div>
-                <div class="summary-label">Borçlu Öğrenci</div>
+                <div class="summary-label">${escapeHtml(t('payments.summaryDebtor'))}</div>
             </div>
             <div class="summary-card summary-warning">
                 <div class="summary-value">${warningCount}</div>
-                <div class="summary-label">Paketi Bitiyor</div>
+                <div class="summary-label">${escapeHtml(t('payments.summaryWarning'))}</div>
             </div>
             <div class="summary-card summary-dates">
                 <div class="summary-value">${totalDates}</div>
-                <div class="summary-label">Toplam Ders</div>
+                <div class="summary-label">${escapeHtml(t('payments.summaryDates'))}</div>
             </div>
         </div>
     `;
@@ -228,8 +229,8 @@ function renderPaymentsView() {
     // ---- Tablo HTML ----
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToAttendanceBtn">← Yoklama Sayfası</div>
-            <div class="main-title">Ödeme Takibi</div>
+            <div class="back-link" id="backToAttendanceBtn">${escapeHtml(t('nav.backToAttendance'))}</div>
+            <div class="main-title">${escapeHtml(t('payments.title'))}</div>
             <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:16px; font-weight:600;">
                 ${escapeHtml(appState.currentClassName)}
             </div>
@@ -242,8 +243,8 @@ function renderPaymentsView() {
                     <thead>
                         <tr id="payHeader">
                             <th>#</th>
-                            <th>Öğrenci</th>
-                            <th style="white-space:nowrap; min-width:110px;">Durum</th>
+                            <th>${escapeHtml(t('payments.colStudent'))}</th>
+                            <th style="white-space:nowrap; min-width:110px;">${escapeHtml(t('payments.colStatus'))}</th>
                             ${appState.courseDates.map(d =>
                                 `<th style="writing-mode:vertical-rl;transform:rotate(180deg);height:100px;">${formatDate(d.date)}</th>`
                             ).join('')}
@@ -276,8 +277,8 @@ function renderPaymentsView() {
                           : digits.startsWith('5')  ? '90' + digits
                           : digits;
             const waMsg   = remaining < 0
-                ? `Merhaba ${student.name}! ${appState.currentClassName} derslerindeki ders paketiniz doldu 🙏 Yeni paket için bizi arayabilirsiniz.`
-                : `Merhaba ${student.name}! ${appState.currentClassName} derslerindeki ders paketinizden ${remaining} ders hakkınız kaldı 🙏 Paketi yenilemek için bizi arayabilirsiniz.`;
+                ? t('payments.waDebtMsg', { name: student.name, class: appState.currentClassName })
+                : t('payments.waRemainMsg', { name: student.name, class: appState.currentClassName, n: remaining });
             waButton = `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#128C7E;color:white;text-decoration:none;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-top:4px;">💬 WA</a>`;
         }
 
@@ -317,18 +318,18 @@ function renderPaymentsView() {
                 p => p.student_id === studentId && p.start_date_id === dateId
             );
             if (existing) {
-                openConfirmModal('Bu ödemeyi silmek istediğinize emin misiniz?', async () => {
+                openConfirmModal(t('payments.deletePaymentConfirm'), async () => {
                     const { error } = await supabase.from('payments').delete().eq('id', existing.id);
                     if (error) {
-                        showToast('Ödeme silinemedi. Bağlantıyı kontrol edin.', 'error');
+                        showToast(t('payments.paymentDeleteFail'), 'error');
                     } else {
-                        showToast('Ödeme silindi ✓', 'success');
+                        showToast(t('payments.paymentDeleted'), 'success');
                         await loadPaymentsData();
                         renderPaymentsView();
                     }
                 });
             } else {
-                openDoubleInputModal('Ödeme Ekle', 'Miktar (₺)', 'Kaç hafta geçerli?', async (amount, weeks) => {
+                openDoubleInputModal(t('payments.addPaymentTitle'), t('payments.amountPlaceholder'), t('payments.weeksPlaceholder'), async (amount, weeks) => {
                     if (!amount || !weeks) return;
                     const { error } = await supabase.from('payments').insert({
                         student_id:    studentId,
@@ -337,9 +338,9 @@ function renderPaymentsView() {
                         weeks_covered: parseInt(weeks)
                     });
                     if (error) {
-                        showToast('Ödeme eklenemedi. Bağlantıyı kontrol edin.', 'error');
+                        showToast(t('payments.paymentAddFail'), 'error');
                     } else {
-                        showToast('Ödeme eklendi ✓', 'success');
+                        showToast(t('payments.paymentAdded'), 'success');
                         await loadPaymentsData();
                         renderPaymentsView();
                     }

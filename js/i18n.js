@@ -54,8 +54,21 @@ export function getLang() {
 }
 
 // ---------------------------------------------------------------
-// setLang(lang) — dili değiştirir, tarayıcıya kaydeder ve
-// sayfadaki tüm sabit (HTML) metinleri yeniden çevirir.
+// DİL DEĞİŞİM OLAYLARI — dil değişince haber verilmek isteyen
+// modüller (örn. app.js) buraya fonksiyon kaydeder. setLang her
+// çağrıldığında bu fonksiyonlar çalışır (örn. bulunulan sayfayı
+// yeni dilde yeniden çizmek için).
+// ---------------------------------------------------------------
+const changeCallbacks = [];
+
+export function onLangChange(cb) {
+    if (typeof cb === 'function') changeCallbacks.push(cb);
+}
+
+// ---------------------------------------------------------------
+// setLang(lang) — dili değiştirir, tarayıcıya kaydeder, sayfadaki
+// tüm sabit (HTML) metinleri yeniden çevirir, dil butonunu tazeler
+// ve kayıtlı dinleyicileri (callback) tetikler.
 // ---------------------------------------------------------------
 export function setLang(lang) {
     if (!DICTS[lang]) return;
@@ -63,6 +76,8 @@ export function setLang(lang) {
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) { /* yoksay */ }
     document.documentElement.lang = lang;
     applyTranslations();
+    renderLangSwitcher();
+    changeCallbacks.forEach(cb => { try { cb(lang); } catch (e) { /* yoksay */ } });
 }
 
 // ---------------------------------------------------------------
@@ -128,4 +143,91 @@ export function applyTranslations(root = document) {
     root.querySelectorAll('[data-i18n-html]').forEach(el => {
         el.innerHTML = t(el.getAttribute('data-i18n-html'));
     });
+}
+
+// ---------------------------------------------------------------
+// DİL SEÇİCİ (DROPDOWN) — TÜM SAYFALARDA görünen tek buton.
+// Butona tıklayınca diller açılır menü olarak listelenir; biri
+// seçilince site o dile döner. AVAILABLE_LANGS'ten otomatik üretilir:
+// yeni dil eklenince menüye kendiliğinden gelir.
+//
+// index.html'deki sabit (#langSwitcher) kabına çizilir. Bu kap
+// #dynamicView dışında olduğu için sayfa değişse de yerinde kalır.
+// ---------------------------------------------------------------
+let switcherContainerId = null;
+
+export function mountLangSwitcher(containerId) {
+    switcherContainerId = containerId;
+    renderLangSwitcher();
+}
+
+function renderLangSwitcher() {
+    if (!switcherContainerId) return;
+    const container = document.getElementById(switcherContainerId);
+    if (!container) return;
+
+    const active = AVAILABLE_LANGS.find(l => l.code === currentLang) || AVAILABLE_LANGS[0];
+
+    const optionsHtml = AVAILABLE_LANGS.map(l => {
+        const isActive = l.code === currentLang;
+        const optStyle = [
+            'display:flex', 'align-items:center', 'gap:8px',
+            'padding:10px 14px', 'cursor:pointer', 'font-size:13px',
+            'font-weight:700', 'white-space:nowrap',
+            'color:' + (isActive ? '#000' : 'var(--text-main)'),
+            'background:' + (isActive ? 'var(--primary)' : 'transparent')
+        ].join(';');
+        return `<div class="lang-option" data-lang="${l.code}" style="${optStyle}">
+                    <span style="opacity:0.7; min-width:22px;">${l.short}</span>
+                    <span>${l.label}</span>
+                </div>`;
+    }).join('');
+
+    const btnStyle = [
+        'display:inline-flex', 'align-items:center', 'gap:6px',
+        'padding:7px 12px', 'border-radius:10px', 'cursor:pointer',
+        'font-size:12px', 'font-weight:700', 'letter-spacing:0.3px',
+        'background:var(--card-bg)', 'color:var(--primary)',
+        'border:1px solid var(--primary)', 'box-shadow:0 4px 14px rgba(0,0,0,0.35)'
+    ].join(';');
+
+    const menuStyle = [
+        'display:none', 'position:absolute', 'top:calc(100% + 6px)', 'right:0',
+        'min-width:150px', 'background:var(--card-bg)',
+        'border:1px solid var(--border)', 'border-radius:12px',
+        'overflow:hidden', 'box-shadow:0 10px 30px rgba(0,0,0,0.5)'
+    ].join(';');
+
+    container.innerHTML = `
+        <button id="langSwitchBtn" type="button" style="${btnStyle}">
+            <span>🌐</span><span>${active.short}</span><span style="font-size:10px;">▾</span>
+        </button>
+        <div id="langSwitchMenu" style="${menuStyle}">${optionsHtml}</div>
+    `;
+
+    const btn  = container.querySelector('#langSwitchBtn');
+    const menu = container.querySelector('#langSwitchMenu');
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    });
+
+    container.querySelectorAll('.lang-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.style.display = 'none';
+            const lang = opt.dataset.lang;
+            if (lang !== currentLang) setLang(lang);
+        });
+    });
+
+    // Menü dışına tıklayınca kapansın (tek dinleyici, tekrarı önlemek için önce kaldır)
+    document.removeEventListener('click', closeLangMenuOnOutside);
+    document.addEventListener('click', closeLangMenuOnOutside);
+}
+
+function closeLangMenuOnOutside() {
+    const menu = document.getElementById('langSwitchMenu');
+    if (menu) menu.style.display = 'none';
 }

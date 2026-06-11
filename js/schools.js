@@ -3,7 +3,7 @@ import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml 
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet } from './offlineStore.js';
-import { t, getLang, setLang, AVAILABLE_LANGS } from './i18n.js';
+import { t } from './i18n.js';
 
 export async function loadSchools() {
     // ADIM 7.2 — Çevrimiçiyken Supabase'den çek + çevrimdışı için kaydet.
@@ -27,25 +27,8 @@ function renderSchoolsView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
-    // ---------------------------------------------------------------
-    // DİL SEÇİM BUTONU (ana sayfaya özel)
-    // AVAILABLE_LANGS listesinden otomatik üretilir; yeni dil eklenince
-    // burada ekstra bir şey yapmana gerek kalmaz, buton kendiliğinden gelir.
-    // ---------------------------------------------------------------
-    const activeLang = getLang();
-    const langButtons = AVAILABLE_LANGS.map(l => {
-        const isActive = l.code === activeLang;
-        const style = isActive
-            ? 'background:var(--primary); color:#000; border:1px solid var(--primary);'
-            : 'background:transparent; color:var(--text-dim); border:1px solid var(--border);';
-        return `<button class="lang-switch-btn" data-lang="${l.code}" style="flex:none; min-width:auto; width:auto; padding:7px 14px; font-size:12px; font-weight:700; border-radius:10px; cursor:pointer; ${style}">${l.short}</button>`;
-    }).join('');
-
     container.innerHTML = `
         <div class="view">
-            <div style="display:flex; justify-content:flex-end; gap:6px; margin-bottom:4px;">
-                ${langButtons}
-            </div>
             <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
             <div class="sub-header">${escapeHtml(t('schools.header'))}</div>
             <div id="schoolsList"></div>
@@ -54,16 +37,6 @@ function renderSchoolsView() {
             </div>
         </div>
     `;
-
-    // Dil butonlarına tıklanınca: dili değiştir, kaydet ve ana sayfayı yeniden çiz
-    container.querySelectorAll('.lang-switch-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const lang = btn.dataset.lang;
-            if (lang === getLang()) return;
-            setLang(lang);          // dili değiştir + kalıcı kaydet + sabit HTML'i çevir
-            renderSchoolsView();    // ana sayfayı yeni dilde yeniden çiz
-        });
-    });
 
     const listDiv = document.getElementById('schoolsList');
     listDiv.innerHTML = '';

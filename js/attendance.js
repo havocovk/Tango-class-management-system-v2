@@ -33,6 +33,7 @@ import { formatDate, isPastDate, refreshIcons, openPromptModalWithValue, openCon
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet, getPendingChanges } from './offlineStore.js';
+import { t } from './i18n.js';
 
 // ---------------------------------------------------------------
 // Dışarıya export edilen tek giriş noktası
@@ -126,20 +127,20 @@ export function renderAttendanceView() {
     if (!container) return;
     let html = `
         <div class="view">
-            <div class="back-link" id="backToClassesBtn">← Sınıflar</div>
+            <div class="back-link" id="backToClassesBtn">${escapeHtml(t('nav.backToClasses'))}</div>
             <div class="nav-buttons" style="margin-bottom:10px;">
-                <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Add Student</button>
-                <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Add Week</button>
-                <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Payments</button>
+                <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
+                <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
+                <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr id="headerRow"><th>#</th><th>Student</th>${appState.courseDates.map((d) => {
+                    <thead><tr id="headerRow"><th>#</th><th>${escapeHtml(t('attendance.colStudent'))}</th>${appState.courseDates.map((d) => {
                         const cancelled = d.is_cancelled;
                         const thStyle = `writing-mode:vertical-rl;transform:rotate(180deg);height:100px; cursor:pointer;` +
                             (cancelled ? ' color:var(--danger); background:rgba(239,68,68,0.14); text-decoration:line-through;' : '');
-                        const thTitle = cancelled ? 'İPTAL EDİLDİ — işlem menüsü için tıklayın' : 'Bu hafta için işlem menüsü (sil / iptal)';
+                        const thTitle = cancelled ? t('attendance.thCancelled') : t('attendance.thActive');
                         return `<th style="${thStyle}" data-date-id="${d.id}" data-date="${d.date}" data-cancelled="${cancelled ? '1' : '0'}" title="${thTitle}">${formatDate(d.date)}</th>`;
                     }).join('')}</tr></thead>
                     <tbody id="studentRows"></tbody>
@@ -158,7 +159,7 @@ export function renderAttendanceView() {
         const nameHtml    = lastName
             ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>`
             : firstName;
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="Profili gör">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
+        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;"><span class="student-name-link" data-student-id="${student.id}" style="cursor:pointer; color:var(--text-main);" title="${escapeHtml(t('attendance.profileTooltip'))}">${nameHtml}</span><span class="btn-icon-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}"><i data-lucide="pencil" size="16"></i></span></div></td>`;
         appState.courseDates.forEach(date => {
             const cancelled = date.is_cancelled;
             const status = appState.attendanceMap[`${student.id}_${date.id}`] || '';
@@ -179,7 +180,7 @@ export function renderAttendanceView() {
     // Class Recaps satırı
     let videoRow = `<tr>`;
     videoRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Class Recaps</td>`;
+    videoRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowClassRecaps'))}</td>`;
     appState.courseDates.forEach(date => {
         const hasVideo = appState.videoMap[date.id];
         const tdStyle  = date.is_cancelled ? 'opacity:0.3; pointer-events:none; background:rgba(239,68,68,0.06);' : '';
@@ -190,7 +191,7 @@ export function renderAttendanceView() {
     // Partner/Teacher satırı
     let partnerRow = `<tr>`;
     partnerRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Partner</td>`;
+    partnerRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowPartner'))}</td>`;
     appState.courseDates.forEach(date => {
         const partner = appState.partnerMap[date.id] || '';
         const iconColor = partner ? 'var(--primary)' : 'var(--text-dim)';
@@ -202,7 +203,7 @@ export function renderAttendanceView() {
     // ADIM 8.2 — Ders Notu satırı
     let noteRow = `<tr>`;
     noteRow += `<td style="position:sticky; left:0; background:var(--card-bg); z-index:10;">#</td>`;
-    noteRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">Ders Notu</td>`;
+    noteRow += `<td style="position:sticky; left:30px; background:var(--card-bg); z-index:10; font-weight:800; color:var(--accent);">${escapeHtml(t('attendance.rowNote'))}</td>`;
     appState.courseDates.forEach(date => {
         const noteText  = appState.notesMap[date.id] || '';
         const iconColor = noteText ? 'var(--primary)' : 'var(--dim-forest)';
@@ -244,10 +245,10 @@ export function renderAttendanceView() {
                 if (dateObj.is_cancelled) return;
                 if (isPastDate(dateObj.date)) {
                     openConfirmModal(
-                        'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?',
+                        t('attendance.pastDateConfirm'),
                         async () => { await actions.toggleAttendance(studentId, dateId); },
                         null,
-                        'Evet'
+                        t('common.yes')
                     );
                     return;
                 }
@@ -268,9 +269,9 @@ export function renderAttendanceView() {
                 const dateId  = parseInt(span.dataset.dateId);
                 const current = span.dataset.partner || '';
                 openPromptModalWithValue(
-                    'Partner / Teacher Adı',
+                    t('attendance.partnerModalTitle'),
                     current,
-                    'İsim girin (boş bırakıp Tamam derseniz silinir)',
+                    t('attendance.partnerModalPlaceholder'),
                     async (newPartner) => {
                         await modals.updateTeacherPartner(dateId, newPartner);
                     }
@@ -284,9 +285,9 @@ export function renderAttendanceView() {
                 const dateId  = parseInt(cell.dataset.dateId);
                 const current = appState.notesMap[dateId] || '';
                 openPromptModalWithValue(
-                    'Ders Notu',
+                    t('attendance.noteModalTitle'),
                     current,
-                    'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
+                    t('attendance.noteModalPlaceholder'),
                     async (newNote) => {
                         await modals.updateNote(dateId, newNote);
                     }

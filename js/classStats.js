@@ -20,6 +20,7 @@ import { supabase } from './supabaseClient.js';
 import { refreshIcons, formatDate, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+import { t, tList } from './i18n.js';
 
 // ---------------------------------------------------------------
 // ADIM 2.1 — N+1 SORUNU DÜZELTİLDİ
@@ -35,7 +36,7 @@ export async function showWeeklyStats() {
         .eq('school_id', appState.currentSchoolId);
 
     if (!allClasses || allClasses.length === 0) {
-        alert('Bu okulda henüz sınıf yok.');
+        alert(t('stats.noClasses'));
         return;
     }
 
@@ -62,7 +63,7 @@ export async function showWeeklyStats() {
         });
     }
 
-    const days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+    const days = tList('stats.days');
 
     // 7 günlük hücre yapısı — her gün için o günde ders yapan sınıfların listesi
     let cells = Array(7).fill().map(() => []);
@@ -82,8 +83,8 @@ export async function showWeeklyStats() {
     // HTML oluştur
     let html = `
         <div class="view">
-            <div class="back-link" id="statsBackBtn">← Geri</div>
-            <div class="main-title">Haftalık Program</div>
+            <div class="back-link" id="statsBackBtn">${escapeHtml(t('nav.backGeneric'))}</div>
+            <div class="main-title">${escapeHtml(t('stats.header'))}</div>
             <table class="stats-table">
                 <thead>
                     <tr>${days.map(d => `<th>${d}</th>`).join('')}</tr>
@@ -132,10 +133,10 @@ export async function showWeeklyStats() {
                     </tr>
                 </tbody>
             </table>
-            <div id="chartTitle" style="text-align:center; padding:12px 15px 4px; color:var(--accent); font-weight:700;">Bir sınıfa tıkla, katılım grafiğini gör</div>
+            <div id="chartTitle" style="text-align:center; padding:12px 15px 4px; color:var(--accent); font-weight:700;">${escapeHtml(t('stats.chartHint'))}</div>
             <div id="chartSection">
                 <div id="chartContainer" class="chart-container" style="justify-content: center; align-items: center;">
-                    <div style="color: var(--text-dim); text-align: center; padding: 40px 0;">Henüz bir sınıf seçilmedi.</div>
+                    <div style="color: var(--text-dim); text-align: center; padding: 40px 0;">${escapeHtml(t('stats.chartNoneSelected'))}</div>
                 </div>
             </div>
         </div>
@@ -183,9 +184,9 @@ async function drawChartForClass(classId) {
         .order('date');
 
     if (!dates || dates.length === 0) {
-        document.getElementById('chartTitle').innerHTML = `<strong>${escapeHtml(cls.name)}</strong> - Ders tarihi yok`;
+        document.getElementById('chartTitle').innerHTML = t('stats.chartNoDatesTitle', { name: `<strong>${escapeHtml(cls.name)}</strong>` });
         const chartContainer = document.getElementById('chartContainer');
-        chartContainer.innerHTML = '<div style="color: var(--text-dim); text-align: center;">Bu sınıf için henüz ders tarihi eklenmemiş.</div>';
+        chartContainer.innerHTML = `<div style="color: var(--text-dim); text-align: center;">${escapeHtml(t('stats.chartNoDatesBody'))}</div>`;
         chartContainer.style.justifyContent = 'center';
         refreshIcons();
         return;
@@ -218,7 +219,7 @@ async function drawChartForClass(classId) {
     }
 
     const chartTitle = document.getElementById('chartTitle');
-    chartTitle.innerHTML = `<strong>${escapeHtml(cls.name)}</strong> - Katılım Sayıları (ders haftaları)`;
+    chartTitle.innerHTML = t('stats.chartTitle', { name: `<strong>${escapeHtml(cls.name)}</strong>` });
 
     const chartContainer = document.getElementById('chartContainer');
     chartContainer.innerHTML = '';

@@ -32,7 +32,7 @@ export const tr = {
     // --- Üst/genel navigasyon ---
     nav: {
         logout: '⎋ Çıkış',
-        appTitle: 'Tango Class Management System',
+        appTitle: 'Tango Sınıf Yönetim Sistemi',
         backToSchools: '← Okullar',
         backToClasses: '← Sınıflar',
         backToAttendance: '← Yoklama Sayfası',
@@ -41,7 +41,7 @@ export const tr = {
 
     // --- Giriş (login) ekranı ---
     login: {
-        title: 'Tango Class Management',
+        title: 'Tango Sınıf Yönetimi',
         subtitle: 'Devam etmek için giriş yapın',
         email: 'E-posta',
         password: 'Şifre',
@@ -130,7 +130,7 @@ export const tr = {
         thCancelled: 'İPTAL EDİLDİ — işlem menüsü için tıklayın',
         thActive: 'Bu hafta için işlem menüsü (sil / iptal)',
         pastDateConfirm: 'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?',
-        partnerModalTitle: 'Partner / Teacher Adı',
+        partnerModalTitle: 'Partner Adı',
         partnerModalPlaceholder: 'İsim girin (boş bırakıp Tamam derseniz silinir)',
         noteModalTitle: 'Ders Notu',
         noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)'
