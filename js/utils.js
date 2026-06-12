@@ -168,7 +168,7 @@ export function openPromptModalWithValue(title, defaultValue, placeholder, callb
     input.addEventListener('keypress', keyHandler);
 }
 
-export function openDoubleInputModal(title, placeholder1, placeholder2, callback) {
+export function openDoubleInputModal(title, placeholder1, placeholder2, callback, defaultVal1 = '', defaultVal2 = '') {
     const modal = document.getElementById('doubleInputModal');
     const titleEl = document.getElementById('doubleModalTitle');
     const input1 = document.getElementById('doubleInput1');
@@ -176,8 +176,8 @@ export function openDoubleInputModal(title, placeholder1, placeholder2, callback
     titleEl.innerText = title;
     input1.placeholder = placeholder1 || '';
     input2.placeholder = placeholder2 || '';
-    input1.value = '';
-    input2.value = '';
+    input1.value = defaultVal1;
+    input2.value = defaultVal2;
     modal.style.display = 'flex';
     input1.focus();
     const confirmHandler = () => {

@@ -28,6 +28,7 @@ export const appState = {
     // --- Seçili sınıf (yoklama + ödeme ekranları ortak kullanır) ---
     currentClassId: null,
     currentClassName: null,
+    currentClass: null,   // ADIM 5.2 — paket fiyatı ve hafta sayısı için
 
     // --- Yoklama ekranı verileri ---
     students: [],

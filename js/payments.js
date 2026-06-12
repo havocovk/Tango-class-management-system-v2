@@ -12,6 +12,12 @@ export async function showPaymentsView(classId, className) {
 }
 
 async function loadPaymentsData() {
+    // ADIM 5.2 — Sınıfın paket fiyatı ve hafta sayısını da çek
+    const { data: classData } = await supabase
+        .from('classes').select('id, name, package_price, package_weeks')
+        .eq('id', appState.currentClassId).single();
+    appState.currentClass = classData || null;
+
     const { data: studentsData } = await supabase
         .from('students').select('*')
         .eq('class_id', appState.currentClassId).order('id');
@@ -335,6 +341,8 @@ function renderPaymentsView() {
                     }
                 });
             } else {
+                const defPrice = (appState.currentClass && appState.currentClass.package_price) ? String(appState.currentClass.package_price) : '';
+                const defWeeks = (appState.currentClass && appState.currentClass.package_weeks) ? String(appState.currentClass.package_weeks) : '';
                 openDoubleInputModal(t('payments.addPaymentTitle'), t('payments.amountPlaceholder'), t('payments.weeksPlaceholder'), async (amount, weeks) => {
                     if (!amount || !weeks) return;
                     const amountNum = parseInt(amount);
