@@ -364,7 +364,7 @@ function renderPaymentsView() {
                         await loadPaymentsData();
                         renderPaymentsView();
                     }
-                });
+                }, defPrice, defWeeks);
             }
         });
     });
