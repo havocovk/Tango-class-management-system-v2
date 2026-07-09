@@ -37,7 +37,12 @@ function setViewVisibility(screen) {
 // renderScreen — ekranı çizer, history'e dokunmaz
 // ---------------------------------------------------------------
 async function renderScreen(screen, params) {
-    setViewVisibility(screen);
+    // workshops/festivals/privateLessons henüz kendi sayfası olmayan
+    // placeholder ekranlar — görünürlüğü DEĞİŞTİRME, menüde kal
+    const placeholders = ['workshops', 'festivals', 'privateLessons'];
+    if (!placeholders.includes(screen)) {
+        setViewVisibility(screen);
+    }
 
     switch (screen) {
         case 'mainMenu': {
