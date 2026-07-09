@@ -266,6 +266,66 @@
     </div>
 </div>
 
+<!-- ========== ADIM 4.2 — ÇALIŞTAY OLUŞTURMA MODALI ========== -->
+<div id="workshopCreateModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--primary);">Yeni Çalıştay Oluştur</h3>
+
+        <!-- Çalıştay adı -->
+        <input type="text" id="wsName" placeholder="Çalıştay adı" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Stüdyo adı -->
+        <input type="text" id="wsStudio" placeholder="Stüdyo / Mekan adı (opsiyonel)" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Başlangıç tarihi -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="text" id="wsStartDateDisplay" readonly placeholder="Başlangıç tarihi"
+                style="flex:1; background:#1e293b; color:white;">
+            <span id="wsCalendarIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="wsHiddenDatePicker" style="display:none;">
+
+        <!-- Saat -->
+        <input type="text" id="wsTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Hafta sayısı -->
+        <input type="number" id="wsTotalWeeks" placeholder="Hafta sayısı (4, 6, 8...)" min="1" max="52"
+            style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+
+        <!-- Tema -->
+        <input type="text" id="wsTheme" placeholder="Tema (opsiyonel, örn: Vals, Tango)" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Ödeme türü -->
+        <select id="wsPaymentType"
+            style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+            <option value="upfront">Baştan Ödeme</option>
+            <option value="weekly">Haftalık Ödeme</option>
+        </select>
+
+        <!-- Baştan ödeme fiyatı -->
+        <div id="wsUpfrontPriceRow" style="margin-bottom:12px;">
+            <input type="number" id="wsTotalPrice" placeholder="Toplam ücret (₺)" min="0"
+                style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+        </div>
+
+        <!-- Haftalık ödeme fiyatı -->
+        <div id="wsWeeklyPriceRow" style="margin-bottom:12px; display:none;">
+            <input type="number" id="wsWeeklyPrice" placeholder="Haftalık ücret (₺)" min="0"
+                style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="wsCreateConfirmBtn">Oluştur</button>
+            <button class="btn-secondary" id="wsCreateCancelBtn">İptal</button>
+        </div>
+    </div>
+</div>
 
 <!-- ========== ADIM 7.1 — SERVICE WORKER KAYIT ========== -->
 <!-- Uygulama kabuğunu (HTML/CSS/JS) telefona kaydeder.     -->

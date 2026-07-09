@@ -146,12 +146,102 @@ function renderWorkshopsView() {
 // (Modal HTML adım 4.2'de eklenecek; şimdilik toast)
 // ---------------------------------------------------------------
 function openWorkshopCreateModal() {
-    const modal = document.getElementById('workshopCreateModal');
-    if (!modal) {
-        showToast('Çalıştay oluşturma modalı yakında eklenecek.', 'warning');
+    const modal       = document.getElementById('workshopCreateModal');
+    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+
+    // Alanları sıfırla
+    document.getElementById('wsName').value         = '';
+    document.getElementById('wsStudio').value       = '';
+    document.getElementById('wsTime').value         = '19:00';
+    document.getElementById('wsTotalWeeks').value   = '';
+    document.getElementById('wsTheme').value        = '';
+    document.getElementById('wsTotalPrice').value   = '';
+    document.getElementById('wsWeeklyPrice').value  = '';
+    document.getElementById('wsPaymentType').value  = 'upfront';
+    document.getElementById('wsStartDateDisplay').value = '';
+    document.getElementById('wsHiddenDatePicker').value = '';
+
+    // Ödeme türü değişince fiyat alanını göster/gizle
+    document.getElementById('wsUpfrontPriceRow').style.display = 'block';
+    document.getElementById('wsWeeklyPriceRow').style.display  = 'none';
+
+    const paymentTypeEl = document.getElementById('wsPaymentType');
+    const onPayTypeChange = () => {
+        const isUpfront = paymentTypeEl.value === 'upfront';
+        document.getElementById('wsUpfrontPriceRow').style.display = isUpfront ? 'block' : 'none';
+        document.getElementById('wsWeeklyPriceRow').style.display  = isUpfront ? 'none'  : 'block';
+    };
+    paymentTypeEl.onchange = onPayTypeChange;
+
+    // Takvim ikonu
+    const calIcon  = document.getElementById('wsCalendarIcon');
+    const hiddenDP = document.getElementById('wsHiddenDatePicker');
+    const display  = document.getElementById('wsStartDateDisplay');
+
+    calIcon.onclick = () => {
+        if (hiddenDP.showPicker) hiddenDP.showPicker();
+    };
+    hiddenDP.onchange = () => {
+        if (hiddenDP.value) {
+            const [y, m, d] = hiddenDP.value.split('-');
+            display.value = `${d}/${m}/${y}`;
+        }
+    };
+
+    // Butonlar
+    document.getElementById('wsCreateConfirmBtn').onclick = () => saveWorkshop(modal);
+    document.getElementById('wsCreateCancelBtn').onclick  = () => { modal.style.display = 'none'; };
+
+    modal.style.display = 'flex';
+    document.getElementById('wsName').focus();
+}
+
+async function saveWorkshop(modal) {
+    const name = document.getElementById('wsName').value.trim();
+    if (!name) { showToast('Çalıştay adı boş olamaz.', 'warning'); return; }
+
+    const startDateISO = document.getElementById('wsHiddenDatePicker').value;
+    if (!startDateISO) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
+
+    const timeVal = document.getElementById('wsTime').value.trim();
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+
+    const totalWeeks = parseInt(document.getElementById('wsTotalWeeks').value);
+    if (!totalWeeks || totalWeeks < 1) { showToast('Hafta sayısı giriniz.', 'warning'); return; }
+
+    const paymentType  = document.getElementById('wsPaymentType').value;
+    const totalPrice   = paymentType === 'upfront'  ? (parseFloat(document.getElementById('wsTotalPrice').value)  || null) : null;
+    const weeklyPrice  = paymentType === 'weekly'   ? (parseFloat(document.getElementById('wsWeeklyPrice').value) || null) : null;
+    const studio       = document.getElementById('wsStudio').value.trim() || null;
+    const theme        = document.getElementById('wsTheme').value.trim()  || null;
+
+    const { data: ws, error } = await supabase
+        .from('workshops')
+        .insert({
+            name,
+            studio_name:  studio,
+            start_date:   startDateISO,
+            lesson_time:  timeVal,
+            total_weeks:  totalWeeks,
+            theme,
+            payment_type: paymentType,
+            total_price:  totalPrice,
+            weekly_price: weeklyPrice,
+            is_archived:  false
+        })
+        .select()
+        .single();
+
+    if (error) {
+        showToast('Çalıştay oluşturulamadı: ' + error.message, 'error');
         return;
     }
-    modal.style.display = 'flex';
+
+    showToast('Çalıştay oluşturuldu ✓', 'success');
+    modal.style.display = 'none';
+    await fetchWorkshops();
+    renderWorkshopsView();
 }
 
 // ---------------------------------------------------------------
