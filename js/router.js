@@ -1,36 +1,27 @@
 // ---------------------------------------------------------------
-// ADIM 3.1 — ROUTER (YÖNLENDİRİCİ) MODÜLÜ
+// router.js — YÖNLENDİRİCİ MODÜLÜ
 // ---------------------------------------------------------------
-// Bu dosya uygulamanın "santral memuru"dur.
-// Tüm sayfa geçişleri TEK bir yerden, buradan yönetilir.
-//
-// Modüller artık birbirini DOĞRUDAN değil, sadece bu dosyayı çağırır.
-// Bu sayede attendance.js ile payments.js arasındaki
-// "kısır döngü" (döngüsel bağımlılık) kırılır.
-//
-// NOT: Burada sayfalar 'import(...)' ile (dinamik import) çağrılıyor.
-// Bu özellikle önemli: router.js hiçbir sayfayı en baştan sabit
-// olarak içeri almaz, böylece yeni bir döngü oluşmaz.
 //
 // KULLANIM:
+//   navigateTo('mainMenu');
 //   navigateTo('schools');
-//   navigateTo('classes',    { schoolId, schoolName });
-//   navigateTo('attendance', { classId, className });
-//   navigateTo('payments',   { classId, className });
+//   navigateTo('classes',       { schoolId, schoolName });
+//   navigateTo('attendance',    { classId, className });
+//   navigateTo('payments',      { classId, className });
 //   navigateTo('stats');
+//   navigateTo('workshops');
+//   navigateTo('festivals');
+//   navigateTo('privateLessons');
 // ---------------------------------------------------------------
 
-// En son gidilen sayfa — dil değişiminde yeniden çizmek için saklanır.
-let currentRoute = { screen: 'schools', params: {} };
+import { showToast } from './utils.js';
+
+let currentRoute = { screen: 'mainMenu', params: {} };
 
 // ---------------------------------------------------------------
-// renderScreen — sadece ekranı çizer, history'e DOKUNMAZ.
-// Hem navigateTo hem reloadCurrentView tarafından kullanılır.
+// setViewVisibility — hangi div görünür olacak
 // ---------------------------------------------------------------
-async function renderScreen(screen, params) {
-    // Her ekran geçişinde görünürlüğü ayarla:
-    // mainMenu → mainMenuView göster, dynamicView gizle
-    // diğerleri → dynamicView göster, mainMenuView gizle
+function setViewVisibility(screen) {
     const mainMenuView = document.getElementById('mainMenuView');
     const dynamicView  = document.getElementById('dynamicView');
     if (screen === 'mainMenu') {
@@ -40,8 +31,20 @@ async function renderScreen(screen, params) {
         if (mainMenuView) mainMenuView.style.display = 'none';
         if (dynamicView)  dynamicView.style.display  = 'block';
     }
+}
+
+// ---------------------------------------------------------------
+// renderScreen — ekranı çizer, history'e dokunmaz
+// ---------------------------------------------------------------
+async function renderScreen(screen, params) {
+    setViewVisibility(screen);
 
     switch (screen) {
+        case 'mainMenu': {
+            const module = await import('./main_menu.js');
+            await module.loadMainMenu();
+            break;
+        }
         case 'schools': {
             const module = await import('./schools.js');
             await module.loadSchools();
@@ -67,28 +70,25 @@ async function renderScreen(screen, params) {
             await module.showWeeklyStats();
             break;
         }
+        case 'workshops': {
+            showToast('Çalıştaylar modülü yakında eklenecek.', 'warning');
+            break;
+        }
+        case 'festivals': {
+            showToast('Festivaller modülü yakında eklenecek.', 'warning');
+            break;
+        }
+        case 'privateLessons': {
+            showToast('Özel Dersler modülü yakında eklenecek.', 'warning');
+            break;
+        }
         default:
             console.error('Bilinmeyen ekran adı:', screen);
     }
 }
 
 // ---------------------------------------------------------------
-// navigateTo — kullanıcı bir butona/linke tıkladığında çağrılır.
-// History'e kayıt EKLER ve ekranı çizer.
-//
-// ANDROID GERİ TUŞU MANTIĞI:
-//   Uygulama ilk açıldığında history boştur. startApp() içinde
-//   schools için pushState yapılır → stack: [schools]
-//
-//   Kullanıcı okula tıklar → navigateTo('classes') → pushState
-//   stack: [schools, classes]
-//
-//   Kullanıcı sınıfa tıklar → navigateTo('attendance') → pushState
-//   stack: [schools, classes, attendance]
-//
-//   Geri tuşu → popstate → classes state'i gelir → renderScreen('classes')
-//   Geri tuşu → popstate → schools state'i gelir → renderScreen('schools')
-//   Geri tuşu → popstate → history bitti → state null gelir → çıkış onayı
+// navigateTo — buton/link tıklandığında çağrılır
 // ---------------------------------------------------------------
 export async function navigateTo(screen, params = {}) {
     currentRoute = { screen, params };
@@ -97,8 +97,7 @@ export async function navigateTo(screen, params = {}) {
 }
 
 // ---------------------------------------------------------------
-// reloadCurrentView — DİL DEĞİŞİMİNDE çağrılır.
-// History'e DOKUNMAZ, sadece mevcut ekranı yeni dilde yeniden çizer.
+// reloadCurrentView — dil değişiminde çağrılır
 // ---------------------------------------------------------------
 export async function reloadCurrentView() {
     await renderScreen(currentRoute.screen, currentRoute.params);

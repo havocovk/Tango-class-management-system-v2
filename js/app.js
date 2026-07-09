@@ -242,6 +242,10 @@ async function renderScreenFromState(state) {
             break;
         }
         case 'schools': {
+            const mainMenuView2 = document.getElementById('mainMenuView');
+            const dynamicView2  = document.getElementById('dynamicView');
+            if (mainMenuView2) mainMenuView2.style.display = 'none';
+            if (dynamicView2)  dynamicView2.style.display  = 'block';
             const m = await import('./schools.js');
             await m.loadSchools();
             break;
