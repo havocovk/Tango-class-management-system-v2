@@ -256,6 +256,28 @@ async function saveWorkshop(modal) {
         return;
     }
 
+    // ADIM 4.3 — Otomatik workshop_dates oluştur (her hafta için +7 gün)
+    const dates = [];
+    const start = new Date(startDateISO);
+    for (let i = 0; i < totalWeeks; i++) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i * 7);
+        dates.push({
+            workshop_id:  ws.id,
+            date:         d.toISOString().split('T')[0],
+            is_cancelled: false
+        });
+    }
+
+    const { error: datesError } = await supabase
+        .from('workshop_dates')
+        .insert(dates);
+
+    if (datesError) {
+        showToast('Tarihler oluşturulamadı: ' + datesError.message, 'error');
+        return;
+    }
+
     showToast('Çalıştay oluşturuldu ✓', 'success');
     modal.style.display = 'none';
     await fetchWorkshops();
