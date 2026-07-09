@@ -49,9 +49,6 @@
 <div class="container" id="appContainer" style="display:none;">
     <!-- DİL SEÇİCİ — içeriği i18n.js tarafından doldurulur -->
     <div id="langSwitcher"></div>
-    <div id="mainMenuView" style="display:none;">
-        <!-- İçerik main_menu.js tarafından doldurulur (Adım 2.3) -->
-    </div>
     <div id="dynamicView"></div>
 </div>
 
@@ -69,6 +66,7 @@
             </span>
         </div>
         <input type="date" id="hiddenDatePicker" style="display:none;">
+        <input type="time" id="newClassTime" value="19:00" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:15px;">
         <div style="display:flex; gap:8px; margin-bottom:15px;">
             <input type="number" id="newClassPackagePrice" placeholder="Paket fiyatı (₺)" min="0" style="flex:1; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
             <input type="number" id="newClassPackageWeeks" placeholder="Hafta sayısı" min="1" style="flex:1; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
