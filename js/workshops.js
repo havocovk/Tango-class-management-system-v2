@@ -68,13 +68,13 @@ function renderWorkshopsView() {
                     <div style="font-size:11px; color:var(--primary); margin-top:2px;">${payType}</div>
                 </div>
                 <div style="display:flex; gap:15px; align-items:center;">
-                    <span class="btn-icon-edit" data-ws-id="${w.id}" style="cursor:pointer; display:inline-flex; color:var(--primary);">
+                    <span class="ws-btn-edit" data-ws-id="${w.id}" style="cursor:pointer; display:inline-flex; color:var(--primary);">
                         <i data-lucide="pencil" size="20"></i>
                     </span>
-                    <span class="btn-icon-archive" data-ws-id="${w.id}" data-ws-archived="${w.is_archived ? '1' : '0'}" style="color:var(--accent); cursor:pointer; display:inline-flex;">
+                    <span class="ws-btn-archive" data-ws-id="${w.id}" data-ws-archived="${w.is_archived ? '1' : '0'}" style="color:var(--accent); cursor:pointer; display:inline-flex;">
                         <i data-lucide="${w.is_archived ? 'archive-restore' : 'archive'}" size="20"></i>
                     </span>
-                    <span class="btn-icon-delete" data-ws-id="${w.id}" style="cursor:pointer; display:inline-flex; color:var(--danger);">
+                    <span class="ws-btn-delete" data-ws-id="${w.id}" style="cursor:pointer; display:inline-flex; color:var(--danger);">
                         <i data-lucide="trash-2" size="20"></i>
                     </span>
                 </div>
@@ -123,7 +123,7 @@ function renderWorkshopsView() {
     });
 
     // Arşiv butonu
-    document.querySelectorAll('.btn-icon-archive[data-ws-id]').forEach(el => {
+    document.querySelectorAll('.ws-btn-archive[data-ws-id]').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
             const wsId      = parseInt(el.dataset.wsId);
@@ -133,7 +133,7 @@ function renderWorkshopsView() {
     });
 
     // Düzenle butonu
-    document.querySelectorAll('.btn-icon-edit[data-ws-id]').forEach(el => {
+    document.querySelectorAll('.ws-btn-edit[data-ws-id]').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
             const wsId = parseInt(el.dataset.wsId);
@@ -143,7 +143,7 @@ function renderWorkshopsView() {
     });
 
     // Sil butonu
-    document.querySelectorAll('.btn-icon-delete[data-ws-id]').forEach(el => {
+    document.querySelectorAll('.ws-btn-delete[data-ws-id]').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
             const wsId = parseInt(el.dataset.wsId);
