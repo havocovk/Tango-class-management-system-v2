@@ -216,9 +216,13 @@ async function saveWorkshop(modal) {
     const studio       = document.getElementById('wsStudio').value.trim() || null;
     const theme        = document.getElementById('wsTheme').value.trim()  || null;
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+
     const { data: ws, error } = await supabase
         .from('workshops')
         .insert({
+            user_id:      user.id,
             name,
             studio_name:  studio,
             start_date:   startDateISO,
