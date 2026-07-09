@@ -22,11 +22,9 @@ export async function loadMainMenu() {
     // tarafından doldurulur. Henüz doldurulmamışsa schools.js'i çağırarak
     // doldur (ilk açılışta bu durum oluşabilir).
     if (!appState._debtSummary) {
+        // Sadece borçlu özetini çek — renderSchoolsView çağırmadan
         const schoolsModule = await import('./schools.js');
-        await schoolsModule.loadSchools();
-        // loadSchools zaten renderSchoolsView çağırır; biz sadece
-        // borçlu özetini doldurmak için çağırıyoruz ama renderSchoolsView
-        // dynamicView'e yazacak — biz hemen üzerine mainMenu'yü yazacağız.
+        await schoolsModule.loadDebtSummary();
     }
 
     renderMainMenu();
@@ -90,10 +88,7 @@ function renderMainMenu() {
         </div>
     `;
 
-    // mainMenuView'i göster, dynamicView'i gizle
-    view.style.display = 'block';
-    const dynView = document.getElementById('dynamicView');
-    if (dynView) dynView.style.display = 'none';
+    // Görünürlük router.js tarafından yönetilir
 
     // Buton click olayları
     document.getElementById('menuBtnGroup').onclick = () => {

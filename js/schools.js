@@ -219,7 +219,7 @@ async function deleteSchool(id) {
 // aynı calcStudentDebt algoritması) JavaScript içinde çalıştırır.
 // Sonuç appState._debtSummary içine yazılır.
 // ---------------------------------------------------------------
-async function loadDebtSummary() {
+export async function loadDebtSummary() {
     appState._debtSummary = null;
     if (!navigator.onLine) return;
 
