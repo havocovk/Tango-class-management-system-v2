@@ -122,37 +122,34 @@ function renderWorkshopsView() {
         });
     });
 
-    // Lucide ikonları render et, SONRA listener'ları bağla
-    refreshIcons();
-
-    // Arşiv butonu
-    document.querySelectorAll('.ws-btn-archive[data-ws-id]').forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wsId       = parseInt(el.dataset.wsId);
-            const isArchived = el.dataset.wsArchived === '1';
-            archiveWorkshop(wsId, !isArchived);
-        });
-    });
-
-    // Düzenle butonu
+    // Butonlara doğrudan onclick bağla
     document.querySelectorAll('.ws-btn-edit[data-ws-id]').forEach(el => {
-        el.addEventListener('click', (e) => {
+        el.onclick = (e) => {
             e.stopPropagation();
             const wsId = parseInt(el.dataset.wsId);
             const ws   = (appState.workshopsList || []).find(w => w.id === wsId);
             if (ws) openWorkshopEditModal(ws);
-        });
+        };
     });
 
-    // Sil butonu
+    document.querySelectorAll('.ws-btn-archive[data-ws-id]').forEach(el => {
+        el.onclick = (e) => {
+            e.stopPropagation();
+            const wsId       = parseInt(el.dataset.wsId);
+            const isArchived = el.dataset.wsArchived === '1';
+            archiveWorkshop(wsId, !isArchived);
+        };
+    });
+
     document.querySelectorAll('.ws-btn-delete[data-ws-id]').forEach(el => {
-        el.addEventListener('click', (e) => {
+        el.onclick = (e) => {
             e.stopPropagation();
             const wsId = parseInt(el.dataset.wsId);
             deleteWorkshop(wsId);
-        });
+        };
     });
+
+    refreshIcons();
 }
 
 // ---------------------------------------------------------------
