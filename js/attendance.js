@@ -95,6 +95,10 @@ export async function loadAttendanceData() {
     }
 
     // ----- ÇEVRİMİÇİ: normal şekilde Supabase'den çek (mevcut davranış) -----
+    // ADIM 3.3 — Sınıf bilgisini (lesson_time dahil) çek
+    const { data: classData } = await supabase.from('classes').select('*').eq('id', appState.currentClassId).single();
+    if (classData) appState.currentClass = classData;
+
     const { data: studentsData } = await supabase.from('students').select('*').eq('class_id', appState.currentClassId).order('id');
     appState.students = studentsData || [];
     const { data: datesData } = await supabase.from('course_dates').select('*').eq('class_id', appState.currentClassId).order('date');
@@ -198,7 +202,7 @@ function buildTableHTML() {
                 <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
             </div>
-            <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}</h2>
+            <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
                 <input id="studentSearchInput" type="text" placeholder="Öğrenci ara..." style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
                 <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="Arşivlenmiş öğrenciler"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
