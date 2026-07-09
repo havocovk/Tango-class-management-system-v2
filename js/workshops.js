@@ -68,6 +68,9 @@ function renderWorkshopsView() {
                     <div style="font-size:11px; color:var(--primary); margin-top:2px;">${payType}</div>
                 </div>
                 <div style="display:flex; gap:15px; align-items:center;">
+                    <span class="btn-icon-edit" data-ws-id="${w.id}" style="cursor:pointer; display:inline-flex; color:var(--primary);">
+                        <i data-lucide="pencil" size="20"></i>
+                    </span>
                     <span class="btn-icon-archive" data-ws-id="${w.id}" data-ws-archived="${w.is_archived ? '1' : '0'}" style="color:var(--accent); cursor:pointer; display:inline-flex;">
                         <i data-lucide="${w.is_archived ? 'archive-restore' : 'archive'}" size="20"></i>
                     </span>
@@ -126,6 +129,16 @@ function renderWorkshopsView() {
             const wsId      = parseInt(el.dataset.wsId);
             const isArchived = el.dataset.wsArchived === '1';
             archiveWorkshop(wsId, !isArchived);
+        });
+    });
+
+    // Düzenle butonu
+    document.querySelectorAll('.btn-icon-edit[data-ws-id]').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wsId = parseInt(el.dataset.wsId);
+            const ws   = (appState.workshopsList || []).find(w => w.id === wsId);
+            if (ws) openWorkshopEditModal(ws);
         });
     });
 
@@ -243,6 +256,112 @@ async function saveWorkshop(modal) {
     }
 
     showToast('Çalıştay oluşturuldu ✓', 'success');
+    modal.style.display = 'none';
+    await fetchWorkshops();
+    renderWorkshopsView();
+}
+
+// ---------------------------------------------------------------
+// openWorkshopEditModal — Mevcut çalıştayı düzenleme modalı
+// ---------------------------------------------------------------
+function openWorkshopEditModal(ws) {
+    const modal = document.getElementById('workshopCreateModal');
+    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+
+    // Başlığı güncelle
+    modal.querySelector('h3').textContent = 'Çalıştayı Düzenle';
+
+    // Mevcut değerleri doldur
+    document.getElementById('wsName').value        = ws.name || '';
+    document.getElementById('wsStudio').value      = ws.studio_name || '';
+    document.getElementById('wsTime').value        = ws.lesson_time ? ws.lesson_time.substring(0,5) : '19:00';
+    document.getElementById('wsTotalWeeks').value  = ws.total_weeks || '';
+    document.getElementById('wsTheme').value       = ws.theme || '';
+    document.getElementById('wsPaymentType').value = ws.payment_type || 'upfront';
+    document.getElementById('wsTotalPrice').value  = ws.total_price || '';
+    document.getElementById('wsWeeklyPrice').value = ws.weekly_price || '';
+
+    // Tarihi göster
+    const display  = document.getElementById('wsStartDateDisplay');
+    const hiddenDP = document.getElementById('wsHiddenDatePicker');
+    if (ws.start_date) {
+        const d = ws.start_date.split('T')[0];
+        hiddenDP.value = d;
+        const [y, m, day] = d.split('-');
+        display.value = `${day}/${m}/${y}`;
+    } else {
+        hiddenDP.value = '';
+        display.value  = '';
+    }
+
+    // Ödeme türüne göre fiyat alanı göster/gizle
+    const isUpfront = (ws.payment_type || 'upfront') === 'upfront';
+    document.getElementById('wsUpfrontPriceRow').style.display = isUpfront ? 'block' : 'none';
+    document.getElementById('wsWeeklyPriceRow').style.display  = isUpfront ? 'none'  : 'block';
+
+    const paymentTypeEl = document.getElementById('wsPaymentType');
+    paymentTypeEl.onchange = () => {
+        const up = paymentTypeEl.value === 'upfront';
+        document.getElementById('wsUpfrontPriceRow').style.display = up ? 'block' : 'none';
+        document.getElementById('wsWeeklyPriceRow').style.display  = up ? 'none'  : 'block';
+    };
+
+    // Takvim ikonu
+    const calIcon = document.getElementById('wsCalendarIcon');
+    calIcon.onclick = () => { if (hiddenDP.showPicker) hiddenDP.showPicker(); };
+    hiddenDP.onchange = () => {
+        if (hiddenDP.value) {
+            const [y, m, d] = hiddenDP.value.split('-');
+            display.value = `${d}/${m}/${y}`;
+        }
+    };
+
+    // Kaydet / İptal
+    document.getElementById('wsCreateConfirmBtn').onclick = () => updateWorkshop(ws.id, modal);
+    document.getElementById('wsCreateCancelBtn').onclick  = () => {
+        modal.querySelector('h3').textContent = 'Yeni Çalıştay Oluştur';
+        modal.style.display = 'none';
+    };
+
+    modal.style.display = 'flex';
+    document.getElementById('wsName').focus();
+}
+
+async function updateWorkshop(wsId, modal) {
+    const name = document.getElementById('wsName').value.trim();
+    if (!name) { showToast('Çalıştay adı boş olamaz.', 'warning'); return; }
+
+    const startDateISO = document.getElementById('wsHiddenDatePicker').value || null;
+    const timeVal      = document.getElementById('wsTime').value.trim();
+    const timePattern  = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (timeVal && !timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+
+    const totalWeeks  = parseInt(document.getElementById('wsTotalWeeks').value) || null;
+    const paymentType = document.getElementById('wsPaymentType').value;
+    const totalPrice  = paymentType === 'upfront' ? (parseFloat(document.getElementById('wsTotalPrice').value)  || null) : null;
+    const weeklyPrice = paymentType === 'weekly'  ? (parseFloat(document.getElementById('wsWeeklyPrice').value) || null) : null;
+    const studio      = document.getElementById('wsStudio').value.trim() || null;
+    const theme       = document.getElementById('wsTheme').value.trim()  || null;
+
+    const { error } = await supabase
+        .from('workshops')
+        .update({
+            name,
+            studio_name:  studio,
+            start_date:   startDateISO,
+            lesson_time:  timeVal || null,
+            total_weeks:  totalWeeks,
+            theme,
+            payment_type: paymentType,
+            total_price:  totalPrice,
+            weekly_price: weeklyPrice
+        })
+        .eq('id', wsId);
+
+    if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
+
+    showToast('Çalıştay güncellendi ✓', 'success');
+    modal.querySelector('h3').textContent = 'Yeni Çalıştay Oluştur';
     modal.style.display = 'none';
     await fetchWorkshops();
     renderWorkshopsView();
