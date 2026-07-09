@@ -264,7 +264,7 @@ async function saveWorkshop(modal) {
         d.setDate(d.getDate() + i * 7);
         dates.push({
             workshop_id:  ws.id,
-            date:         d.toISOString().split('T')[0],
+            lesson_date:  d.toISOString().split('T')[0],
             is_cancelled: false
         });
     }
