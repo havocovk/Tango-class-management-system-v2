@@ -144,14 +144,10 @@ function openNewClassModal() {
     const calendarIcon = document.getElementById('calendarIconBtn');
     const confirmBtn = document.getElementById('newClassConfirmBtn');
     const cancelBtn = document.getElementById('newClassCancelBtn');
-    const priceInput = document.getElementById('newClassPackagePrice');
-    const weeksInput = document.getElementById('newClassPackageWeeks');
 
     const todayISO = new Date().toISOString().split('T')[0];
     const todayDisplay = isoToDisplayDate(todayISO);
     dateDisplay.value = todayDisplay;
-    if (priceInput) priceInput.value = '';
-    if (weeksInput) weeksInput.value = '';
     hiddenDatePicker.value = todayISO;
 
     nameInput.value = '';
@@ -193,9 +189,6 @@ function openNewClassModal() {
             return;
         }
 
-        const packagePrice = priceInput && priceInput.value ? parseInt(priceInput.value) : null;
-        const packageWeeks = weeksInput && weeksInput.value ? parseInt(weeksInput.value) : null;
-
         // ADIM 3.2 — Saat oku ve doğrula
         const newClassTimeInput = document.getElementById('newClassTime');
         let lessonTime = newClassTimeInput ? newClassTimeInput.value.trim() : '19:00';
@@ -207,7 +200,7 @@ function openNewClassModal() {
 
         const { data: newClass, error: classError } = await supabase
             .from('classes')
-            .insert({ school_id: appState.currentSchoolId, name: className, package_price: packagePrice, package_weeks: packageWeeks, lesson_time: lessonTime })
+            .insert({ school_id: appState.currentSchoolId, name: className, lesson_time: lessonTime })
             .select()
             .single();
 
@@ -255,13 +248,9 @@ async function editClass(classId, oldName) {
     const calendarIcon = document.getElementById('editClassCalendarIcon');
     const saveBtn = document.getElementById('editClassSaveBtn');
     const cancelBtn = document.getElementById('editClassCancelBtn');
-    const priceInput = document.getElementById('editClassPackagePrice');
-    const weeksInput = document.getElementById('editClassPackageWeeks');
 
     // Mevcut paket ve saat değerlerini göster
     const clsObj = appState.classesList.find(c => c.id === classId);
-    if (priceInput) priceInput.value = (clsObj && clsObj.package_price) ? clsObj.package_price : '';
-    if (weeksInput) weeksInput.value = (clsObj && clsObj.package_weeks) ? clsObj.package_weeks : '';
     const timeInput = document.getElementById('editClassTime');
     if (timeInput) timeInput.value = (clsObj && clsObj.lesson_time) ? clsObj.lesson_time.substring(0, 5) : '19:00';
 
@@ -295,11 +284,8 @@ async function editClass(classId, oldName) {
         const newName = nameInput.value.trim();
         const newDateISO = hiddenDatePicker.value;
 
-        // ADIM 5.2 — paket fiyatı ve hafta sayısını güncelle
         const updateData = {};
         if (newName && newName !== oldName) updateData.name = newName;
-        if (priceInput) updateData.package_price = priceInput.value ? parseInt(priceInput.value) : null;
-        if (weeksInput) updateData.package_weeks = weeksInput.value ? parseInt(weeksInput.value) : null;
         // ADIM 3.2 — lesson_time güncelle
         const editTimeInput = document.getElementById('editClassTime');
         if (editTimeInput) {
