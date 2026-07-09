@@ -14,14 +14,18 @@
 //
 // KULLANIM:
 //   navigateTo('schools');
-//   navigateTo('classes',    { schoolId, schoolName });
-//   navigateTo('attendance', { classId, className });
-//   navigateTo('payments',   { classId, className });
+//   navigateTo('classes',       { schoolId, schoolName });
+//   navigateTo('attendance',    { classId, className });
+//   navigateTo('payments',      { classId, className });
 //   navigateTo('stats');
+//   navigateTo('mainMenu');
+//   navigateTo('workshops');
+//   navigateTo('festivals');
+//   navigateTo('privateLessons');
 // ---------------------------------------------------------------
 
 // En son gidilen sayfa — dil değişiminde yeniden çizmek için saklanır.
-let currentRoute = { screen: 'schools', params: {} };
+let currentRoute = { screen: 'mainMenu', params: {} };
 
 // ---------------------------------------------------------------
 // renderScreen — sadece ekranı çizer, history'e DOKUNMAZ.
@@ -52,6 +56,29 @@ async function renderScreen(screen, params) {
         case 'stats': {
             const module = await import('./classStats.js');
             await module.showWeeklyStats();
+            break;
+        }
+        case 'mainMenu': {
+            const module = await import('./main_menu.js');
+            await module.loadMainMenu();
+            break;
+        }
+        case 'workshops': {
+            // ADIM 4'te geliştirilecek — şimdilik placeholder
+            const { showToast } = await import('./utils.js');
+            showToast('Çalıştaylar modülü yakında eklenecek.', 'warning');
+            break;
+        }
+        case 'festivals': {
+            // ADIM 5'te geliştirilecek — şimdilik placeholder
+            const { showToast } = await import('./utils.js');
+            showToast('Festivaller modülü yakında eklenecek.', 'warning');
+            break;
+        }
+        case 'privateLessons': {
+            // ADIM 6'da geliştirilecek — şimdilik placeholder
+            const { showToast } = await import('./utils.js');
+            showToast('Özel Dersler modülü yakında eklenecek.', 'warning');
             break;
         }
         default:
