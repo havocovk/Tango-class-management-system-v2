@@ -200,7 +200,7 @@ function openNewClassModal() {
         let lessonTime = timeInput ? timeInput.value.trim() : '19:00';
         const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (!timePattern.test(lessonTime)) {
-            alert('Geçerli bir saat girin (örn: 19:00)');
+            showToast('Geçerli bir saat girin (örn: 19:00)', 'warning');
             return;
         }
 
