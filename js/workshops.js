@@ -265,6 +265,7 @@ async function saveWorkshop(modal) {
         dates.push({
             workshop_id:  ws.id,
             lesson_date:  d.toISOString().split('T')[0],
+            week_number:  i + 1,
             is_cancelled: false
         });
     }
