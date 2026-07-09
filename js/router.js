@@ -39,7 +39,7 @@ function setViewVisibility(screen) {
 async function renderScreen(screen, params) {
     // workshops/festivals/privateLessons henüz kendi sayfası olmayan
     // placeholder ekranlar — görünürlüğü DEĞİŞTİRME, menüde kal
-    const placeholders = ['workshops', 'festivals', 'privateLessons'];
+    const placeholders = ['festivals', 'privateLessons', 'workshopDetail'];
     if (!placeholders.includes(screen)) {
         setViewVisibility(screen);
     }
@@ -76,7 +76,12 @@ async function renderScreen(screen, params) {
             break;
         }
         case 'workshops': {
-            showToast('Çalıştaylar modülü yakında eklenecek.', 'warning');
+            const module = await import('./workshops.js');
+            await module.loadWorkshops();
+            break;
+        }
+        case 'workshopDetail': {
+            showToast('Calistay detay sayfasi yakin eklenecek.', 'warning');
             break;
         }
         case 'festivals': {
