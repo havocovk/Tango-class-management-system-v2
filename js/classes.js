@@ -195,9 +195,10 @@ function openNewClassModal() {
 
         const packagePrice = priceInput && priceInput.value ? parseInt(priceInput.value) : null;
         const packageWeeks = weeksInput && weeksInput.value ? parseInt(weeksInput.value) : null;
-        // Saat input'unu oku ve doğrula (HH:MM formatı)
-        const timeInput = document.getElementById('newClassTime');
-        let lessonTime = timeInput ? timeInput.value.trim() : '19:00';
+
+        // ADIM 3.2 — Saat oku ve doğrula
+        const newClassTimeInput = document.getElementById('newClassTime');
+        let lessonTime = newClassTimeInput ? newClassTimeInput.value.trim() : '19:00';
         const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (!timePattern.test(lessonTime)) {
             showToast('Geçerli bir saat girin (örn: 19:00)', 'warning');
@@ -257,10 +258,12 @@ async function editClass(classId, oldName) {
     const priceInput = document.getElementById('editClassPackagePrice');
     const weeksInput = document.getElementById('editClassPackageWeeks');
 
-    // Mevcut paket değerlerini göster
+    // Mevcut paket ve saat değerlerini göster
     const clsObj = appState.classesList.find(c => c.id === classId);
     if (priceInput) priceInput.value = (clsObj && clsObj.package_price) ? clsObj.package_price : '';
     if (weeksInput) weeksInput.value = (clsObj && clsObj.package_weeks) ? clsObj.package_weeks : '';
+    const timeInput = document.getElementById('editClassTime');
+    if (timeInput) timeInput.value = (clsObj && clsObj.lesson_time) ? clsObj.lesson_time.substring(0, 5) : '19:00';
 
     nameInput.value = oldName;
     dateDisplay.value = '';
@@ -297,6 +300,17 @@ async function editClass(classId, oldName) {
         if (newName && newName !== oldName) updateData.name = newName;
         if (priceInput) updateData.package_price = priceInput.value ? parseInt(priceInput.value) : null;
         if (weeksInput) updateData.package_weeks = weeksInput.value ? parseInt(weeksInput.value) : null;
+        // ADIM 3.2 — lesson_time güncelle
+        const editTimeInput = document.getElementById('editClassTime');
+        if (editTimeInput) {
+            const timeVal = editTimeInput.value.trim();
+            const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+            if (timeVal && !timePattern.test(timeVal)) {
+                showToast('Geçerli bir saat girin (örn: 19:00)', 'warning');
+                return;
+            }
+            updateData.lesson_time = timeVal || '19:00';
+        }
         if (Object.keys(updateData).length > 0) {
             const { error } = await supabase.from('classes').update(updateData).eq('id', classId);
             if (error) alert(t('classes.editNameFail', { msg: error.message }));
