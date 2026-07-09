@@ -195,9 +195,18 @@ function openNewClassModal() {
 
         const packagePrice = priceInput && priceInput.value ? parseInt(priceInput.value) : null;
         const packageWeeks = weeksInput && weeksInput.value ? parseInt(weeksInput.value) : null;
+        // Saat input'unu oku ve doğrula (HH:MM formatı)
+        const timeInput = document.getElementById('newClassTime');
+        let lessonTime = timeInput ? timeInput.value.trim() : '19:00';
+        const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+        if (!timePattern.test(lessonTime)) {
+            alert('Geçerli bir saat girin (örn: 19:00)');
+            return;
+        }
+
         const { data: newClass, error: classError } = await supabase
             .from('classes')
-            .insert({ school_id: appState.currentSchoolId, name: className, package_price: packagePrice, package_weeks: packageWeeks })
+            .insert({ school_id: appState.currentSchoolId, name: className, package_price: packagePrice, package_weeks: packageWeeks, lesson_time: lessonTime })
             .select()
             .single();
 
