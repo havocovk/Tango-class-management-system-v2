@@ -122,11 +122,14 @@ function renderWorkshopsView() {
         });
     });
 
+    // Lucide ikonları render et, SONRA listener'ları bağla
+    refreshIcons();
+
     // Arşiv butonu
     document.querySelectorAll('.ws-btn-archive[data-ws-id]').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const wsId      = parseInt(el.dataset.wsId);
+            const wsId       = parseInt(el.dataset.wsId);
             const isArchived = el.dataset.wsArchived === '1';
             archiveWorkshop(wsId, !isArchived);
         });
@@ -150,8 +153,6 @@ function renderWorkshopsView() {
             deleteWorkshop(wsId);
         });
     });
-
-    refreshIcons();
 }
 
 // ---------------------------------------------------------------
