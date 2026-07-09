@@ -167,7 +167,12 @@ async function startApp() {
     history.replaceState(null, '');
     history.pushState({ screen: 'mainMenu', params: {} }, '');
 
-    // mainMenuView görünür, dynamicView gizli — main_menu.js halleder
+    // mainMenuView görünür, dynamicView gizli
+    const mainMenuView = document.getElementById('mainMenuView');
+    const dynamicView  = document.getElementById('dynamicView');
+    if (mainMenuView) mainMenuView.style.display = 'block';
+    if (dynamicView)  dynamicView.style.display  = 'none';
+
     const m = await import('./main_menu.js');
     await m.loadMainMenu();
 
@@ -228,6 +233,10 @@ async function renderScreenFromState(state) {
     const { screen, params = {} } = state;
     switch (screen) {
         case 'mainMenu': {
+            const mainMenuView = document.getElementById('mainMenuView');
+            const dynamicView  = document.getElementById('dynamicView');
+            if (mainMenuView) mainMenuView.style.display = 'block';
+            if (dynamicView)  dynamicView.style.display  = 'none';
             const m = await import('./main_menu.js');
             await m.loadMainMenu();
             break;
