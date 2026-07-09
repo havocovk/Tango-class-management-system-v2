@@ -245,6 +245,14 @@ export const tr = {
         months: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
     },
 
+    // --- Ana Menü (main_menu.js) ---
+    mainMenu: {
+        groupClasses:   'Grup Dersleri',
+        workshops:      'Çalıştaylar',
+        festivals:      'Festivaller',
+        privateLessons: 'Özel Dersler'
+    },
+
     // --- Haftalık istatistikler / katılım grafiği ---
     stats: {
         header: 'Haftalık Program',

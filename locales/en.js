@@ -244,6 +244,14 @@ export const en = {
         months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     },
 
+    // --- Main Menu (main_menu.js) ---
+    mainMenu: {
+        groupClasses:   'Group Classes',
+        workshops:      'Workshops',
+        festivals:      'Festivals',
+        privateLessons: 'Private Lessons'
+    },
+
     // --- Weekly statistics / attendance chart ---
     stats: {
         header: 'Weekly Schedule',
