@@ -125,7 +125,7 @@ retryBtn.onclick = async () => {
         return;
     }
     await trySyncPending();
-    await navigateTo('schools');
+    await navigateTo('mainMenu');
 };
 
 // Sayfa ilk açılışında bağlantı yoksa hemen bandı göster
@@ -165,10 +165,11 @@ async function startApp() {
     // Geri tuşuyla schools'a dönünce bir kez daha basılırsa
     // null state'e düşülür ve history.back() Android'e kontrolü verir.
     history.replaceState(null, '');
-    history.pushState({ screen: 'schools', params: {} }, '');
+    history.pushState({ screen: 'mainMenu', params: {} }, '');
 
-    const m = await import('./schools.js');
-    await m.loadSchools();
+    // mainMenuView görünür, dynamicView gizli — main_menu.js halleder
+    const m = await import('./main_menu.js');
+    await m.loadMainMenu();
 
     if (navigator.onLine) {
         await trySyncPending();
@@ -226,6 +227,11 @@ logoutBtn.onclick = handleLogout;
 async function renderScreenFromState(state) {
     const { screen, params = {} } = state;
     switch (screen) {
+        case 'mainMenu': {
+            const m = await import('./main_menu.js');
+            await m.loadMainMenu();
+            break;
+        }
         case 'schools': {
             const m = await import('./schools.js');
             await m.loadSchools();
