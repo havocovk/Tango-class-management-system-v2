@@ -308,16 +308,10 @@ function openFestClassDetail(cls) {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
-    const dateStr = cls.lesson_date ? formatDate(cls.lesson_date) : '';
-    const timeStr = cls.lesson_time ? cls.lesson_time.substring(0, 5) : '';
-    const dt      = [dateStr, timeStr].filter(Boolean).join(' · ');
-
-    // Video ikonu
-    const platform    = cls.video_url ? detectVideoPlatform(cls.video_url) : null;
-    const videoIcon   = platform
-        ? `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>`
-        : '';
-    const videoBtnStyle = `cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:${platform ? platform.color : 'var(--primary)'};font-size:12px;font-weight:600;`;
+    const dateStr  = cls.lesson_date ? formatDate(cls.lesson_date) : '';
+    const timeStr  = cls.lesson_time ? cls.lesson_time.substring(0, 5) : '';
+    const dt       = [dateStr, timeStr].filter(Boolean).join(' · ');
+    const hasVideo = !!cls.video_url;
 
     container.innerHTML = `
         <div class="view">
@@ -350,15 +344,14 @@ function openFestClassDetail(cls) {
                     </div>
                 </div>
 
-                <!-- Video -->
-                <div>
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
-                        <i data-lucide="video" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Video
-                    </div>
-                    <div id="fcVideoBtn" style="${videoBtnStyle}">
-                        <i data-lucide="${cls.video_url ? 'video' : 'video-off'}" size="16" style="pointer-events:none;"></i>
-                        ${cls.video_url ? ('Video Ekli ' + videoIcon) : 'Video Ekle'}
-                    </div>
+                <!-- Ders Videosu — kamera ikonu (soluk=yok, canlı=var) -->
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:12px;color:var(--text-dim);font-weight:600;">
+                        Ders Videosu
+                    </span>
+                    <span id="fcVideoIcon" class="vid-icon ${hasVideo ? 'active' : ''}" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;">
+                        <i data-lucide="video" size="22" style="pointer-events:none;"></i>
+                    </span>
                 </div>
 
                 <!-- Partner Adı -->
@@ -397,8 +390,8 @@ function openFestClassDetail(cls) {
         });
     };
 
-    // Video butonu
-    document.getElementById('fcVideoBtn').onclick = () => {
+    // Video ikonu tıklama
+    document.getElementById('fcVideoIcon').onclick = () => {
         if (cls.video_url) {
             openFestVideoModal(cls);
         } else {
