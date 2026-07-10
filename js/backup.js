@@ -26,13 +26,25 @@ import { t } from './i18n.js';
 // Geri yüklemede üstten alta doğru yazılır (önce okullar, en son videolar).
 // Bu sıra, tabloların birbirine bağımlılığını (foreign key) korur.
 const TABLES = [
+    // --- Grup Dersleri (orijinal tablolar) ---
     'schools',
     'classes',
     'students',
     'course_dates',
     'attendance',
     'payments',
-    'videos'
+    'videos',
+    // --- Çalıştaylar (Aşama 4) ---
+    'workshops',
+    'workshop_dates',
+    'workshop_students',
+    'workshop_attendance',
+    'workshop_payments',
+    // --- Festivaller (Aşama 5) ---
+    'festivals',
+    'festival_classes',
+    // --- Özel Dersler (Aşama 6) ---
+    'private_lessons'
 ];
 
 // ---------------------------------------------------------------
