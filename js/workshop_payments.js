@@ -55,14 +55,21 @@ async function loadWorkshopPaymentsData() {
         .from('workshop_dates').select('*').eq('workshop_id', wid).order('week_number');
     appState.wsDates = dates || [];
 
-    // Yoklama (weekly modda "S" haftalarını borç dışı bırakmak için gerekir)
+    // Yoklama — bu çalıştaya ait tüm yoklamaları çek;
+    // hem student_id hem workshop_date_id kesinlikle Number olarak sakla
+    // (tip uyumsuzluğu anahtar eşleşmesini bozmasın).
     const dateIds = appState.wsDates.map(d => d.id);
     appState.wsAttendanceMap = {};
     if (dateIds.length > 0) {
         const { data: att } = await supabase
-            .from('workshop_attendance').select('*').in('workshop_date_id', dateIds);
+            .from('workshop_attendance')
+            .select('*')
+            .eq('workshop_id', wid)
+            .in('workshop_date_id', dateIds);
         if (att) att.forEach(a => {
-            appState.wsAttendanceMap[`${a.student_id}_${a.workshop_date_id}`] = a.status;
+            const sid = Number(a.student_id);
+            const did = Number(a.workshop_date_id);
+            appState.wsAttendanceMap[`${sid}_${did}`] = (a.status || '').toString().trim();
         });
     }
 
@@ -298,10 +305,15 @@ function checkWsIsPaid(studentId, dateIndex) {
 function calcWsStudentDebt(student) {
     let validDates = 0;
     appState.wsDates.forEach(d => {
-        if (d.is_cancelled) return;                 // iptal → kimseye sayılmaz
-        if (!isWeekOccurred(d.lesson_date)) return; // gelecek hafta → henüz sayılmaz
-        const status = appState.wsAttendanceMap[`${student.id}_${d.id}`] || '';
-        if (status !== '+') return;                 // sadece geldi (+) işaretli haftalar borç doğurur
+        if (d.is_cancelled) return;                  // iptal hafta → kimseye sayılmaz
+        if (!isWeekOccurred(d.lesson_date)) return;  // gelecek hafta → henüz sayılmaz
+        // Map her zaman Number(id) ile doldurulduğundan burada da Number kullan.
+        const sid    = Number(student.id);
+        const did    = Number(d.id);
+        const status = (appState.wsAttendanceMap[`${sid}_${did}`] || '').toString().trim();
+        // Sadece '+' (geldi) işaretli haftalar borç doğurur.
+        // '-' (gelmedi), 'S' (sınıfta yoktu) ve boş → borç yok.
+        if (status !== '+') return;
         validDates++;
     });
 
