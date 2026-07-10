@@ -394,6 +394,33 @@
     </div>
 </div>
 
+<!-- ========== FESTİVAL DERSİ VIDEO MODALI ========== -->
+<div id="festVideoModal" class="modal">
+    <div class="modal-content" style="max-width:420px; text-align:center;">
+        <h3 id="festVideoModalTitle" style="margin-top:0; text-align:center;">
+            <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
+            <span style="vertical-align:middle;"> Ders Videosu</span>
+        </h3>
+        <p id="festVideoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:8px; font-size:13px; margin:16px 0; color:#2DD4BF; border:1px solid rgba(45,212,191,0.3);"></p>
+        <!-- Embed oynatıcı (YouTube/Vimeo için) -->
+        <div id="festVideoEmbedContainer" style="display:none; margin:0 0 16px; border-radius:10px; overflow:hidden; background:#000;">
+            <div style="position:relative; padding-bottom:56.25%; height:0;">
+                <iframe id="festVideoEmbed" src="" frameborder="0" allowfullscreen
+                    style="position:absolute; top:0; left:0; width:100%; height:100%;"></iframe>
+            </div>
+        </div>
+        <div style="display:flex; gap:24px; justify-content:center; align-items:center; margin-bottom:16px;">
+            <span id="festVideoPlayBtn" style="cursor:pointer; color:#2DD4BF; transition:transform 0.2s;">
+                <i data-lucide="play" size="32"></i>
+            </span>
+            <span id="festVideoDeleteBtn" style="cursor:pointer; color:var(--danger); transition:transform 0.2s;">
+                <i data-lucide="trash-2" size="32"></i>
+            </span>
+        </div>
+        <button id="festVideoCloseBtn" class="btn-secondary" style="width:100%;">Kapat</button>
+    </div>
+</div>
+
 <!-- ========== ADIM 7.1 — SERVICE WORKER KAYIT ========== -->
 <!-- Uygulama kabuğunu (HTML/CSS/JS) telefona kaydeder.     -->
 <!-- İnternet olmasa bile uygulama açılabilir hale gelir.   -->

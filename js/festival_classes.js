@@ -1,26 +1,16 @@
 // ---------------------------------------------------------------
 // festival_classes.js — FESTİVAL DERSLERİ MODÜLÜ
-// ADIM 5.3 + 5.4 + 5.5 — Ders listesi, oluşturma, detay sayfası
-// ---------------------------------------------------------------
-// Festival dersleri YOKLAMA İÇERMEZ, ÖĞRENCİ LİSTESİ YOKTUR.
-// Her ders için: ad, tarih, saat, katılımcı sayısı,
-//               kazanılan para, video, partner, not.
-//
-// TABLO YAPISI (Supabase):
-//   festivals:       id, user_id, name, location, start_date, end_date, is_archived
-//   festival_classes: id, festival_id, name, lesson_date, lesson_time,
-//                    participant_count, earned_amount, video_url,
-//                    partner_name, note, is_archived
+// ADIM 5.3 + 5.4 + 5.5
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
 import { COUNTRY_CURRENCY } from './festivals.js';
-import { refreshIcons, openConfirmModal, openPromptModalWithValue, showToast, escapeHtml, formatDate } from './utils.js';
+import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
-// VIDEO PLATFORM TESPİTİ VE EMBED
+// VIDEO PLATFORM TESPİTİ
 // ---------------------------------------------------------------
 function detectVideoPlatform(url) {
     if (!url) return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
@@ -40,14 +30,12 @@ function detectVideoPlatform(url) {
     return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
 }
 
-// YouTube veya Vimeo URL'sini embed URL'sine çevir
+// YouTube / Vimeo URL'sini embed URL'sine çevir
 function toEmbedUrl(url) {
     const lower = url.toLowerCase();
-    // YouTube: watch?v=ID veya youtu.be/ID → embed/ID
     if (lower.includes('youtube.com/watch')) {
         try {
-            const u  = new URL(url);
-            const id = u.searchParams.get('v');
+            const id = new URL(url).searchParams.get('v');
             if (id) return `https://www.youtube.com/embed/${id}`;
         } catch(e) {}
     }
@@ -59,7 +47,6 @@ function toEmbedUrl(url) {
         const id = url.split('/shorts/')[1].split('?')[0];
         if (id) return `https://www.youtube.com/embed/${id}`;
     }
-    // Vimeo: vimeo.com/ID → player.vimeo.com/video/ID
     if (lower.includes('vimeo.com/')) {
         const id = url.split('vimeo.com/')[1].split('?')[0].split('/')[0];
         if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
@@ -67,33 +54,10 @@ function toEmbedUrl(url) {
     return null;
 }
 
-// Video bölümü HTML'i — embed veya link
-function buildVideoHtml(videoUrl) {
-    if (!videoUrl) return '';
-    const platform  = detectVideoPlatform(videoUrl);
-    const embedUrl  = platform.canEmbed ? toEmbedUrl(videoUrl) : null;
-    const badge     = `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;margin-left:6px;vertical-align:middle;">${platform.name}</span>`;
-
-    if (embedUrl) {
-        return `
-            <div style="margin-top:6px;">
-                <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000;">
-                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen
-                        style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
-                </div>
-                <div style="margin-top:6px;">${badge} <a href="${escapeHtml(videoUrl)}" target="_blank" style="font-size:11px;color:var(--primary);">Yeni sekmede aç</a></div>
-            </div>`;
-    }
-    return `<div style="margin-top:6px;">${badge} <a href="${escapeHtml(videoUrl)}" target="_blank" style="font-size:11px;color:var(--primary);">Videoyu Aç</a></div>`;
-}
-
 // ---------------------------------------------------------------
 // Para birimi dropdown HTML'i
-// Festivaldeki ülkeye göre o ülkenin para birimi en üstte gelir,
-// ardından $ USD ve € EUR sabit olarak yer alır, sonra diğerleri.
 // ---------------------------------------------------------------
 function currencySelectHtml(festivalLocation, savedCurrency) {
-    // Ülkeyi location string'inden al: 'Paris, Fransa' → 'Fransa'
     let countryName = '';
     if (festivalLocation) {
         const parts = festivalLocation.split(',');
@@ -101,7 +65,6 @@ function currencySelectHtml(festivalLocation, savedCurrency) {
     }
     const countryCurrency = COUNTRY_CURRENCY[countryName] || null;
 
-    // Sabit listeler
     const allCurrencies = [
         '₺ TRY','$ USD','€ EUR','£ GBP','₽ RUB','¥ JPY','¥ CNY',
         '₩ KRW','₹ INR','R$ BRL','C$ CAD','A$ AUD','Fr CHF',
@@ -113,15 +76,14 @@ function currencySelectHtml(festivalLocation, savedCurrency) {
         '₫ VND','₨ PKR','৳ BDT','NZ$ NZD','HK$ HKD','NT$ TWD',
     ];
 
-    // Önce ülke para birimi, sonra USD/EUR (zaten listede yoksa), sonra kalanlar
     const top = [];
     if (countryCurrency) top.push(countryCurrency);
     if (!top.includes('$ USD')) top.push('$ USD');
     if (!top.includes('€ EUR')) top.push('€ EUR');
-    const rest = allCurrencies.filter(c => !top.includes(c));
+    const rest    = allCurrencies.filter(c => !top.includes(c));
     const ordered = [...top, ...rest];
-
     const selected = savedCurrency || top[0] || '$ USD';
+
     const opts = ordered.map(c =>
         `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`
     ).join('');
@@ -147,20 +109,17 @@ export async function showFestivalDetail(festivalId, festivalName) {
 // ---------------------------------------------------------------
 async function loadFestivalData() {
     const fid = appState.currentFestivalId;
-
     const { data: fest } = await supabase.from('festivals').select('*').eq('id', fid).single();
     appState.currentFestival = fest || null;
 
     const { data: classes } = await supabase
-        .from('festival_classes')
-        .select('*')
-        .eq('festival_id', fid)
-        .order('lesson_date', { ascending: true });
+        .from('festival_classes').select('*')
+        .eq('festival_id', fid).order('lesson_date', { ascending: true });
     appState.festivalClasses = classes || [];
 }
 
 // ---------------------------------------------------------------
-// Festival detay sayfasını çiz (ders listesi)
+// Festival detay sayfası — ders listesi
 // ---------------------------------------------------------------
 function renderFestivalDetailView() {
     const container = document.getElementById('dynamicView');
@@ -169,22 +128,20 @@ function renderFestivalDetailView() {
     const fest    = appState.currentFestival;
     const classes = (appState.festivalClasses || []).filter(c => !c.is_archived);
 
-    // Üst bilgi kutusu
     let infoHtml = '';
     if (fest) {
-        const dateStr  = fest.start_date ? formatDate(fest.start_date) : '';
-        const dateEnd  = fest.end_date   ? ' – ' + formatDate(fest.end_date) : '';
-        const loc      = fest.location   ? escapeHtml(fest.location) : '';
+        const dateStr = fest.start_date ? formatDate(fest.start_date) : '';
+        const dateEnd = fest.end_date   ? ' – ' + formatDate(fest.end_date) : '';
+        const loc     = fest.location   ? escapeHtml(fest.location) : '';
         infoHtml = `
         <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <div style="font-size:12px;color:var(--text-dim);line-height:1.9;">
-                ${loc  ? '<div><b>Lokasyon:</b> ' + loc + '</div>' : ''}
+                ${loc     ? '<div><b>Lokasyon:</b> ' + loc + '</div>' : ''}
                 ${dateStr ? '<div><b>Tarih:</b> ' + dateStr + dateEnd + '</div>' : ''}
             </div>
         </div>`;
     }
 
-    // Ders kartları
     let classesHtml = '';
     if (classes.length === 0) {
         classesHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">Henüz ders eklenmemiş.</div>`;
@@ -193,6 +150,7 @@ function renderFestivalDetailView() {
             const dateStr = c.lesson_date ? formatDate(c.lesson_date) : '';
             const timeStr = c.lesson_time ? c.lesson_time.substring(0, 5) : '';
             const dt      = [dateStr, timeStr].filter(Boolean).join(' · ');
+            const platform = c.video_url ? detectVideoPlatform(c.video_url) : null;
 
             classesHtml += `
             <div class="class-card" style="cursor:pointer;" data-fc-goto="${c.id}">
@@ -202,10 +160,17 @@ function renderFestivalDetailView() {
                     <div style="font-size:11px;color:var(--primary);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;">
                         ${c.participant_count ? `<span>👥 ${c.participant_count} katılımcı</span>` : ''}
                         ${c.earned_amount     ? `<span>💰 ${Number(c.earned_amount).toLocaleString('tr-TR')} ${c.currency || ''}</span>` : ''}
-                        ${c.video_url         ? `<span>🎬 Video</span>` : ''}
+                        ${platform ? `<span style="color:${platform.color};">🎬 ${platform.name}</span>` : ''}
                     </div>
                 </div>
-                <i data-lucide="chevron-right" size="20" style="color:var(--primary);flex-shrink:0;pointer-events:none;"></i>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <div class="fc-btn-edit" data-fc-id="${c.id}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--primary);z-index:2;">
+                        <i data-lucide="pencil" size="18" style="pointer-events:none;"></i>
+                    </div>
+                    <div class="fc-btn-delete" data-fc-id="${c.id}" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--danger);z-index:2;">
+                        <i data-lucide="trash-2" size="18" style="pointer-events:none;"></i>
+                    </div>
+                </div>
             </div>`;
         });
     }
@@ -229,18 +194,41 @@ function renderFestivalDetailView() {
     document.getElementById('addFestClassBtn').onclick    = () => openFestClassModal();
 
     document.querySelectorAll('[data-fc-goto]').forEach(el => {
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+            if (e.target.closest('.fc-btn-edit') || e.target.closest('.fc-btn-delete')) return;
             const cid = el.dataset.fcGoto;
             const cls = (appState.festivalClasses || []).find(x => String(x.id) === String(cid));
             if (cls) openFestClassDetail(cls);
         });
     });
 
+    document.querySelectorAll('.fc-btn-edit').forEach(el => {
+        el.onclick = (e) => {
+            e.stopPropagation();
+            const cls = (appState.festivalClasses || []).find(x => String(x.id) === String(el.dataset.fcId));
+            if (cls) openFestClassModal(cls);
+        };
+    });
+
+    document.querySelectorAll('.fc-btn-delete').forEach(el => {
+        el.onclick = (e) => {
+            e.stopPropagation();
+            const cid = el.dataset.fcId;
+            openConfirmModal('Bu dersi silmek istediğinizden emin misiniz?', async () => {
+                const { error } = await supabase.from('festival_classes').delete().eq('id', cid);
+                if (error) { showToast('Silme başarısız.', 'error'); return; }
+                showToast('Ders silindi ✓', 'success');
+                await loadFestivalData();
+                renderFestivalDetailView();
+            });
+        };
+    });
+
     refreshIcons();
 }
 
 // ---------------------------------------------------------------
-// ADIM 5.4 — Ders oluşturma modalı
+// Ders oluşturma / düzenleme modalı
 // ---------------------------------------------------------------
 function openFestClassModal(existing) {
     const modal = document.getElementById('festClassModal');
@@ -281,22 +269,14 @@ function openFestClassModal(existing) {
 async function createFestClass(modal) {
     const name = document.getElementById('fcName').value.trim();
     if (!name) { showToast('Ders adı boş olamaz.', 'warning'); return; }
-
     const lesson_date = document.getElementById('fcHiddenDate').value || null;
     if (!lesson_date) { showToast('Tarih seçiniz.', 'warning'); return; }
-
-    const timeVal = document.getElementById('fcTime').value.trim();
-    const lesson_time = timeVal || null;
+    const lesson_time = document.getElementById('fcTime').value.trim() || null;
 
     const { error } = await supabase.from('festival_classes').insert({
-        festival_id:  appState.currentFestivalId,
-        name,
-        lesson_date,
-        lesson_time
+        festival_id: appState.currentFestivalId, name, lesson_date, lesson_time
     });
-
     if (error) { showToast('Ders oluşturulamadı: ' + error.message, 'error'); return; }
-
     showToast('Ders oluşturuldu ✓', 'success');
     modal.style.display = 'none';
     await loadFestivalData();
@@ -306,20 +286,14 @@ async function createFestClass(modal) {
 async function updateFestClass(classId, modal) {
     const name = document.getElementById('fcName').value.trim();
     if (!name) { showToast('Ders adı boş olamaz.', 'warning'); return; }
-
     const lesson_date = document.getElementById('fcHiddenDate').value || null;
     if (!lesson_date) { showToast('Tarih seçiniz.', 'warning'); return; }
-
-    const timeVal = document.getElementById('fcTime').value.trim();
+    const lesson_time = document.getElementById('fcTime').value.trim() || null;
 
     const { error } = await supabase.from('festival_classes').update({
-        name,
-        lesson_date,
-        lesson_time: timeVal || null
+        name, lesson_date, lesson_time
     }).eq('id', classId);
-
     if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
-
     showToast('Ders güncellendi ✓', 'success');
     modal.style.display = 'none';
     await loadFestivalData();
@@ -327,9 +301,7 @@ async function updateFestClass(classId, modal) {
 }
 
 // ---------------------------------------------------------------
-// ADIM 5.5 — Ders detay sayfası
-// Tüm alanlar tek Kaydet butonuyla kaydedilir.
-// Düzenle/Sil: ders listesindeki ikonlardan yapılır.
+// Ders detay sayfası
 // ---------------------------------------------------------------
 function openFestClassDetail(cls) {
     appState.currentFestClassId = cls.id;
@@ -340,13 +312,20 @@ function openFestClassDetail(cls) {
     const timeStr = cls.lesson_time ? cls.lesson_time.substring(0, 5) : '';
     const dt      = [dateStr, timeStr].filter(Boolean).join(' · ');
 
+    // Video ikonu
+    const platform    = cls.video_url ? detectVideoPlatform(cls.video_url) : null;
+    const videoIcon   = platform
+        ? `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>`
+        : '';
+    const videoBtnStyle = `cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card-bg);color:${platform ? platform.color : 'var(--primary)'};font-size:12px;font-weight:600;`;
+
     container.innerHTML = `
         <div class="view">
             <div class="back-link" id="backToFestDetailBtn">← Festival Dersleri</div>
             <div class="main-title">${escapeHtml(cls.name)}</div>
             ${dt ? `<div style="text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:20px;">${dt}</div>` : ''}
 
-            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;">
+            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:16px;">
 
                 <!-- Katılımcı Sayısı -->
                 <div>
@@ -371,15 +350,15 @@ function openFestClassDetail(cls) {
                     </div>
                 </div>
 
-                <!-- Video URL -->
+                <!-- Video -->
                 <div>
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
-                        <i data-lucide="video" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Video URL
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
+                        <i data-lucide="video" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Video
                     </div>
-                    <input type="text" id="fcVideoInput" value="${escapeHtml(cls.video_url || '')}"
-                        placeholder="YouTube, Vimeo, Google Drive, Instagram..."
-                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
-                    ${buildVideoHtml(cls.video_url)}
+                    <div id="fcVideoBtn" style="${videoBtnStyle}">
+                        <i data-lucide="${cls.video_url ? 'video' : 'video-off'}" size="16" style="pointer-events:none;"></i>
+                        ${cls.video_url ? ('Video Ekli ' + videoIcon) : 'Video Ekle'}
+                    </div>
                 </div>
 
                 <!-- Partner Adı -->
@@ -401,7 +380,7 @@ function openFestClassDetail(cls) {
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;">${escapeHtml(cls.note || '')}</textarea>
                 </div>
 
-                <!-- TEK KAYDET BUTONU -->
+                <!-- Kaydet -->
                 <button id="fcSaveAllBtn" class="btn-success" style="width:100%;padding:13px;font-size:14px;font-weight:700;">
                     <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Kaydet
                 </button>
@@ -418,41 +397,134 @@ function openFestClassDetail(cls) {
         });
     };
 
-    // Tek Kaydet butonu — tüm alanları tek seferde kaydeder
+    // Video butonu
+    document.getElementById('fcVideoBtn').onclick = () => {
+        if (cls.video_url) {
+            openFestVideoModal(cls);
+        } else {
+            openFestVideoAddModal(cls);
+        }
+    };
+
+    // Kaydet
     document.getElementById('fcSaveAllBtn').onclick = async () => {
         const participant_count = parseInt(document.getElementById('fcParticipantInput').value) || 0;
         const earned_amount     = parseFloat(document.getElementById('fcEarnedInput').value)    || 0;
-        const currency          = document.getElementById('fcCurrencySelect') ? document.getElementById('fcCurrencySelect').value : null;
-        const video_url         = document.getElementById('fcVideoInput').value.trim()           || null;
-        const partner_name      = document.getElementById('fcPartnerInput').value.trim()         || null;
-        const note              = document.getElementById('fcNoteInput').value.trim()             || null;
+        const currency          = document.getElementById('fcCurrencySelect')
+                                  ? document.getElementById('fcCurrencySelect').value : null;
+        const partner_name      = document.getElementById('fcPartnerInput').value.trim() || null;
+        const note              = document.getElementById('fcNoteInput').value.trim()    || null;
 
         const { error } = await supabase.from('festival_classes').update({
-            participant_count, earned_amount, currency, video_url, partner_name, note
+            participant_count, earned_amount, currency, partner_name, note
         }).eq('id', cls.id);
 
         if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
         showToast('Kaydedildi ✓', 'success');
 
-        // Lokal state güncelle
         const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
         if (idx !== -1) Object.assign(appState.festivalClasses[idx], {
-            participant_count, earned_amount, currency, video_url, partner_name, note
+            participant_count, earned_amount, currency, partner_name, note
         });
     };
 
     refreshIcons();
 }
-// ---------------------------------------------------------------
-// Tek alan kaydetme yardımcısı
-// ---------------------------------------------------------------
-async function saveFestClassField(classId, field, value, successMsg) {
-    const { error } = await supabase.from('festival_classes')
-        .update({ [field]: value }).eq('id', classId);
-    if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
-    showToast(successMsg, 'success');
 
-    // Lokal state güncelle (sayfayı yeniden çizmeden)
-    const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(classId));
-    if (idx !== -1) appState.festivalClasses[idx][field] = value;
+// ---------------------------------------------------------------
+// Video ekleme modalı (URL giriş)
+// ---------------------------------------------------------------
+function openFestVideoAddModal(cls) {
+    const { openPromptModal } = window._tcmsUtils || {};
+    // utils'ten openPromptModal'ı kullanalım
+    import('./utils.js').then(({ openPromptModal }) => {
+        openPromptModal('Video Linki Ekle', 'https://youtube.com/...', async (url) => {
+            if (!url || !url.startsWith('http')) {
+                showToast('Geçerli bir URL giriniz.', 'warning');
+                return;
+            }
+            const { error } = await supabase.from('festival_classes')
+                .update({ video_url: url }).eq('id', cls.id);
+            if (error) { showToast('Video kaydedilemedi.', 'error'); return; }
+            showToast('Video eklendi ✓', 'success');
+            cls.video_url = url;
+            const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
+            if (idx !== -1) appState.festivalClasses[idx].video_url = url;
+            // Detay sayfasını yenile
+            openFestClassDetail(cls);
+        });
+    });
+}
+
+// ---------------------------------------------------------------
+// Video görüntüleme modalı
+// ---------------------------------------------------------------
+function openFestVideoModal(cls) {
+    const modal      = document.getElementById('festVideoModal');
+    const titleEl    = document.getElementById('festVideoModalTitle');
+    const linkDisp   = document.getElementById('festVideoLinkDisplay');
+    const embedCont  = document.getElementById('festVideoEmbedContainer');
+    const embedFrame = document.getElementById('festVideoEmbed');
+    const playBtn    = document.getElementById('festVideoPlayBtn');
+    const deleteBtn  = document.getElementById('festVideoDeleteBtn');
+    const closeBtn   = document.getElementById('festVideoCloseBtn');
+    if (!modal) return;
+
+    const url      = cls.video_url;
+    const platform = detectVideoPlatform(url);
+    const embedUrl = platform.canEmbed ? toEmbedUrl(url) : null;
+
+    // Başlık — platform rozeti
+    titleEl.innerHTML = `
+        <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+        <span style="vertical-align:middle;"> Ders Videosu</span>
+        <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
+    `;
+
+    linkDisp.textContent = url;
+
+    // Embed varsa göster, yoksa gizle
+    if (embedUrl) {
+        embedFrame.src          = embedUrl;
+        embedCont.style.display = 'block';
+        linkDisp.style.display  = 'none';
+    } else {
+        embedCont.style.display = 'none';
+        embedFrame.src          = '';
+        linkDisp.style.display  = 'block';
+    }
+
+    modal.style.display = 'flex';
+    refreshIcons();
+
+    // Oynat butonu — embed varsa zaten görünüyor, yoksa yeni sekmede aç
+    playBtn.onclick = () => { window.open(url, '_blank'); };
+
+    // Sil
+    deleteBtn.onclick = () => {
+        modal.style.display = 'none';
+        embedFrame.src      = '';
+        openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
+            const { error } = await supabase.from('festival_classes')
+                .update({ video_url: null }).eq('id', cls.id);
+            if (error) { showToast('Video silinemedi.', 'error'); return; }
+            showToast('Video silindi ✓', 'success');
+            cls.video_url = null;
+            const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
+            if (idx !== -1) appState.festivalClasses[idx].video_url = null;
+            openFestClassDetail(cls);
+        });
+    };
+
+    // Kapat
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+        embedFrame.src      = '';
+    };
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            embedFrame.src      = '';
+        }
+    };
 }
