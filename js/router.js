@@ -39,7 +39,7 @@ function setViewVisibility(screen) {
 async function renderScreen(screen, params) {
     // workshops/festivals/privateLessons henüz kendi sayfası olmayan
     // placeholder ekranlar — görünürlüğü DEĞİŞTİRME, menüde kal
-    const placeholders = ['festivals', 'privateLessons'];
+    const placeholders = ['privateLessons'];
     if (!placeholders.includes(screen)) {
         setViewVisibility(screen);
     }
