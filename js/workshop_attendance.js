@@ -196,11 +196,12 @@ function buildStudentRows() {
 function buildFooter() {
     const footer = document.getElementById('wsFooterRow');
 
-    let videoRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Video</td>';
+    let videoRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Ders Videoları</td>';
     appState.wsDates.forEach(d => {
         const hasVideo = appState.wsVideoMap[d.id];
+        const vColor = hasVideo ? 'var(--primary)' : 'var(--text-dim)';
         const cc = d.is_cancelled ? ' cell-cancelled' : '';
-        videoRow += `<td class="${cc}"><span class="ws-vid-icon ${hasVideo ? 'active' : ''}" data-wsdate-id="${d.id}" style="cursor:pointer;"><i data-lucide="video" size="20"></i></span></td>`;
+        videoRow += `<td class="${cc}"><span class="ws-vid-icon" data-wsdate-id="${d.id}" style="cursor:pointer;display:inline-flex;color:${vColor};"><i data-lucide="video" size="20"></i></span></td>`;
     });
     videoRow += '</tr>';
 
@@ -213,7 +214,7 @@ function buildFooter() {
     });
     partnerRow += '</tr>';
 
-    let noteRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Not</td>';
+    let noteRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Ders Notu</td>';
     appState.wsDates.forEach(d => {
         const note = appState.wsNotesMap[d.id] || '';
         const color = note ? 'var(--primary)' : 'var(--text-dim)';
@@ -233,7 +234,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-att-cell').forEach(cell => {
         cell.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const studentId = parseInt(cell.dataset.studentId);
+            const studentId = cell.dataset.studentId;
             const dateId    = cell.dataset.wsdateId;
             const dateObj   = appState.wsDates.find(d => d.id === dateId);
             if (!dateObj || dateObj.is_cancelled) return;
@@ -245,7 +246,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-student-edit').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const studentId = parseInt(el.dataset.studentId);
+            const studentId = el.dataset.studentId;
             const name      = el.dataset.studentName;
             editWorkshopStudent(studentId, name);
         });
@@ -399,7 +400,7 @@ async function addWorkshopWeek() {
 // ---------------------------------------------------------------
 function handleWorkshopVideo(dateId) {
     const current = appState.wsVideoMap[dateId] || '';
-    openPromptModalWithValue('Video Bağlantısı', current, 'https://...', async (url) => {
+    openPromptModalWithValue('Ders Videosu', current, 'https://...', async (url) => {
         // Önce eski videoyu sil
         await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
         if (url && url.trim()) {
@@ -446,12 +447,50 @@ async function updateWorkshopNote(dateId, note) {
 // Hafta menüsü (iptal et / sil)
 // ---------------------------------------------------------------
 function openWorkshopWeekMenu(dateId, isCancelled) {
-    openConfirmModal(
-        isCancelled ? 'Bu haftanın iptalini geri almak istiyor musunuz?' : 'Bu haftayı ne yapmak istersiniz? (Tamam = İptal Et, kapatıp tekrar basılıysa sil)',
-        async () => {
-            await toggleWorkshopWeekCancel(dateId, !isCancelled);
-        }
-    );
+    const modal       = document.getElementById('weekActionModal');
+    const title       = document.getElementById('weekActionTitle');
+    const cancelBtn   = document.getElementById('weekActionCancelToggleBtn');
+    const deleteBtn   = document.getElementById('weekActionDeleteBtn');
+    const closeBtn    = document.getElementById('weekActionCloseBtn');
+    if (!modal) { showToast('Menü bulunamadı.', 'error'); return; }
+
+    title.textContent = 'Hafta İşlemleri';
+
+    // İptal butonu metnini duruma göre ayarla
+    cancelBtn.innerHTML = isCancelled
+        ? '<i data-lucide="rotate-ccw" size="15"></i>İptali Geri Al'
+        : '<i data-lucide="ban" size="15"></i>Haftayı İptal Et';
+
+    cancelBtn.onclick = async () => {
+        modal.style.display = 'none';
+        await toggleWorkshopWeekCancel(dateId, !isCancelled);
+    };
+
+    deleteBtn.onclick = () => {
+        modal.style.display = 'none';
+        openConfirmModal('Bu haftayı ve tüm yoklama kayıtlarını silmek istediğinizden emin misiniz?', async () => {
+            await deleteWorkshopWeek(dateId);
+        });
+    };
+
+    closeBtn.onclick = () => { modal.style.display = 'none'; };
+
+    modal.style.display = 'flex';
+    refreshIcons();
+}
+
+async function deleteWorkshopWeek(dateId) {
+    try {
+        await supabase.from('workshop_attendance').delete().eq('workshop_date_id', dateId);
+        await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
+        const { error } = await supabase.from('workshop_dates').delete().eq('id', dateId);
+        if (error) throw error;
+        showToast('Hafta silindi ✓', 'success');
+        await loadWorkshopData();
+        renderWorkshopAttendance();
+    } catch (err) {
+        showToast('Hafta silinemedi: ' + err.message, 'error');
+    }
 }
 
 async function toggleWorkshopWeekCancel(dateId, makeCancelled) {
