@@ -379,7 +379,7 @@ function renderWeeklyPayments() {
             </div>
             <div class="summary-card summary-dates">
                 <div class="summary-value">${occurredWeeks}</div>
-                <div class="summary-label">Gelen Hafta</div>
+                <div class="summary-label">Ders Yapılan Hafta</div>
             </div>
         </div>`;
 
