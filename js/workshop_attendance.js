@@ -173,12 +173,13 @@ function buildStudentRows() {
     }
 
     visible.forEach((student, idx) => {
-        const nameParts = student.name.trim().split(' ');
-        const firstName = escapeHtml(nameParts[0] || student.name);
-        const lastName  = escapeHtml(nameParts.slice(1).join(' '));
-        const nameHtml  = lastName ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>` : firstName;
+        const nameParts  = student.name.trim().split(' ');
+        const firstName  = escapeHtml(nameParts[0] || student.name);
+        const lastName   = escapeHtml(nameParts.slice(1).join(' '));
+        const nameHtml   = lastName ? `<div style="line-height:1.35;">${firstName}<br>${lastName}</div>` : firstName;
+        const rowOpacity = student.is_archived ? 'opacity:0.5;' : '';
 
-        let row = `<tr><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;">
+        let row = `<tr style="${rowOpacity}"><td>${idx+1}</td><td><div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="color:var(--text-main);">${nameHtml}</span>
             <span class="ws-student-edit" data-student-id="${student.id}" data-student-name="${escapeHtml(student.name)}" style="cursor:pointer;color:var(--primary);display:inline-flex;"><i data-lucide="pencil" size="16"></i></span>
         </div></td>`;
