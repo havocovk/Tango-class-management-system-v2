@@ -698,7 +698,7 @@ function openWorkshopWeekMenu(dateId, isCancelled) {
 
     deleteBtn.onclick = () => {
         modal.style.display = 'none';
-        openConfirmModal(t('workshopAtt.weekDeleteConfirm'), async () => 
+        openConfirmModal(t('workshopAtt.weekDeleteConfirm'), async () => {
             await deleteWorkshopWeek(dateId);
         });
     };
