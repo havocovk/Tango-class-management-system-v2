@@ -18,6 +18,7 @@ import { supabase } from './supabaseClient.js';
 import { showWorkshopPayments } from './workshop_payments.js';
 import { refreshIcons, formatDate, isPastDate, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
+import { t } from './i18n.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
@@ -90,32 +91,32 @@ function renderWorkshopAttendance() {
     // Üst bilgi kutusu
     let infoHtml = '';
     if (ws) {
-        const weeks   = ws.total_weeks ? `${ws.total_weeks} hafta` : '';
+        const weeks   = ws.total_weeks ? `${ws.total_weeks} ${t('workshopAtt.weekUnit')}` : '';
         const dateStr = ws.start_date  ? ws.start_date.split('T')[0] : '';
         const time    = ws.lesson_time ? ws.lesson_time.substring(0,5) : '';
         infoHtml = `
         <div style="background:rgba(45,212,191,0.06);border:1px solid rgba(45,212,191,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <div style="font-size:12px;color:var(--text-dim);line-height:1.9;">
-                ${ws.studio_name ? '<div><b>Stüdyo:</b> ' + escapeHtml(ws.studio_name) + '</div>' : ''}
-                ${dateStr ? '<div><b>Başlangıç:</b> ' + dateStr + (time ? ' · ' + time : '') + '</div>' : ''}
-                ${weeks ? '<div><b>Süre:</b> ' + weeks + '</div>' : ''}
-                ${ws.theme ? '<div><b>Tema:</b> ' + escapeHtml(ws.theme) + '</div>' : ''}
+                ${ws.studio_name ? '<div><b>' + t('workshopAtt.studioLabel') + ':</b> ' + escapeHtml(ws.studio_name) + '</div>' : ''}
+                ${dateStr ? '<div><b>' + t('workshopAtt.startLabel') + ':</b> ' + dateStr + (time ? ' · ' + time : '') + '</div>' : ''}
+                ${weeks ? '<div><b>' + t('workshopAtt.durationLabel') + ':</b> ' + weeks + '</div>' : ''}
+                ${ws.theme ? '<div><b>' + t('workshopAtt.themeLabel') + ':</b> ' + escapeHtml(ws.theme) + '</div>' : ''}
             </div>
         </div>`;
     }
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToWorkshopsBtn">← Çalıştaylar</div>
-            <div class="main-title">Çalıştay Yoklama</div>
+            <div class="back-link" id="backToWorkshopsBtn">${t('workshopAtt.backToWorkshops')}</div>
+            <div class="main-title">${t('workshopAtt.title')}</div>
             <h2 style="text-align:center;font-size:18px;color:var(--primary);">${escapeHtml(appState.currentWorkshopName || '')}</h2>
             ${infoHtml}
             <div class="nav-buttons" style="margin-bottom:10px;">
-                <button id="wsAddStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Öğrenci Ekle</button>
-                <button id="wsImportStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Mevcut Öğrenci</button>
+                <button id="wsAddStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.addStudent')}</button>
+                <button id="wsImportStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.importStudent')}</button>
                 <button id="wsAddWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Hafta Ekle</button>
-                <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Ödemeler</button>
-                <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? 'Arşivi Gizle' : 'Arşivi Göster'}</button>
+                <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.payments')}</button>
+                <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? t('workshopAtt.hideArchive') : t('workshopAtt.showArchive')}</button>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -151,7 +152,7 @@ function renderWorkshopAttendance() {
 // ---------------------------------------------------------------
 function buildHeader() {
     const headerRow = document.getElementById('wsHeaderRow');
-    let html = '<th>#</th><th>Öğrenci</th>';
+    let html = `<th>#</th><th>${t('workshopAtt.colStudent')}</th>`;
     appState.wsDates.forEach(d => {
         const cancelled = d.is_cancelled;
         const thStyle = 'th-date' + (cancelled ? ' th-date-cancelled' : '');
@@ -169,7 +170,7 @@ function buildStudentRows() {
     const visible = appState.wsStudents.filter(s => appState.showArchivedWsStudents ? true : !s.is_archived);
 
     if (visible.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${2 + appState.wsDates.length}" style="text-align:center;color:var(--text-dim);padding:20px;">Henüz öğrenci eklenmemiş.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${2 + appState.wsDates.length}" style="text-align:center;color:var(--text-dim);padding:20px;">${t('workshopAtt.emptyStudents')}</td></tr>`;
         return;
     }
 
@@ -205,7 +206,7 @@ function buildStudentRows() {
 function buildFooter() {
     const footer = document.getElementById('wsFooterRow');
 
-    let videoRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Ders Videoları</td>';
+    let videoRow = `<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">${t('workshopAtt.rowVideos')}</td>`;
     appState.wsDates.forEach(d => {
         const hasVideo = appState.wsVideoMap[d.id];
         const vColor = hasVideo ? 'var(--primary)' : 'var(--text-dim)';
@@ -214,7 +215,7 @@ function buildFooter() {
     });
     videoRow += '</tr>';
 
-    let partnerRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Partner</td>';
+    let partnerRow = `<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">${t('workshopAtt.rowPartner')}</td>`;
     appState.wsDates.forEach(d => {
         const partner = appState.wsPartnerMap[d.id] || '';
         const color = partner ? 'var(--primary)' : 'var(--text-dim)';
@@ -223,7 +224,7 @@ function buildFooter() {
     });
     partnerRow += '</tr>';
 
-    let noteRow = '<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">Ders Notu</td>';
+    let noteRow = `<tr><td class="foot-sticky-first">#</td><td class="foot-sticky-label">${t('workshopAtt.rowNote')}</td>`;
     appState.wsDates.forEach(d => {
         const note = appState.wsNotesMap[d.id] || '';
         const color = note ? 'var(--primary)' : 'var(--text-dim)';
@@ -276,7 +277,7 @@ function attachCellListeners() {
             e.stopPropagation();
             const dateId  = parseInt(el.dataset.wsdateId);
             const current = el.dataset.partner || '';
-            openPromptModalWithValue('Partner / Öğretmen', current, 'İsim girin', async (val) => {
+            openPromptModalWithValue(t('workshopAtt.partnerTitle'), current, t('workshopAtt.partnerPlaceholder'), async (val) => {
                 await updateWorkshopPartner(dateId, val);
             });
         });
@@ -288,7 +289,7 @@ function attachCellListeners() {
             e.stopPropagation();
             const dateId  = parseInt(el.dataset.wsdateId);
             const current = appState.wsNotesMap[dateId] || '';
-            openPromptModalWithValue('Ders Notu', current, 'Not girin', async (val) => {
+            openPromptModalWithValue(t('workshopAtt.noteTitle'), current, t('workshopAtt.notePlaceholder'), async (val) => {
                 await updateWorkshopNote(dateId, val);
             });
         });
@@ -330,7 +331,7 @@ async function toggleWorkshopAttendance(studentId, dateId, cell) {
             student_id:       studentId,
             status:           newStatus
         });
-        if (error) { showToast('Yoklama kaydedilemedi: ' + error.message, 'error'); return; }
+        if (error) { showToast(t('workshopAtt.attSaveFail').replace('{msg}', error.message), 'error'); return; }
         appState.wsAttendanceMap[key] = newStatus;
     }
 
@@ -353,11 +354,11 @@ function addWorkshopStudent() {
     const input2  = document.getElementById('doubleInput2');
     const confirm = document.getElementById('doubleModalConfirm');
     const cancel  = document.getElementById('doubleModalCancel');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
-    title.textContent    = 'Yeni Öğrenci';
-    input1.placeholder   = 'Ad Soyad';
-    input2.placeholder   = 'Telefon (opsiyonel)';
+    title.textContent    = t('workshopAtt.newStudentTitle');
+    input1.placeholder   = t('workshopAtt.namePlaceholder');
+    input2.placeholder   = t('workshopAtt.phonePlaceholder');
     input1.value         = '';
     input2.value         = '';
     modal.style.display  = 'flex';
@@ -366,10 +367,10 @@ function addWorkshopStudent() {
     confirm.onclick = async () => {
         const name  = input1.value.trim();
         const phone = input2.value.trim() || null;
-        if (!name) { showToast('Ad Soyad boş olamaz.', 'warning'); return; }
+        if (!name) { showToast(t('workshopAtt.nameEmpty'), 'warning'); return; }
         modal.style.display = 'none';
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+        if (!user) { showToast(t('workshopAtt.sessionNotFound'), 'error'); return; }
         const { error } = await supabase.from('workshop_students').insert({
             workshop_id: appState.currentWorkshopId,
             user_id:     user.id,
@@ -377,8 +378,8 @@ function addWorkshopStudent() {
             phone,
             is_archived: false
         });
-        if (error) { showToast('Öğrenci eklenemedi: ' + error.message, 'error'); return; }
-        showToast('Öğrenci eklendi ✓', 'success');
+        if (error) { showToast(t('workshopAtt.studentAddFail').replace('{msg}', error.message), 'error'); return; }
+        showToast(t('workshopAtt.studentAdded'), 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
     };
@@ -403,7 +404,7 @@ function editWorkshopStudent(studentId, currentName) {
     const saveBtn       = document.getElementById('studentSaveBtn');
     const cancelEditBtn = document.getElementById('studentCancelEditBtn');
     const editTitle     = document.getElementById('studentEditModeTitle');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
     const student = appState.wsStudents.find(s => s.id === studentId);
     const isArchived = student ? !!student.is_archived : false;
@@ -427,7 +428,7 @@ function editWorkshopStudent(studentId, currentName) {
         archiveBtn.innerHTML = isArchived
             ? '<i data-lucide="archive-restore" size="22"></i>'
             : '<i data-lucide="archive" size="22"></i>';
-        archiveBtn.title = isArchived ? 'Arşivden çıkar' : 'Arşivle';
+        archiveBtn.title = isArchived ? t('workshopAtt.archiveLabel') : t('workshopAtt.unarchiveLabel');
     }
     refreshIcons();
 
@@ -435,7 +436,7 @@ function editWorkshopStudent(studentId, currentName) {
     editBtn.onclick = () => {
         viewMode.style.display  = 'none';
         editMode.style.display  = 'block';
-        if (editTitle) editTitle.textContent = 'Adı Düzenle';
+        if (editTitle) editTitle.textContent = t('workshopAtt.editName');
         editInput.style.display = 'block';
         if (phoneInput) phoneInput.style.display = 'none';
         editInput.value = currentName;
@@ -447,7 +448,7 @@ function editWorkshopStudent(studentId, currentName) {
         phoneBtn.onclick = () => {
             viewMode.style.display  = 'none';
             editMode.style.display  = 'block';
-            if (editTitle) editTitle.textContent = 'Telefonu Düzenle';
+            if (editTitle) editTitle.textContent = t('workshopAtt.editPhone');
             editInput.style.display = 'none';
             if (phoneInput) {
                 phoneInput.style.display = 'block';
@@ -461,9 +462,9 @@ function editWorkshopStudent(studentId, currentName) {
     if (archiveBtn) {
         archiveBtn.onclick = async () => {
             const { error } = await supabase.from('workshop_students').update({ is_archived: !isArchived }).eq('id', studentId);
-            if (error) { showToast('İşlem başarısız.', 'error'); return; }
+            if (error) { showToast(t('workshopAtt.studentArchiveFail'), 'error'); return; }
             modal.style.display = 'none';
-            showToast(!isArchived ? 'Öğrenci arşivlendi ✓' : 'Arşivden çıkarıldı ✓', 'success');
+            showToast(!isArchived ? t('workshopAtt.studentArchived') : t('workshopAtt.studentUnarchived'), 'success');
             await loadWorkshopData();
             renderWorkshopAttendance();
         };
@@ -472,10 +473,10 @@ function editWorkshopStudent(studentId, currentName) {
     // Sil
     deleteBtn.onclick = () => {
         modal.style.display = 'none';
-        openConfirmModal('Bu öğrenciyi silmek istediğinizden emin misiniz?', async () => {
+        openConfirmModal(t('workshopAtt.studentDeleteConfirm'), async () => {
             const { error } = await supabase.from('workshop_students').delete().eq('id', studentId);
-            if (error) { showToast('Silinemedi.', 'error'); return; }
-            showToast('Öğrenci silindi ✓', 'success');
+            if (error) { showToast(t('workshopAtt.studentDeleteFail'), 'error'); return; }
+            showToast(t('workshopAtt.studentDeleted'), 'success');
             await loadWorkshopData();
             renderWorkshopAttendance();
         }, () => { modal.style.display = 'flex'; });
@@ -491,19 +492,19 @@ function editWorkshopStudent(studentId, currentName) {
             const newName = editInput.value.trim();
             if (!newName) return;
             const { error } = await supabase.from('workshop_students').update({ name: newName }).eq('id', studentId);
-            if (error) { showToast('Güncellenemedi.', 'error'); return; }
+            if (error) { showToast(t('workshopAtt.studentUpdateFail'), 'error'); return; }
             nameDisp.innerText = newName;
             currentName = newName;
         } else {
             const newPhone = phoneInput ? phoneInput.value.trim() : null;
             const { error } = await supabase.from('workshop_students').update({ phone: newPhone || null }).eq('id', studentId);
-            if (error) { showToast('Güncellenemedi.', 'error'); return; }
+            if (error) { showToast(t('workshopAtt.studentUpdateFail'), 'error'); return; }
         }
         editInput.style.display = 'block';
         if (phoneInput) phoneInput.style.display = 'block';
         viewMode.style.display = 'block';
         editMode.style.display = 'none';
-        showToast('Güncellendi ✓', 'success');
+        showToast(t('workshopAtt.studentUpdated'), 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
     };
@@ -537,8 +538,8 @@ async function addWorkshopWeek() {
         week_number:  lastWeekNum + 1,
         is_cancelled: false
     });
-    if (error) { showToast('Hafta eklenemedi: ' + error.message, 'error'); return; }
-    showToast('Hafta eklendi ✓', 'success');
+    if (error) { showToast(t('workshopAtt.weekAddFail').replace('{msg}', error.message), 'error'); return; }
+    showToast(t('workshopAtt.weekAdded'), 'success');
     await loadWorkshopData();
     renderWorkshopAttendance();
 }
@@ -547,7 +548,7 @@ async function addWorkshopWeek() {
 // Video ekle / göster / sil
 // ---------------------------------------------------------------
 function detectWsVideoPlatform(url) {
-    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    if (!url) return { name: 'Other', color: '#94a3b8' };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be')) return { name: 'YouTube',      color: '#FF0000' };
     if (lower.includes('vimeo.com'))                                  return { name: 'Vimeo',        color: '#1AB7EA' };
@@ -555,7 +556,7 @@ function detectWsVideoPlatform(url) {
     if (lower.includes('instagram.com'))                              return { name: 'Instagram',    color: '#E1306C' };
     if (lower.includes('facebook.com') || lower.includes('fb.watch'))return { name: 'Facebook',     color: '#1877F2' };
     if (lower.includes('tiktok.com'))                                 return { name: 'TikTok',       color: '#010101' };
-    return { name: 'Diğer', color: '#94a3b8' };
+    return { name: 'Other', color: '#94a3b8' };
 }
 
 function handleWorkshopVideo(dateId) {
@@ -593,11 +594,11 @@ function handleWorkshopVideo(dateId) {
 
         const deleteHandler = () => {
             modal.style.display = 'none';
-            openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
+            openConfirmModal(t('workshopAtt.videoDeleteConfirm'), async () => {
                 await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
                 delete appState.wsVideoMap[dateId];
-                showToast('Video silindi ✓', 'success');
-                // İkonu güncelle
+                showToast(t('workshopAtt.videoDeleted'), 'success');
+                // ikonu guncelle
                 const icon = document.querySelector(`.ws-vid-icon[data-wsdate-id="${dateId}"]`);
                 if (icon) { icon.style.color = 'var(--dim-forest)'; }
                 cleanup();
@@ -631,14 +632,14 @@ function handleWorkshopVideo(dateId) {
 
     } else {
         // Video yok → link giriş modalı
-        openPromptModal('Video Linki Ekle', 'https://...', async (url) => {
-            if (!url || !url.startsWith('http')) { showToast('Geçerli bir URL giriniz.', 'warning'); return; }
+        openPromptModal(t('workshopAtt.videoAddTitle'), 'https://...', async (url) => {
+            if (!url || !url.startsWith('http')) { showToast(t('workshopAtt.videoUrlInvalid'), 'warning'); return; }
             const { error } = await supabase.from('workshop_videos').insert({
                 workshop_date_id: dateId, url: url.trim()
             });
-            if (error) { showToast('Video kaydedilemedi: ' + error.message, 'error'); return; }
+            if (error) { showToast(t('workshopAtt.videoSaveFail').replace('{msg}', error.message), 'error'); return; }
             appState.wsVideoMap[dateId] = url.trim();
-            showToast('Video kaydedildi ✓', 'success');
+            showToast(t('workshopAtt.videoSaved'), 'success');
             // Sadece o ikonu güncelle
             const icon = document.querySelector(`.ws-vid-icon[data-wsdate-id="${dateId}"]`);
             if (icon) { icon.style.color = '#2DD4BF'; }
@@ -652,9 +653,9 @@ function handleWorkshopVideo(dateId) {
 async function updateWorkshopPartner(dateId, partner) {
     const { error } = await supabase.from('workshop_dates')
         .update({ teacher_partner: partner || null }).eq('id', dateId);
-    if (error) { showToast('Partner kaydedilemedi.', 'error'); return; }
+    if (error) { showToast(t('workshopAtt.partnerSaveFail'), 'error'); return; }
     appState.wsPartnerMap[dateId] = partner || '';
-    showToast('Partner kaydedildi ✓', 'success');
+    showToast(t('workshopAtt.partnerSaved'), 'success');
     await loadWorkshopData();
     renderWorkshopAttendance();
 }
@@ -665,9 +666,9 @@ async function updateWorkshopPartner(dateId, partner) {
 async function updateWorkshopNote(dateId, note) {
     const { error } = await supabase.from('workshop_dates')
         .update({ note: note || null }).eq('id', dateId);
-    if (error) { showToast('Not kaydedilemedi.', 'error'); return; }
+    if (error) { showToast(t('workshopAtt.noteSaveFail'), 'error'); return; }
     appState.wsNotesMap[dateId] = note || '';
-    showToast('Not kaydedildi ✓', 'success');
+    showToast(t('workshopAtt.noteSaved'), 'success');
     await loadWorkshopData();
     renderWorkshopAttendance();
 }
@@ -681,14 +682,14 @@ function openWorkshopWeekMenu(dateId, isCancelled) {
     const cancelBtn   = document.getElementById('weekActionCancelToggleBtn');
     const deleteBtn   = document.getElementById('weekActionDeleteBtn');
     const closeBtn    = document.getElementById('weekActionCloseBtn');
-    if (!modal) { showToast('Menü bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Menu not found.', 'error'); return; }
 
-    title.textContent = 'Hafta İşlemleri';
+    title.textContent = t('workshopAtt.weekActions');
 
     // İptal butonu metnini duruma göre ayarla
     cancelBtn.innerHTML = isCancelled
-        ? '<i data-lucide="rotate-ccw" size="15"></i>İptali Geri Al'
-        : '<i data-lucide="ban" size="15"></i>Haftayı İptal Et';
+        ? `<i data-lucide="rotate-ccw" size="15"></i>${t('workshopAtt.undoCancel')}`
+        : `<i data-lucide="ban" size="15"></i>${t('workshopAtt.cancelWeek')}`;
 
     cancelBtn.onclick = async () => {
         modal.style.display = 'none';
@@ -697,7 +698,7 @@ function openWorkshopWeekMenu(dateId, isCancelled) {
 
     deleteBtn.onclick = () => {
         modal.style.display = 'none';
-        openConfirmModal('Bu haftayı ve tüm yoklama kayıtlarını silmek istediğinizden emin misiniz?', async () => {
+        openConfirmModal(t('workshopAtt.weekDeleteConfirm'), async () => 
             await deleteWorkshopWeek(dateId);
         });
     };
@@ -714,11 +715,11 @@ async function deleteWorkshopWeek(dateId) {
         await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
         const { error } = await supabase.from('workshop_dates').delete().eq('id', dateId);
         if (error) throw error;
-        showToast('Hafta silindi ✓', 'success');
+        showToast(t('workshopAtt.weekDeleted'), 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
     } catch (err) {
-        showToast('Hafta silinemedi: ' + err.message, 'error');
+        showToast(t('workshopAtt.weekDeleteFail').replace('{msg}', err.message), 'error');
     }
 }
 
@@ -732,8 +733,8 @@ async function importStudentFromClasses() {
         .eq('is_archived', false)
         .order('name');
 
-    if (error) { showToast('Öğrenciler yüklenemedi.', 'error'); return; }
-    if (!allStudents || allStudents.length === 0) { showToast('Grup dersinde öğrenci yok.', 'warning'); return; }
+    if (error) { showToast(t('workshopAtt.importLoadFail'), 'error'); return; }
+    if (!allStudents || allStudents.length === 0) { showToast(t('workshopAtt.importEmpty'), 'warning'); return; }
 
     // Zaten çalıştayda olan öğrenci isimlerini al (duplicate önleme)
     const existingNames = appState.wsStudents.map(s => s.name.trim().toLowerCase());
@@ -744,9 +745,9 @@ async function importStudentFromClasses() {
     const inputEl  = document.getElementById('dynamicInput');
     const confirmB = document.getElementById('dynamicModalConfirm');
     const cancelB  = document.getElementById('dynamicModalCancel');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
-    titleEl.textContent = 'Öğrenci Seç';
+    titleEl.textContent = t('workshopAtt.importTitle');
 
     // Input yerine select listesi göster
     inputEl.style.display = 'none';
@@ -768,7 +769,7 @@ async function importStudentFromClasses() {
 
     confirmB.onclick = async () => {
         const selected = selectEl.options[selectEl.selectedIndex];
-        if (!selected || selected.disabled) { showToast('Geçerli bir öğrenci seçin.', 'warning'); return; }
+        if (!selected || selected.disabled) { showToast(t('workshopAtt.importInvalid'), 'warning'); return; }
         const name  = selected.dataset.name;
         const phone = selected.dataset.phone || null;
 
@@ -777,7 +778,7 @@ async function importStudentFromClasses() {
         inputEl.style.display  = 'block';
 
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+        if (!user) { showToast(t('workshopAtt.sessionNotFound'), 'error'); return; }
         const { error: insErr } = await supabase.from('workshop_students').insert({
             workshop_id: appState.currentWorkshopId,
             user_id:     user.id,
@@ -785,8 +786,8 @@ async function importStudentFromClasses() {
             phone,
             is_archived: false
         });
-        if (insErr) { showToast('Öğrenci eklenemedi: ' + insErr.message, 'error'); return; }
-        showToast(name + ' çalıştaya eklendi ✓', 'success');
+        if (insErr) { showToast(t('workshopAtt.importFail').replace('{msg}', insErr.message), 'error'); return; }
+        showToast(t('workshopAtt.importSuccess').replace('{name}', name), 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
     };
@@ -801,8 +802,8 @@ async function importStudentFromClasses() {
 async function toggleWorkshopWeekCancel(dateId, makeCancelled) {
     const { error } = await supabase.from('workshop_dates')
         .update({ is_cancelled: makeCancelled }).eq('id', dateId);
-    if (error) { showToast('İşlem başarısız.', 'error'); return; }
-    showToast(makeCancelled ? 'Hafta iptal edildi ✓' : 'İptal geri alındı ✓', 'success');
+    if (error) { showToast(t('workshopAtt.weekToggleFail'), 'error'); return; }
+    showToast(makeCancelled ? t('workshopAtt.weekCancelled') : t('workshopAtt.weekUncancelled'), 'success');
     await loadWorkshopData();
     renderWorkshopAttendance();
 }
