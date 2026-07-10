@@ -327,6 +327,73 @@
     </div>
 </div>
 
+<!-- ========== ADIM 5.2 — FESTİVAL OLUŞTURMA MODALI ========== -->
+<div id="festivalCreateModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--primary);">Yeni Festival Ekle</h3>
+
+        <input type="text" id="festName" placeholder="Festival adı" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <input type="text" id="festLocation" placeholder="Lokasyon (opsiyonel)" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Başlangıç tarihi -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="text" id="festStartDateDisplay" readonly placeholder="Başlangıç tarihi"
+                style="flex:1; background:#1e293b; color:white;">
+            <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="festHiddenStartDate" style="display:none;">
+
+        <!-- Bitiş tarihi -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+            <input type="text" id="festEndDateDisplay" readonly placeholder="Bitiş tarihi (opsiyonel)"
+                style="flex:1; background:#1e293b; color:white;">
+            <span id="festEndCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="festHiddenEndDate" style="display:none;">
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="festSaveBtn">Kaydet</button>
+            <button class="btn-secondary" id="festCancelBtn">İptal</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== ADIM 5.4 — FESTİVAL DERSİ OLUŞTURMA MODALI ========== -->
+<div id="festClassModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--primary);">Yeni Ders Ekle</h3>
+
+        <input type="text" id="fcName" placeholder="Ders adı" autocomplete="off"
+            style="width:100%; margin-bottom:12px;">
+
+        <!-- Tarih -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="text" id="fcDateDisplay" readonly placeholder="Ders tarihi"
+                style="flex:1; background:#1e293b; color:white;">
+            <span id="fcCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="fcHiddenDate" style="display:none;">
+
+        <!-- Saat -->
+        <input type="text" id="fcTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off"
+            style="width:100%; margin-bottom:20px;">
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="fcSaveBtn">Kaydet</button>
+            <button class="btn-secondary" id="fcCancelBtn">İptal</button>
+        </div>
+    </div>
+</div>
+
 <!-- ========== ADIM 7.1 — SERVICE WORKER KAYIT ========== -->
 <!-- Uygulama kabuğunu (HTML/CSS/JS) telefona kaydeder.     -->
 <!-- İnternet olmasa bile uygulama açılabilir hale gelir.   -->

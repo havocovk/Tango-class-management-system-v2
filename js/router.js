@@ -85,13 +85,14 @@ async function renderScreen(screen, params) {
             await module.showWorkshopAttendance(params.workshopId, params.workshopName);
             break;
         }
-        case 'workshopPayments': {
-            const module = await import('./workshop_payments.js');
-            await module.showWorkshopPayments(params.workshopId, params.workshopName);
+        case 'festivals': {
+            const module = await import('./festivals.js');
+            await module.loadFestivals();
             break;
         }
-        case 'festivals': {
-            showToast('Festivaller modülü yakında eklenecek.', 'warning');
+        case 'festivalDetail': {
+            const module = await import('./festival_classes.js');
+            await module.showFestivalDetail(params.festivalId, params.festivalName);
             break;
         }
         case 'privateLessons': {

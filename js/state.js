@@ -46,6 +46,15 @@ export const appState = {
     showArchivedClasses: false,
     showArchivedStudents: false,
 
+    // --- FESTİVAL verileri ---
+    festivalsList: [],
+    showArchivedFestivals: false,
+    currentFestivalId: null,
+    currentFestivalName: null,
+    currentFestival: null,
+    festivalClasses: [],
+    currentFestClassId: null,
+
     // --- ÇALIŞTAY verileri ---
     workshopsList: [],
     showArchivedWorkshops: false,
@@ -58,6 +67,5 @@ export const appState = {
     wsVideoMap: {},
     wsPartnerMap: {},
     wsNotesMap: {},
-    wsPayments: [],
     showArchivedWsStudents: false
 };
