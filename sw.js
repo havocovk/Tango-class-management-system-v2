@@ -13,7 +13,7 @@
 //   3. Cache'te yoksa ağa git, cevabı cache'e ekle
 // ---------------------------------------------------------------
 
-const CACHE_NAME = 'tcms-v101';
+const CACHE_NAME = 'tcms-v102';
 
 // İlk kurulumda cache'lenecek dosyalar (uygulama kabuğu)
 const SHELL_FILES = [

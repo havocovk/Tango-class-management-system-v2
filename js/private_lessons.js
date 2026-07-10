@@ -1,61 +1,52 @@
 // ---------------------------------------------------------------
 // private_lessons.js — ÖZEL DERSLER MODÜLÜ
-// ADIM 6.1 + 6.2 + 6.3 + 6.4
 // ---------------------------------------------------------------
 
-import { supabase }          from './supabaseClient.js';
+import { supabase }       from './supabaseClient.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate, openPromptModal } from './utils.js';
-import { navigateTo }        from './router.js';
-import { appState }          from './state.js';
+import { navigateTo }     from './router.js';
+import { appState }       from './state.js';
 
 // ---------------------------------------------------------------
-// Para birimleri: TL önce, altında EUR ve USD, sonra diğerleri
+// Para birimleri — festival_classes.js ile aynı kısa format
+// ₺ TRY üstte, altında € EUR ve $ USD, sonra diğerleri
 // ---------------------------------------------------------------
-const CURRENCIES = [
-    { code: 'TRY', symbol: '₺', label: '₺ Türk Lirası' },
-    { code: 'EUR', symbol: '€', label: '€ Euro' },
-    { code: 'USD', symbol: '$', label: '$ Amerikan Doları' },
-    { code: 'GBP', symbol: '£', label: '£ İngiliz Sterlini' },
-    { code: 'RUB', symbol: '₽', label: '₽ Rus Rublesi' },
-    { code: 'KZT', symbol: '₸', label: '₸ Kazak Tengesi' },
-    { code: 'ARS', symbol: '$', label: '$ Arjantin Pesosu' },
-    { code: 'BRL', symbol: 'R$', label: 'R$ Brezilya Reali' },
+const ALL_CURRENCIES = [
+    '₺ TRY','€ EUR','$ USD','£ GBP','₽ RUB','₸ KZT',
+    '¥ JPY','¥ CNY','₩ KRW','₹ INR','R$ BRL','C$ CAD',
+    'A$ AUD','Fr CHF','kr SEK','kr NOK','kr DKK','zł PLN',
+    'Kč CZK','Ft HUF','lei RON','лв BGN','дин RSD','₴ UAH',
+    '$ ARS','$ MXN','$ COP','$ CLP','S/ PEN','$ UYU',
+    'R ZAR','£ EGP','د.م. MAD','₦ NGN','KSh KES',
+    'ر.س SAR','د.إ AED','₪ ILS','฿ THB','S$ SGD',
+    'RM MYR','Rp IDR','₱ PHP','₫ VND','₨ PKR',
+    '৳ BDT','NZ$ NZD','HK$ HKD','NT$ TWD',
 ];
 
-function getCurrencySymbol(code) {
-    const c = CURRENCIES.find(c => c.code === code);
-    return c ? c.symbol : code;
-}
-
-function currencySelectHtml(selectedCode) {
-    const opts = CURRENCIES.map(c =>
-        `<option value="${c.code}" ${c.code === selectedCode ? 'selected' : ''}>${escapeHtml(c.label)}</option>`
+function currencySelectHtml(selectedCurrency) {
+    const sel = selectedCurrency || '₺ TRY';
+    const opts = ALL_CURRENCIES.map(c =>
+        `<option value="${c}" ${c === sel ? 'selected' : ''}>${escapeHtml(c)}</option>`
     ).join('');
     return `<select id="plModalCurrency"
-        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;flex:0 0 auto;min-width:60px;">
+        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:110px;flex:0 0 auto;">
         ${opts}
     </select>`;
 }
 
 // ---------------------------------------------------------------
-// Yardımcı: TIME string'ini HH:MM formatına dönüştür
+// Yardımcılar
 // ---------------------------------------------------------------
 function formatTime(timeStr) {
     if (!timeStr) return '';
     return timeStr.slice(0, 5);
 }
 
-// ---------------------------------------------------------------
-// Yardımcı: Bugünün tarihini YYYY-MM-DD formatında döndür
-// ---------------------------------------------------------------
 function todayISO() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// ---------------------------------------------------------------
-// Modal'ı garantili bul — yoksa DOM'a ekle
-// ---------------------------------------------------------------
 function ensureModal(id) {
     let modal = document.getElementById(id);
     if (!modal) {
@@ -68,9 +59,6 @@ function ensureModal(id) {
     return modal;
 }
 
-// ---------------------------------------------------------------
-// Platform tespiti — attendanceModals.js ile aynı mantık
-// ---------------------------------------------------------------
 function detectVideoPlatform(url) {
     if (!url) return { name: 'Diğer', color: '#94a3b8' };
     const lower = url.toLowerCase();
@@ -80,11 +68,17 @@ function detectVideoPlatform(url) {
         return { name: 'Vimeo', color: '#1AB7EA' };
     if (lower.includes('drive.google.com'))
         return { name: 'Google Drive', color: '#34A853' };
+    if (lower.includes('instagram.com'))
+        return { name: 'Instagram', color: '#E1306C' };
+    if (lower.includes('facebook.com') || lower.includes('fb.watch'))
+        return { name: 'Facebook', color: '#1877F2' };
+    if (lower.includes('tiktok.com'))
+        return { name: 'TikTok', color: '#010101' };
     return { name: 'Diğer', color: '#94a3b8' };
 }
 
 // ---------------------------------------------------------------
-// GİRİŞ NOKTASI — liste ekranı
+// GİRİŞ NOKTASI — liste
 // ---------------------------------------------------------------
 export async function loadPrivateLessons() {
     await fetchPrivateLessons();
@@ -92,12 +86,10 @@ export async function loadPrivateLessons() {
 }
 
 // ---------------------------------------------------------------
-// GİRİŞ NOKTASI — detay ekranı
+// GİRİŞ NOKTASI — detay
 // ---------------------------------------------------------------
 export async function showPrivateLessonDetail(lessonId) {
-    if (!appState.privateLessonsList) {
-        await fetchPrivateLessons();
-    }
+    if (!appState.privateLessonsList) await fetchPrivateLessons();
     const lesson = (appState.privateLessonsList || []).find(l => l.id === lessonId);
     if (!lesson) {
         showToast('Ders bulunamadı.', 'error');
@@ -108,14 +100,13 @@ export async function showPrivateLessonDetail(lessonId) {
 }
 
 // ---------------------------------------------------------------
-// Supabase'den özel dersleri çek
+// Supabase'den çek
 // ---------------------------------------------------------------
 async function fetchPrivateLessons() {
     const { data, error } = await supabase
         .from('private_lessons')
         .select('*')
         .order('lesson_date', { ascending: false });
-
     if (error) {
         showToast('Özel dersler yüklenemedi.', 'error');
         appState.privateLessonsList = [];
@@ -140,30 +131,29 @@ function renderPrivateLessonsView() {
 
     let listHtml = '';
     if (displayed.length === 0) {
-        listHtml = `<div style="text-align:center; color:var(--text-dim); padding:20px;">
+        listHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">
             ${showArch ? 'Arşivlenmiş özel ders yok.' : 'Henüz özel ders eklenmemiş.'}
         </div>`;
     } else {
         displayed.forEach(l => {
-            const isPast   = l.lesson_date < today;
-            const opacity  = (isPast || l.is_archived) ? 'opacity:0.5;' : '';
-            const timeStr  = formatTime(l.lesson_time);
-            const dateStr  = l.lesson_date ? formatDate(l.lesson_date) : '';
-            const loc      = l.location ? escapeHtml(l.location) + ' · ' : '';
-            const symbol   = l.currency ? getCurrencySymbol(l.currency) : '₺';
-            const earned   = l.earned_amount ? l.earned_amount + ' ' + symbol : '';
+            const isPast  = l.lesson_date < today;
+            const opacity = (isPast || l.is_archived) ? 'opacity:0.5;' : '';
+            const timeStr = formatTime(l.lesson_time);
+            const dateStr = l.lesson_date ? formatDate(l.lesson_date) : '';
+            const loc     = l.location ? escapeHtml(l.location) + ' · ' : '';
+            const earned  = l.earned_amount ? l.earned_amount + ' ' + (l.currency || '₺ TRY').split(' ')[0] : '';
 
             listHtml += `
             <div class="class-card" style="${opacity}" data-pl-id="${l.id}">
-                <div style="flex:1; cursor:pointer;" data-pl-goto="${l.id}">
-                    <div style="font-weight:700; font-size:15px; color:var(--text-main);">
+                <div style="flex:1;cursor:pointer;" data-pl-goto="${l.id}">
+                    <div style="font-weight:700;font-size:15px;color:var(--text-main);">
                         ${escapeHtml(l.student_name)}
                     </div>
-                    <div style="font-size:12px; color:var(--text-dim); margin-top:3px;">
+                    <div style="font-size:12px;color:var(--text-dim);margin-top:3px;">
                         ${loc}${dateStr}${timeStr ? ' · ' + timeStr : ''}${earned ? ' · ' + earned : ''}
                     </div>
                 </div>
-                <div style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex;gap:8px;align-items:center;">
                     <div class="pl-btn-edit" data-pl-id="${l.id}"
                         style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--primary);position:relative;z-index:2;">
                         <i data-lucide="pencil" size="20" style="pointer-events:none;"></i>
@@ -186,11 +176,9 @@ function renderPrivateLessonsView() {
             <span class="back-link" id="plBackBtn">
                 <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ana Menü
             </span>
-
             <div class="main-title">
                 <i data-lucide="user-round" size="22" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Özel Dersler
             </div>
-
             <div class="nav-buttons">
                 <button class="btn-success" id="plAddBtn">
                     <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Özel Ders Ekle
@@ -199,22 +187,21 @@ function renderPrivateLessonsView() {
                     <i data-lucide="${showArch ? 'list' : 'archive'}" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${showArch ? 'Aktif Dersler' : 'Arşiv'}
                 </button>
             </div>
-
             <div id="plList">${listHtml}</div>
         </div>
     `;
 
-    document.getElementById('plBackBtn').onclick    = () => navigateTo('mainMenu');
-    document.getElementById('plAddBtn').onclick     = () => openLessonModal(null);
+    document.getElementById('plBackBtn').onclick = () => navigateTo('mainMenu');
+    document.getElementById('plAddBtn').onclick  = () => openLessonModal(null);
     document.getElementById('plArchiveToggleBtn').onclick = () => {
         appState.showArchivedPrivate = !showArch;
         renderPrivateLessonsView();
     };
 
     container.querySelectorAll('[data-pl-goto]').forEach(el => {
-        el.addEventListener('click', () => {
-            navigateTo('privateLessonDetail', { lessonId: parseInt(el.dataset.plGoto) });
-        });
+        el.addEventListener('click', () =>
+            navigateTo('privateLessonDetail', { lessonId: parseInt(el.dataset.plGoto) })
+        );
     });
 
     container.querySelectorAll('.pl-btn-edit').forEach(el => {
@@ -249,12 +236,12 @@ function renderDetailView(lesson) {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
-    const symbol  = lesson.currency ? getCurrencySymbol(lesson.currency) : '₺';
-    const earned  = lesson.earned_amount ? lesson.earned_amount + ' ' + symbol : '—';
-    const hasVideo = !!(lesson.video_url);
-
-    // video ikonu: link varsa parlak, yoksa soluk
-    const vidIconClass = hasVideo ? 'vid-icon active' : 'vid-icon';
+    // Para birimi sembolü: '₺ TRY' → '₺'
+    const currSymbol  = (lesson.currency || '₺ TRY').split(' ')[0];
+    const earned      = lesson.earned_amount ? lesson.earned_amount + ' ' + currSymbol : '—';
+    const hasVideo    = !!(lesson.video_url);
+    const vidClass    = hasVideo ? 'vid-icon active' : 'vid-icon';
+    const hasPartner  = !!(lesson.partner_name);
 
     container.innerHTML = `
         <div class="view">
@@ -262,36 +249,37 @@ function renderDetailView(lesson) {
                 <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Özel Dersler
             </span>
 
-            <!-- BAŞLIK -->
             <div class="main-title" style="margin-top:10px;">Özel Ders</div>
-            <div style="text-align:center; font-size:15px; font-weight:600; color:var(--text-main); margin-bottom:24px;">
+            <div style="text-align:center;font-size:15px;font-weight:600;color:var(--text-main);margin-bottom:24px;">
                 Öğrenci: <span style="color:var(--primary);">${escapeHtml(lesson.student_name)}</span>
             </div>
 
             <!-- DERS PARTNERİ -->
-            <div class="sub-header">Ders Partneri</div>
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-                ${lesson.partner_name
-                    ? `<span style="color:var(--text-main); font-size:14px;">${escapeHtml(lesson.partner_name)}</span>
-                       <button class="btn-secondary" id="plPartnerEditBtn" style="flex:0 0 auto; min-width:70px; padding:8px 12px;">Düzenle</button>`
-                    : `<button class="btn-secondary" id="plPartnerEditBtn" style="flex:0 0 auto;">
-                           <i data-lucide="plus" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ekle
-                       </button>`
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Ders Partneri</span>
+                ${hasPartner
+                    ? `<span style="color:var(--text-main);font-size:14px;font-weight:600;">${escapeHtml(lesson.partner_name)}</span>
+                       <span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
+                           <i data-lucide="pencil" size="18"></i>
+                       </span>`
+                    : `<span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
+                           <i data-lucide="circle-plus" size="22"></i>
+                       </span>`
                 }
             </div>
 
             <!-- DERS VİDEOSU -->
-            <div class="sub-header">Ders Videosu</div>
-            <div style="margin-bottom:20px;">
-                <span class="${vidIconClass}" id="plVideoIcon" style="font-size:0;">
-                    <i data-lucide="video" size="28"></i>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Ders Videosu</span>
+                <span class="${vidClass}" id="plVideoIcon" style="display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
+                    <i data-lucide="video" size="22"></i>
                 </span>
             </div>
 
             <!-- ALINAN ÜCRET -->
-            <div class="sub-header">Alınan Ücret</div>
-            <div style="font-size:16px; font-weight:700; color:var(--primary); margin-bottom:20px;">
-                ${earned}
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Alınan Ücret</span>
+                <span style="color:var(--primary);font-size:16px;font-weight:700;">${earned}</span>
             </div>
 
             <!-- DERS NOTU -->
@@ -300,14 +288,12 @@ function renderDetailView(lesson) {
                 style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;resize:vertical;margin-bottom:16px;box-sizing:border-box;"
                 placeholder="Ders notları, figürler, gözlemler...">${escapeHtml(lesson.note || '')}</textarea>
 
-            <!-- KAYDET -->
-            <button class="btn-success" id="plDetailSaveBtn" style="width:100%; margin-bottom:8px;">
+            <button class="btn-success" id="plDetailSaveBtn" style="width:100%;">
                 <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Kaydet
             </button>
         </div>
     `;
 
-    // Geri
     document.getElementById('plDetailBackBtn').onclick = () => {
         appState.privateLessonsList = null;
         navigateTo('privateLessons');
@@ -319,8 +305,9 @@ function renderDetailView(lesson) {
             'Ders Partneri',
             lesson.partner_name || '',
             async (val) => {
-                await updateLessonField(lesson.id, { partner_name: val || null }, 'Partner kaydedildi ✓');
-                lesson.partner_name = val || null;
+                const partner_name = val.trim() || null;
+                await updateLessonField(lesson.id, { partner_name }, 'Partner kaydedildi ✓');
+                lesson.partner_name = partner_name;
                 renderDetailView(lesson);
             }
         );
@@ -343,7 +330,7 @@ function renderDetailView(lesson) {
         }
     };
 
-    // Kaydet (sadece not)
+    // Sadece notu kaydet
     document.getElementById('plDetailSaveBtn').onclick = async () => {
         const note = document.getElementById('plDetailNote').value.trim() || null;
         await updateLessonField(lesson.id, { note }, 'Kaydedildi ✓');
@@ -354,73 +341,81 @@ function renderDetailView(lesson) {
 }
 
 // ---------------------------------------------------------------
-// Özel ders video modalı — grup dersleri videoModal ile aynı yapı
+// ÖZEL DERS VİDEO MODALI
+// festVideoModal'ı yeniden kullanır (aynı HTML yapısı)
 // ---------------------------------------------------------------
 function openPrivateVideoModal(lesson) {
-    const modal = ensureModal('plVideoModal');
-    const platform = detectVideoPlatform(lesson.video_url);
+    const modal    = document.getElementById('festVideoModal');
+    const titleEl  = document.getElementById('festVideoModalTitle');
+    const linkDisp = document.getElementById('festVideoLinkDisplay');
+    const embedCont= document.getElementById('festVideoEmbedContainer');
+    const playBtn  = document.getElementById('festVideoPlayBtn');
+    const deleteBtn= document.getElementById('festVideoDeleteBtn');
+    const closeBtn = document.getElementById('festVideoCloseBtn');
+    if (!modal) return;
 
-    modal.querySelector('.modal-content').innerHTML = `
-        <h3 style="margin-top:0; text-align:center;">
-            <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
-            <span style="vertical-align:middle;"> Özel Ders Videosu</span>
-            <span style="
-                display:inline-block;vertical-align:middle;margin-left:8px;
-                padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;
-                background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;
-            ">${escapeHtml(platform.name)}</span>
-        </h3>
-        <p style="word-break:break-all;background:rgba(45,212,191,0.1);padding:12px;border-radius:8px;font-size:13px;margin:16px 0;color:#2DD4BF;border:1px solid rgba(45,212,191,0.3);">
-            ${escapeHtml(lesson.video_url)}
-        </p>
-        <div style="display:flex;gap:24px;justify-content:center;align-items:center;margin-bottom:16px;">
-            <span id="plVidPlay" style="cursor:pointer;color:#2DD4BF;">
-                <i data-lucide="play" size="32"></i>
-            </span>
-            <span id="plVidDelete" style="cursor:pointer;color:var(--danger);">
-                <i data-lucide="trash-2" size="32"></i>
-            </span>
-            <a id="plVidWa" href="https://wa.me/?text=${encodeURIComponent(lesson.video_url)}"
-                target="_blank"
-                style="cursor:pointer;color:#25D366;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;">
-                <i data-lucide="message-circle" size="32"></i>
-            </a>
-        </div>
-        <button id="plVidClose" class="btn-secondary" style="width:100%;">Kapat</button>
+    const url      = lesson.video_url;
+    const platform = detectVideoPlatform(url);
+
+    if (embedCont) embedCont.style.display = 'none';
+
+    titleEl.innerHTML = `
+        <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+        <span style="vertical-align:middle;"> Özel Ders Videosu</span>
+        <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;
+            background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${escapeHtml(platform.name)}</span>
     `;
 
-    modal.style.display = 'flex';
+    linkDisp.textContent   = url;
+    linkDisp.style.display = 'block';
+    modal.style.display    = 'flex';
     refreshIcons();
 
-    document.getElementById('plVidPlay').onclick = () => window.open(lesson.video_url, '_blank');
+    // WhatsApp butonu
+    const waBtn = document.getElementById('festVideoPlayBtn');
+    const waShare = modal.querySelector('a[id*="whatsapp"], a[id*="Wa"], #whatsappVideoShareBtn');
+    if (waShare) waShare.href = `https://wa.me/?text=${encodeURIComponent(url)}`;
 
-    document.getElementById('plVidDelete').onclick = () => {
+    const watchHandler  = () => window.open(url, '_blank');
+    const deleteHandler = () => {
         modal.style.display = 'none';
-        openConfirmModal('Video silinsin mi?', async () => {
+        openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
             await updateLessonField(lesson.id, { video_url: null }, 'Video silindi ✓');
             lesson.video_url = null;
             renderDetailView(lesson);
-        }, () => {
-            modal.style.display = 'flex';
-        });
+            cleanup();
+        }, () => { modal.style.display = 'flex'; refreshIcons(); });
+    };
+    const closeHandler  = () => { modal.style.display = 'none'; cleanup(); };
+    const outsideHandler= (e) => { if (e.target === modal) closeHandler(); };
+
+    const cleanup = () => {
+        playBtn.removeEventListener('click', watchHandler);
+        deleteBtn.removeEventListener('click', deleteHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+        modal.removeEventListener('click', outsideHandler);
     };
 
-    document.getElementById('plVidClose').onclick = () => { modal.style.display = 'none'; };
-
-    modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    cleanup(); // önceki listener'ları temizle
+    playBtn.addEventListener('click', watchHandler);
+    deleteBtn.addEventListener('click', deleteHandler);
+    closeBtn.addEventListener('click', closeHandler);
+    modal.addEventListener('click', outsideHandler);
 }
 
 // ---------------------------------------------------------------
 // OLUŞTURMA / DÜZENLEME MODALI
+// Saat: type="text" maxlength="5" placeholder="SS:DD" — mevcut sistemle aynı
+// Para birimi: kısa format '₺ TRY', '€ EUR' vb.
 // ---------------------------------------------------------------
 function openLessonModal(existing) {
     const modal  = ensureModal('privateLessonModal');
     const isEdit = !!existing;
-    const title  = isEdit ? 'Özel Dersi Düzenle' : 'Yeni Özel Ders Ekle';
-    const selCur = existing && existing.currency ? existing.currency : 'TRY';
 
     modal.querySelector('.modal-content').innerHTML = `
-        <h3 style="margin-top:0;color:var(--primary);text-align:left;">${title}</h3>
+        <h3 style="margin-top:0;color:var(--primary);text-align:left;">
+            ${isEdit ? 'Özel Dersi Düzenle' : 'Yeni Özel Ders Ekle'}
+        </h3>
 
         <input type="text" id="plModalName" placeholder="Öğrenci / kişi adı *" autocomplete="off"
             style="width:100%;margin-bottom:12px;"
@@ -442,21 +437,20 @@ function openLessonModal(existing) {
         <input type="date" id="plModalHiddenDate" style="display:none;"
             value="${existing && existing.lesson_date ? existing.lesson_date : ''}">
 
-        <!-- Saat: doğrudan time input, HH:MM zorunlu -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <input type="time" id="plModalTime"
-                style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;"
-                placeholder="Saat (opsiyonel)"
-                value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : ''}">
-            <span style="color:var(--text-dim);font-size:12px;flex-shrink:0;">SS:DD</span>
-        </div>
+        <!-- Saat: mevcut sistemle aynı — type="text", maxlength=5, placeholder SS:DD -->
+        <input type="text" id="plModalTime"
+            placeholder="Saat (opsiyonel, örn: 19:00)"
+            maxlength="5"
+            autocomplete="off"
+            style="width:100%;margin-bottom:12px;"
+            value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : ''}">
 
         <!-- Ücret + Para Birimi -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
             <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
                 style="flex:1;"
                 value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
-            ${currencySelectHtml(selCur)}
+            ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
         </div>
 
         <div style="display:flex;gap:10px;">
@@ -477,6 +471,17 @@ function openLessonModal(existing) {
     hiddenDate.onchange = () => {
         dispDate.value = hiddenDate.value ? formatDate(hiddenDate.value) : '';
     };
+
+    // Saat doğrulaması: sadece HH:MM formatı (00:00–23:59)
+    document.getElementById('plModalTime').addEventListener('blur', function() {
+        const val = this.value.trim();
+        if (!val) return;
+        const valid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(val);
+        if (!valid) {
+            showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning');
+            this.value = '';
+        }
+    });
 
     document.getElementById('plModalSaveBtn').onclick  = () =>
         isEdit ? updateLesson(existing.id, modal) : createLesson(modal);
@@ -499,12 +504,16 @@ async function createLesson(modal) {
     const lesson_date = document.getElementById('plModalHiddenDate').value || null;
     if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
 
-    const lesson_time   = document.getElementById('plModalTime').value || null;
+    const timeVal = document.getElementById('plModalTime').value.trim();
+    if (timeVal && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(timeVal)) {
+        showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning'); return;
+    }
+    const lesson_time   = timeVal || null;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
     if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
     const earned_amount = parseFloat(earned_raw);
-    const currency      = document.getElementById('plModalCurrency').value || 'TRY';
+    const currency      = document.getElementById('plModalCurrency').value || '₺ TRY';
 
     const { error } = await supabase.from('private_lessons').insert({
         student_name, lesson_date, lesson_time, location, earned_amount, currency
@@ -529,12 +538,16 @@ async function updateLesson(lessonId, modal) {
     const lesson_date = document.getElementById('plModalHiddenDate').value || null;
     if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
 
-    const lesson_time   = document.getElementById('plModalTime').value || null;
+    const timeVal = document.getElementById('plModalTime').value.trim();
+    if (timeVal && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(timeVal)) {
+        showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning'); return;
+    }
+    const lesson_time   = timeVal || null;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
     if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
     const earned_amount = parseFloat(earned_raw);
-    const currency      = document.getElementById('plModalCurrency').value || 'TRY';
+    const currency      = document.getElementById('plModalCurrency').value || '₺ TRY';
 
     const { error } = await supabase.from('private_lessons').update({
         student_name, lesson_date, lesson_time, location, earned_amount, currency
@@ -550,7 +563,7 @@ async function updateLesson(lessonId, modal) {
 }
 
 // ---------------------------------------------------------------
-// Tek alan güncelle (video, partner, note)
+// Tek alan güncelle
 // ---------------------------------------------------------------
 async function updateLessonField(lessonId, fields, successMsg) {
     const { error } = await supabase.from('private_lessons')
