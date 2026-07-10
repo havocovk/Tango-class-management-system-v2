@@ -5,6 +5,7 @@
 import { supabase }       from './supabaseClient.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate, openPromptModal } from './utils.js';
 import { navigateTo }     from './router.js';
+import { t }              from './i18n.js';
 import { appState }       from './state.js';
 
 // ---------------------------------------------------------------
@@ -60,7 +61,7 @@ function ensureModal(id) {
 }
 
 function detectVideoPlatform(url) {
-    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    if (!url) return { name: 'Other', color: '#94a3b8' };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be'))
         return { name: 'YouTube', color: '#FF0000' };
@@ -74,7 +75,7 @@ function detectVideoPlatform(url) {
         return { name: 'Facebook', color: '#1877F2' };
     if (lower.includes('tiktok.com'))
         return { name: 'TikTok', color: '#010101' };
-    return { name: 'Diğer', color: '#94a3b8' };
+    return { name: 'Other', color: '#94a3b8' };
 }
 
 // ---------------------------------------------------------------
@@ -92,7 +93,7 @@ export async function showPrivateLessonDetail(lessonId) {
     if (!appState.privateLessonsList) await fetchPrivateLessons();
     const lesson = (appState.privateLessonsList || []).find(l => l.id === lessonId);
     if (!lesson) {
-        showToast('Ders bulunamadı.', 'error');
+        showToast(t('privateLessons.toastNotFound'), 'error');
         await loadPrivateLessons();
         return;
     }
@@ -108,7 +109,7 @@ async function fetchPrivateLessons() {
         .select('*')
         .order('lesson_date', { ascending: false });
     if (error) {
-        showToast('Özel dersler yüklenemedi.', 'error');
+        showToast(t('privateLessons.toastLoadFail'), 'error');
         appState.privateLessonsList = [];
     } else {
         appState.privateLessonsList = data || [];
@@ -132,7 +133,7 @@ function renderPrivateLessonsView() {
     let listHtml = '';
     if (displayed.length === 0) {
         listHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">
-            ${showArch ? 'Arşivlenmiş özel ders yok.' : 'Henüz özel ders eklenmemiş.'}
+            ${showArch ? t('privateLessons.emptyArchived') : t('privateLessons.emptyActive')}
         </div>`;
     } else {
         displayed.forEach(l => {
@@ -174,17 +175,17 @@ function renderPrivateLessonsView() {
     container.innerHTML = `
         <div class="view">
             <span class="back-link" id="plBackBtn">
-                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ana Menü
+                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('privateLessons.backToMenu')}
             </span>
             <div class="main-title">
-                <i data-lucide="user-round" size="22" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Özel Dersler
+                <i data-lucide="user-round" size="22" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>${t('privateLessons.title')}
             </div>
             <div class="nav-buttons">
                 <button class="btn-success" id="plAddBtn">
-                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Özel Ders Ekle
+                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('privateLessons.add')}
                 </button>
                 <button class="btn-secondary" id="plArchiveToggleBtn">
-                    <i data-lucide="${showArch ? 'list' : 'archive'}" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${showArch ? 'Aktif Dersler' : 'Arşiv'}
+                    <i data-lucide="${showArch ? 'list' : 'archive'}" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${showArch ? t('privateLessons.showActive') : t('privateLessons.showArchive')}
                 </button>
             </div>
             <div id="plList">${listHtml}</div>
@@ -246,17 +247,17 @@ function renderDetailView(lesson) {
     container.innerHTML = `
         <div class="view">
             <span class="back-link" id="plDetailBackBtn">
-                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Özel Dersler
+                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('privateLessons.backToList')}
             </span>
 
-            <div class="main-title" style="margin-top:10px;">Özel Ders</div>
+            <div class="main-title" style="margin-top:10px;">${t('privateLessons.detailTitle')}</div>
             <div style="text-align:center;font-size:15px;font-weight:600;color:var(--text-main);margin-bottom:24px;">
-                Öğrenci: <span style="color:var(--primary);">${escapeHtml(lesson.student_name)}</span>
+                ${t('privateLessons.studentLabel')}: <span style="color:var(--primary);">${escapeHtml(lesson.student_name)}</span>
             </div>
 
             <!-- DERS PARTNERİ -->
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-                <span style="font-size:20px;font-weight:700;color:var(--accent);">Ders Partneri</span>
+                <span style="font-size:20px;font-weight:700;color:var(--accent);">${t('privateLessons.partnerLabel')}</span>
                 ${hasPartner
                     ? `<span style="color:var(--text-main);font-size:20px;font-weight:600;">${escapeHtml(lesson.partner_name)}</span>
                        <span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;">
@@ -270,7 +271,7 @@ function renderDetailView(lesson) {
 
             <!-- DERS VİDEOSU -->
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-                <span style="font-size:20px;font-weight:700;color:var(--accent);">Ders Videosu</span>
+                <span style="font-size:20px;font-weight:700;color:var(--accent);">${t('privateLessons.videoLabel')}</span>
                 <span class="${vidClass}" id="plVideoIcon" style="display:inline-flex;align-items:center;justify-content:center;">
                     <i data-lucide="video" size="15"></i>
                 </span>
@@ -278,18 +279,18 @@ function renderDetailView(lesson) {
 
             <!-- ALINAN ÜCRET -->
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-                <span style="font-size:20px;font-weight:700;color:var(--accent);">Alınan Ücret</span>
+                <span style="font-size:20px;font-weight:700;color:var(--accent);">${t('privateLessons.earnedLabel')}</span>
                 <span style="color:var(--primary);font-size:20px;font-weight:700;">${earned}</span>
             </div>
 
             <!-- DERS NOTU -->
-            <div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:10px;margin-top:4px;">Ders Notu</div>
+            <div style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:10px;margin-top:4px;">${t('privateLessons.noteLabel')}</div>
             <textarea id="plDetailNote" rows="5"
                 style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;resize:vertical;margin-bottom:16px;box-sizing:border-box;"
-                placeholder="Ders notları, figürler, gözlemler...">${escapeHtml(lesson.note || '')}</textarea>
+                placeholder="${t('privateLessons.notePlaceholder')}">${escapeHtml(lesson.note || '')}</textarea>
 
             <button class="btn-success" id="plDetailSaveBtn" style="width:100%;">
-                <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Kaydet
+                <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('privateLessons.save')}
             </button>
         </div>
     `;
@@ -302,11 +303,11 @@ function renderDetailView(lesson) {
     // Partner ekle / düzenle
     document.getElementById('plPartnerEditBtn').onclick = () => {
         openPromptModal(
-            'Ders Partneri',
+            t('privateLessons.partnerTitle'),
             lesson.partner_name || '',
             async (val) => {
                 const partner_name = val.trim() || null;
-                await updateLessonField(lesson.id, { partner_name }, 'Partner kaydedildi ✓');
+                await updateLessonField(lesson.id, { partner_name }, t('privateLessons.toastSaved'));
                 lesson.partner_name = partner_name;
                 renderDetailView(lesson);
             }
@@ -318,12 +319,12 @@ function renderDetailView(lesson) {
         if (lesson.video_url) {
             openPrivateVideoModal(lesson);
         } else {
-            openPromptModal('Video Linki Ekle', 'https://...', async (url) => {
+            openPromptModal(t('privateLessons.videoAddTitle'), 'https://...', async (url) => {
                 if (!url || !url.startsWith('http')) {
-                    showToast('Geçerli bir URL giriniz.', 'warning');
+                    showToast(t('privateLessons.videoUrlInvalid'), 'warning');
                     return;
                 }
-                await updateLessonField(lesson.id, { video_url: url }, 'Video kaydedildi ✓');
+                await updateLessonField(lesson.id, { video_url: url }, t('privateLessons.videoSaved'));
                 lesson.video_url = url;
                 renderDetailView(lesson);
             });
@@ -333,7 +334,7 @@ function renderDetailView(lesson) {
     // Sadece notu kaydet
     document.getElementById('plDetailSaveBtn').onclick = async () => {
         const note = document.getElementById('plDetailNote').value.trim() || null;
-        await updateLessonField(lesson.id, { note }, 'Kaydedildi ✓');
+        await updateLessonField(lesson.id, { note }, t('privateLessons.toastSaved'));
         lesson.note = note;
     };
 
@@ -361,7 +362,7 @@ function openPrivateVideoModal(lesson) {
 
     titleEl.innerHTML = `
         <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
-        <span style="vertical-align:middle;"> Özel Ders Videosu</span>
+        <span style="vertical-align:middle;"> ${t('privateLessons.videoTitle')}</span>
         <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;
             background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${escapeHtml(platform.name)}</span>
     `;
@@ -379,8 +380,8 @@ function openPrivateVideoModal(lesson) {
     const watchHandler  = () => window.open(url, '_blank');
     const deleteHandler = () => {
         modal.style.display = 'none';
-        openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
-            await updateLessonField(lesson.id, { video_url: null }, 'Video silindi ✓');
+        openConfirmModal(t('privateLessons.videoDeleteConfirm'), async () => {
+            await updateLessonField(lesson.id, { video_url: null }, t('privateLessons.videoDeleted'));
             lesson.video_url = null;
             renderDetailView(lesson);
             cleanup();
@@ -414,20 +415,20 @@ function openLessonModal(existing) {
 
     modal.querySelector('.modal-content').innerHTML = `
         <h3 style="margin-top:0;color:var(--primary);text-align:left;">
-            ${isEdit ? 'Özel Dersi Düzenle' : 'Yeni Özel Ders Ekle'}
+            ${isEdit ? t('privateLessons.modalEditTitle') : t('privateLessons.modalCreateTitle')}
         </h3>
 
-        <input type="text" id="plModalName" placeholder="Öğrenci / kişi adı *" autocomplete="off"
+        <input type="text" id="plModalName" placeholder="${t('privateLessons.namePlaceholder')}" autocomplete="off"
             style="width:100%;margin-bottom:12px;"
             value="${escapeHtml(existing ? existing.student_name || '' : '')}">
 
-        <input type="text" id="plModalLocation" placeholder="Lokasyon (opsiyonel)" autocomplete="off"
+        <input type="text" id="plModalLocation" placeholder="${t('privateLessons.locationPlaceholder')}" autocomplete="off"
             style="width:100%;margin-bottom:12px;"
             value="${escapeHtml(existing ? existing.location || '' : '')}">
 
         <!-- Tarih -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-            <input type="text" id="plModalDateDisplay" readonly placeholder="Tarih seçin *"
+            <input type="text" id="plModalDateDisplay" readonly placeholder="${t('privateLessons.datePlaceholder')}"
                 style="flex:1;background:#1e293b;color:white;cursor:pointer;"
                 value="${existing && existing.lesson_date ? formatDate(existing.lesson_date) : ''}">
             <span id="plModalCalIcon" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:36px;min-height:36px;justify-content:center;">
@@ -439,7 +440,7 @@ function openLessonModal(existing) {
 
         <!-- Saat: zorunlu, 24 saat formatı, varsayılan 19:00 -->
         <input type="text" id="plModalTime"
-            placeholder="SS:DD (örn: 19:00)"
+            placeholder="${t('privateLessons.timePlaceholder')}"
             maxlength="5"
             autocomplete="off"
             style="width:100%;margin-bottom:12px;"
@@ -447,15 +448,15 @@ function openLessonModal(existing) {
 
         <!-- Ücret + Para Birimi yan yana -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;width:100%;">
-            <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
+            <input type="number" id="plModalEarned" placeholder="${t('privateLessons.earnedPlaceholder')}"
                 style="width:55%;box-sizing:border-box;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;"
                 value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
             <div style="width:45%;box-sizing:border-box;">${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}</div>
         </div>
 
         <div style="display:flex;gap:10px;">
-            <button class="btn-success" id="plModalSaveBtn">Kaydet</button>
-            <button class="btn-secondary" id="plModalCancelBtn">İptal</button>
+            <button class="btn-success" id="plModalSaveBtn">${t('privateLessons.save')}</button>
+            <button class="btn-secondary" id="plModalCancelBtn">${t('common.cancel')}</button>
         </div>
     `;
 
@@ -488,18 +489,18 @@ function openLessonModal(existing) {
 // ---------------------------------------------------------------
 async function createLesson(modal) {
     const student_name = document.getElementById('plModalName').value.trim();
-    if (!student_name) { showToast('Öğrenci adı boş olamaz.', 'warning'); return; }
+    if (!student_name) { showToast(t('privateLessons.nameEmpty'), 'warning'); return; }
 
     const lesson_date = document.getElementById('plModalHiddenDate').value || null;
-    if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
+    if (!lesson_date)  { showToast(t('privateLessons.dateEmpty'), 'warning'); return; }
 
     const timeVal = document.getElementById('plModalTime').value.trim();
     const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    if (!timePattern.test(timeVal)) { showToast(t('privateLessons.timeInvalid'), 'warning'); return; }
     const lesson_time = timeVal;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
-    if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
+    if (earned_raw === '') { showToast(t('privateLessons.earnedEmpty'), 'warning'); return; }
     const earned_amount = parseFloat(earned_raw);
     const currency      = document.getElementById('plModalCurrency').value || '₺ TRY';
 
@@ -507,9 +508,9 @@ async function createLesson(modal) {
         student_name, lesson_date, lesson_time, location, earned_amount, currency
     });
 
-    if (error) { showToast('Ders oluşturulamadı: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('privateLessons.toastCreateFail').replace('{msg}', error.message), 'error'); return; }
 
-    showToast('Özel ders eklendi ✓', 'success');
+    showToast(t('privateLessons.toastCreated'), 'success');
     modal.style.display = 'none';
     appState.privateLessonsList = null;
     await fetchPrivateLessons();
@@ -521,18 +522,18 @@ async function createLesson(modal) {
 // ---------------------------------------------------------------
 async function updateLesson(lessonId, modal) {
     const student_name = document.getElementById('plModalName').value.trim();
-    if (!student_name) { showToast('Öğrenci adı boş olamaz.', 'warning'); return; }
+    if (!student_name) { showToast(t('privateLessons.nameEmpty'), 'warning'); return; }
 
     const lesson_date = document.getElementById('plModalHiddenDate').value || null;
-    if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
+    if (!lesson_date)  { showToast(t('privateLessons.dateEmpty'), 'warning'); return; }
 
     const timeVal = document.getElementById('plModalTime').value.trim();
     const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    if (!timePattern.test(timeVal)) { showToast(t('privateLessons.timeInvalid'), 'warning'); return; }
     const lesson_time = timeVal;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
-    if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
+    if (earned_raw === '') { showToast(t('privateLessons.earnedEmpty'), 'warning'); return; }
     const earned_amount = parseFloat(earned_raw);
     const currency      = document.getElementById('plModalCurrency').value || '₺ TRY';
 
@@ -540,9 +541,9 @@ async function updateLesson(lessonId, modal) {
         student_name, lesson_date, lesson_time, location, earned_amount, currency
     }).eq('id', lessonId);
 
-    if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('privateLessons.toastUpdateFail').replace('{msg}', error.message), 'error'); return; }
 
-    showToast('Ders güncellendi ✓', 'success');
+    showToast(t('privateLessons.toastUpdated'), 'success');
     modal.style.display = 'none';
     appState.privateLessonsList = null;
     await fetchPrivateLessons();
@@ -555,7 +556,7 @@ async function updateLesson(lessonId, modal) {
 async function updateLessonField(lessonId, fields, successMsg) {
     const { error } = await supabase.from('private_lessons')
         .update(fields).eq('id', lessonId);
-    if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('privateLessons.toastSaveFail').replace('{msg}', error.message), 'error'); return; }
     showToast(successMsg, 'success');
     const idx = (appState.privateLessonsList || []).findIndex(l => l.id === lessonId);
     if (idx !== -1) Object.assign(appState.privateLessonsList[idx], fields);
@@ -567,8 +568,8 @@ async function updateLessonField(lessonId, fields, successMsg) {
 async function archiveLesson(lessonId, makeArchived) {
     const { error } = await supabase.from('private_lessons')
         .update({ is_archived: makeArchived }).eq('id', lessonId);
-    if (error) { showToast('İşlem başarısız.', 'error'); return; }
-    showToast(makeArchived ? 'Ders arşivlendi ✓' : 'Ders arşivden çıkarıldı ✓', 'success');
+    if (error) { showToast(t('privateLessons.toastArchiveFail'), 'error'); return; }
+    showToast(makeArchived ? t('privateLessons.toastArchived') : t('privateLessons.toastUnarchived'), 'success');
     if (makeArchived) appState.showArchivedPrivate = false;
     appState.privateLessonsList = null;
     await fetchPrivateLessons();
@@ -579,10 +580,10 @@ async function archiveLesson(lessonId, makeArchived) {
 // Sil
 // ---------------------------------------------------------------
 async function deleteLesson(lessonId) {
-    openConfirmModal('Bu özel dersi silmek istediğinizden emin misiniz?', async () => {
+    openConfirmModal(t('privateLessons.confirmDelete'), async () => {
         const { error } = await supabase.from('private_lessons').delete().eq('id', lessonId);
-        if (error) { showToast('Silme başarısız.', 'error'); return; }
-        showToast('Ders silindi ✓', 'success');
+        if (error) { showToast(t('privateLessons.toastDeleteFail'), 'error'); return; }
+        showToast(t('privateLessons.toastDeleted'), 'success');
         appState.privateLessonsList = null;
         await fetchPrivateLessons();
         renderPrivateLessonsView();
