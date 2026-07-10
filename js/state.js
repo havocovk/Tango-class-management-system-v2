@@ -58,5 +58,6 @@ export const appState = {
     wsVideoMap: {},
     wsPartnerMap: {},
     wsNotesMap: {},
+    wsPayments: [],
     showArchivedWsStudents: false
 };

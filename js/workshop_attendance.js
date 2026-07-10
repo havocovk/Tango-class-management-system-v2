@@ -135,7 +135,7 @@ function renderWorkshopAttendance() {
     document.getElementById('wsAddStudentBtn').onclick    = () => addWorkshopStudent();
     document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
-    document.getElementById('wsPaymentsBtn').onclick      = () => showToast('Çalıştay ödemeleri adım 4.7\'de gelecek.', 'warning');
+    document.getElementById('wsPaymentsBtn').onclick      = () => navigateTo('workshopPayments', { workshopId: appState.currentWorkshopId, workshopName: appState.currentWorkshopName });
     document.getElementById('wsToggleArchivedBtn').onclick = () => {
         appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
         renderWorkshopAttendance();
