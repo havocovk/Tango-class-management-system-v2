@@ -12,6 +12,7 @@
 //   navigateTo('workshops');
 //   navigateTo('festivals');
 //   navigateTo('privateLessons');
+//   navigateTo('privateLessonDetail', { lessonId });
 // ---------------------------------------------------------------
 
 import { showToast } from './utils.js';
@@ -39,7 +40,7 @@ function setViewVisibility(screen) {
 async function renderScreen(screen, params) {
     // workshops/festivals/privateLessons henüz kendi sayfası olmayan
     // placeholder ekranlar — görünürlüğü DEĞİŞTİRME, menüde kal
-    const placeholders = ['privateLessons'];
+    const placeholders = [];
     if (!placeholders.includes(screen)) {
         setViewVisibility(screen);
     }
@@ -96,7 +97,13 @@ async function renderScreen(screen, params) {
             break;
         }
         case 'privateLessons': {
-            showToast('Özel Dersler modülü yakında eklenecek.', 'warning');
+            const module = await import('./private_lessons.js');
+            await module.loadPrivateLessons();
+            break;
+        }
+        case 'privateLessonDetail': {
+            const module = await import('./private_lessons.js');
+            await module.showPrivateLessonDetail(params.lessonId);
             break;
         }
         default:
