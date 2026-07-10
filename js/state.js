@@ -44,5 +44,18 @@ export const appState = {
     // --- ADIM 5.1 — Arşiv görünürlük bayrakları ---
     // true ise arşivlenmiş kayıtlar da listede gösterilir.
     showArchivedClasses: false,
-    showArchivedStudents: false
+    showArchivedStudents: false,
+
+    // --- ÇALIŞTAY verileri ---
+    workshopsList: [],
+    showArchivedWorkshops: false,
+    currentWorkshopId: null,
+    currentWorkshopName: null,
+    currentWorkshop: null,
+    wsStudents: [],
+    wsDates: [],
+    wsAttendanceMap: {},
+    wsVideoMap: {},
+    wsPartnerMap: {},
+    wsNotesMap: {}
 };
