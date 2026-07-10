@@ -5,6 +5,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml } from './utils.js';
+import { t } from './i18n.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 
@@ -26,7 +27,7 @@ async function fetchWorkshops() {
         .order('start_date', { ascending: false });
 
     if (error) {
-        showToast('Çalıştaylar yüklenemedi.', 'error');
+        showToast(t('workshops.toastLoadFail'), 'error');
         appState.workshopsList = [];
     } else {
         appState.workshopsList = data || [];
@@ -49,11 +50,11 @@ function renderWorkshopsView() {
 
     if (displayed.length === 0) {
         listHtml = `<div style="text-align:center; color:var(--text-dim); padding:20px;">
-            ${showArch ? 'Arşivlenmiş çalıştay yok.' : 'Henüz çalıştay eklenmemiş.'}
+            ${showArch ? t('workshops.emptyArchived') : t('workshops.empty')
         </div>`;
     } else {
         displayed.forEach(w => {
-            const payType  = w.payment_type === 'upfront' ? 'Baştan Ödeme' : 'Haftalık Ödeme';
+            const payType  = w.payment_type === 'upfront' ? t('workshops.payTypeUpfront') : t('workshops.payTypeWeekly');
             const weeks    = w.total_weeks ? `${w.total_weeks} hafta` : '';
             const dateStr  = w.start_date ? w.start_date.split('T')[0] : '';
             const opacity  = w.is_archived ? 'opacity:0.5;' : '';
@@ -84,18 +85,18 @@ function renderWorkshopsView() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToMenuBtn">← Ana Menü</div>
-            <div class="main-title">Çalıştaylar</div>
+            <div class="back-link" id="backToMenuBtn">${t('workshops.backToMenu')}</div>
+            <div class="main-title">${t('workshops.title')}</div>
             <div id="workshopsListContainer">${listHtml}</div>
             <div class="nav-buttons" style="margin-top:20px;">
                 <button class="btn-success" id="addWorkshopBtn">
-                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Çalıştay Ekle
+                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshops.add')}
                 </button>
             </div>
             <div class="nav-buttons" style="margin-top:10px;">
                 <button class="btn-secondary" id="toggleArchivedWorkshopsBtn">
                     <i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>
-                    ${showArch ? 'Arşivi Gizle' : 'Arşivi Göster'}
+                    ${showArch ? t('workshops.hideArchive') : t('workshops.showArchive')}
                 </button>
             </div>
         </div>
@@ -158,7 +159,7 @@ function renderWorkshopsView() {
 // ---------------------------------------------------------------
 function openWorkshopCreateModal() {
     const modal       = document.getElementById('workshopCreateModal');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
     // Alanları sıfırla
     document.getElementById('wsName').value         = '';
@@ -209,17 +210,17 @@ function openWorkshopCreateModal() {
 
 async function saveWorkshop(modal) {
     const name = document.getElementById('wsName').value.trim();
-    if (!name) { showToast('Çalıştay adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('workshops.nameEmpty'), 'warning'); return; }
 
     const startDateISO = document.getElementById('wsHiddenDatePicker').value;
-    if (!startDateISO) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
+    if (!startDateISO) { showToast(t('festivals.startDateEmpty'), 'warning'); return; }
 
     const timeVal = document.getElementById('wsTime').value.trim();
     const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    if (!timePattern.test(timeVal)) { showToast(t('workshops.timeInvalid'), 'warning'); return; }
 
     const totalWeeks = parseInt(document.getElementById('wsTotalWeeks').value);
-    if (!totalWeeks || totalWeeks < 1) { showToast('Hafta sayısı giriniz.', 'warning'); return; }
+    if (!totalWeeks || totalWeeks < 1) { showToast(t('workshops.nameEmpty'), 'warning'); return; }
 
     const paymentType  = document.getElementById('wsPaymentType').value;
     const totalPrice   = paymentType === 'upfront'  ? (parseFloat(document.getElementById('wsTotalPrice').value)  || null) : null;
@@ -228,7 +229,7 @@ async function saveWorkshop(modal) {
     const theme        = document.getElementById('wsTheme').value.trim()  || null;
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+    if (!user) { showToast(t('workshopAtt.sessionNotFound'), 'error'); return; }
 
     const { data: ws, error } = await supabase
         .from('workshops')
@@ -249,7 +250,7 @@ async function saveWorkshop(modal) {
         .single();
 
     if (error) {
-        showToast('Çalıştay oluşturulamadı: ' + error.message, 'error');
+        showToast(t('workshops.toastCreateFail').replace('{msg}', error.message), 'error');
         return;
     }
 
@@ -272,11 +273,11 @@ async function saveWorkshop(modal) {
         .insert(dates);
 
     if (datesError) {
-        showToast('Tarihler oluşturulamadı: ' + datesError.message, 'error');
+        showToast(t('workshops.toastDatesError').replace('{msg}', datesError.message), 'error');
         return;
     }
 
-    showToast('Çalıştay oluşturuldu ✓', 'success');
+    showToast(t('workshops.toastCreated'), 'success');
     modal.style.display = 'none';
     await fetchWorkshops();
     renderWorkshopsView();
@@ -287,10 +288,10 @@ async function saveWorkshop(modal) {
 // ---------------------------------------------------------------
 function openWorkshopEditModal(ws) {
     const modal = document.getElementById('workshopCreateModal');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
     // Başlığı güncelle
-    modal.querySelector('h3').textContent = 'Çalıştayı Düzenle';
+    modal.querySelector('h3').textContent = t('workshops.modalEditTitle');
 
     // Mevcut değerleri doldur
     document.getElementById('wsName').value        = ws.name || '';
@@ -340,7 +341,7 @@ function openWorkshopEditModal(ws) {
     // Kaydet / İptal
     document.getElementById('wsCreateConfirmBtn').onclick = () => updateWorkshop(ws.id, modal);
     document.getElementById('wsCreateCancelBtn').onclick  = () => {
-        modal.querySelector('h3').textContent = 'Yeni Çalıştay Oluştur';
+        modal.querySelector('h3').textContent = t('workshops.modalCreateTitle');
         modal.style.display = 'none';
     };
 
@@ -350,12 +351,12 @@ function openWorkshopEditModal(ws) {
 
 async function updateWorkshop(wsId, modal) {
     const name = document.getElementById('wsName').value.trim();
-    if (!name) { showToast('Çalıştay adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('workshops.nameEmpty'), 'warning'); return; }
 
     const startDateISO = document.getElementById('wsHiddenDatePicker').value || null;
     const timeVal      = document.getElementById('wsTime').value.trim();
     const timePattern  = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (timeVal && !timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    if (timeVal && !timePattern.test(timeVal)) { showToast(t('workshops.timeInvalid'), 'warning'); return; }
 
     const totalWeeks  = parseInt(document.getElementById('wsTotalWeeks').value) || null;
     const paymentType = document.getElementById('wsPaymentType').value;
@@ -379,10 +380,10 @@ async function updateWorkshop(wsId, modal) {
         })
         .eq('id', wsId);
 
-    if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('workshops.toastUpdateFail').replace('{msg}', error.message), 'error'); return; }
 
-    showToast('Çalıştay güncellendi ✓', 'success');
-    modal.querySelector('h3').textContent = 'Yeni Çalıştay Oluştur';
+    showToast(t('workshops.toastUpdated'), 'success');
+    modal.querySelector('h3').textContent = t('workshops.modalCreateTitle');
     modal.style.display = 'none';
     await fetchWorkshops();
     renderWorkshopsView();
@@ -398,10 +399,10 @@ async function archiveWorkshop(wsId, makeArchived) {
         .eq('id', wsId);
 
     if (error) {
-        showToast('İşlem başarısız.', 'error');
+        showToast(t('workshops.toastArchiveFail'), 'error');
         return;
     }
-    showToast(makeArchived ? 'Çalıştay arşivlendi ✓' : 'Çalıştay arşivden çıkarıldı ✓', 'success');
+    showToast(makeArchived ? t('workshops.toastArchived') : t('workshops.toastUnarchived'), 'success');
     if (makeArchived) appState.showArchivedWorkshops = false;
     await fetchWorkshops();
     renderWorkshopsView();
@@ -411,17 +412,17 @@ async function archiveWorkshop(wsId, makeArchived) {
 // deleteWorkshop — Çalıştayı siler (CASCADE ile alt tablolar da silinir)
 // ---------------------------------------------------------------
 async function deleteWorkshop(wsId) {
-    openConfirmModal('Bu çalıştayı silmek istediğinizden emin misiniz? Tüm tarihler, öğrenciler ve ödemeler de silinir.', async () => {
+    openConfirmModal(t('workshops.confirmDelete'), async () => {
         const { error } = await supabase
             .from('workshops')
             .delete()
             .eq('id', wsId);
 
         if (error) {
-            showToast('Silme işlemi başarısız.', 'error');
+            showToast(t('workshops.toastDeleteFail'), 'error');
             return;
         }
-        showToast('Çalıştay silindi ✓', 'success');
+        showToast(t('workshops.toastDeleted'), 'success');
         await fetchWorkshops();
         renderWorkshopsView();
     });
