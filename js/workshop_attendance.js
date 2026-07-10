@@ -135,7 +135,7 @@ function renderWorkshopAttendance() {
     document.getElementById('wsAddStudentBtn').onclick    = () => addWorkshopStudent();
     document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
-    document.getElementById('wsPaymentsBtn').onclick      = () => navigateTo('workshopPayments', { workshopId: appState.currentWorkshopId, workshopName: appState.currentWorkshopName });
+    document.getElementById('wsPaymentsBtn').onclick      = () => showToast('Çalıştay ödemeleri adım 4.7\'de gelecek.', 'warning');
     document.getElementById('wsToggleArchivedBtn').onclick = () => {
         appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
         renderWorkshopAttendance();
@@ -545,23 +545,104 @@ async function addWorkshopWeek() {
 // ---------------------------------------------------------------
 // Video ekle / göster / sil
 // ---------------------------------------------------------------
+function detectWsVideoPlatform(url) {
+    if (!url) return { name: 'Diğer', color: '#94a3b8' };
+    const lower = url.toLowerCase();
+    if (lower.includes('youtube.com') || lower.includes('youtu.be')) return { name: 'YouTube',      color: '#FF0000' };
+    if (lower.includes('vimeo.com'))                                  return { name: 'Vimeo',        color: '#1AB7EA' };
+    if (lower.includes('drive.google.com'))                           return { name: 'Google Drive', color: '#34A853' };
+    if (lower.includes('instagram.com'))                              return { name: 'Instagram',    color: '#E1306C' };
+    if (lower.includes('facebook.com') || lower.includes('fb.watch'))return { name: 'Facebook',     color: '#1877F2' };
+    if (lower.includes('tiktok.com'))                                 return { name: 'TikTok',       color: '#010101' };
+    return { name: 'Diğer', color: '#94a3b8' };
+}
+
 function handleWorkshopVideo(dateId) {
-    const current = appState.wsVideoMap[dateId] || '';
-    openPromptModalWithValue('Ders Videosu', current, 'https://...', async (url) => {
-        // Önce eski videoyu sil
-        await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
-        if (url && url.trim()) {
+    const existingUrl = appState.wsVideoMap[dateId] || '';
+
+    if (existingUrl) {
+        // Video var → mevcut videoModal'ı aç (WhatsApp gizli)
+        const modal      = document.getElementById('videoModal');
+        const linkDisp   = document.getElementById('videoLinkDisplay');
+        const watchBtn   = document.getElementById('watchVideoBtn');
+        const deleteBtn  = document.getElementById('deleteVideoBtn');
+        const closeBtn   = document.getElementById('closeVideoModalBtn');
+        const waBtn      = document.getElementById('whatsappVideoShareBtn');
+        const noteDisp   = document.getElementById('videoNoteDisplay');
+        if (!modal) return;
+
+        const platform = detectWsVideoPlatform(existingUrl);
+        const titleEl  = modal.querySelector('h3');
+        if (titleEl) {
+            titleEl.innerHTML = `
+                <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+                <span style="vertical-align:middle;"> Ders Videosu</span>
+                <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
+            `;
+        }
+        linkDisp.textContent = existingUrl;
+        linkDisp.style.color = '#2DD4BF';
+        if (waBtn)   waBtn.style.display   = 'none';   // WA gizle
+        if (noteDisp) noteDisp.style.display = 'none'; // not gizle
+
+        modal.style.display = 'flex';
+        refreshIcons();
+
+        const watchHandler = () => window.open(existingUrl, '_blank');
+
+        const deleteHandler = () => {
+            modal.style.display = 'none';
+            openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
+                await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
+                delete appState.wsVideoMap[dateId];
+                showToast('Video silindi ✓', 'success');
+                // İkonu güncelle
+                const icon = document.querySelector(`.ws-vid-icon[data-wsdate-id="${dateId}"]`);
+                if (icon) { icon.style.color = 'var(--dim-forest)'; }
+                cleanup();
+            }, () => { modal.style.display = 'flex'; refreshIcons(); });
+        };
+
+        const closeHandler = () => {
+            modal.style.display = 'none';
+            if (waBtn) waBtn.style.display = 'inline-flex'; // WA'yı geri aç
+            cleanup();
+        };
+
+        const outsideHandler = (e) => { if (e.target === modal) closeHandler(); };
+
+        const cleanup = () => {
+            watchBtn.removeEventListener('click', watchHandler);
+            deleteBtn.removeEventListener('click', deleteHandler);
+            closeBtn.removeEventListener('click', closeHandler);
+            modal.removeEventListener('click', outsideHandler);
+        };
+
+        watchBtn.removeEventListener('click', watchHandler);
+        deleteBtn.removeEventListener('click', deleteHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+        modal.removeEventListener('click', outsideHandler);
+
+        watchBtn.addEventListener('click', watchHandler);
+        deleteBtn.addEventListener('click', deleteHandler);
+        closeBtn.addEventListener('click', closeHandler);
+        modal.addEventListener('click', outsideHandler);
+
+    } else {
+        // Video yok → link giriş modalı
+        openPromptModal('Video Linki Ekle', 'https://...', async (url) => {
+            if (!url || !url.startsWith('http')) { showToast('Geçerli bir URL giriniz.', 'warning'); return; }
             const { error } = await supabase.from('workshop_videos').insert({
                 workshop_date_id: dateId, url: url.trim()
             });
             if (error) { showToast('Video kaydedilemedi: ' + error.message, 'error'); return; }
+            appState.wsVideoMap[dateId] = url.trim();
             showToast('Video kaydedildi ✓', 'success');
-        } else {
-            showToast('Video silindi ✓', 'success');
-        }
-        await loadWorkshopData();
-        renderWorkshopAttendance();
-    });
+            // Sadece o ikonu güncelle
+            const icon = document.querySelector(`.ws-vid-icon[data-wsdate-id="${dateId}"]`);
+            if (icon) { icon.style.color = '#2DD4BF'; }
+        });
+    }
 }
 
 // ---------------------------------------------------------------

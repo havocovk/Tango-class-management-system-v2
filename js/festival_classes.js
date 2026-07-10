@@ -450,22 +450,23 @@ function openFestVideoAddModal(cls) {
 }
 
 // ---------------------------------------------------------------
-// Video görüntüleme modalı
+// Video görüntüleme modalı — embed yok, yeni sekmede/uygulamada açar
 // ---------------------------------------------------------------
 function openFestVideoModal(cls) {
-    const modal      = document.getElementById('festVideoModal');
-    const titleEl    = document.getElementById('festVideoModalTitle');
-    const linkDisp   = document.getElementById('festVideoLinkDisplay');
-    const embedCont  = document.getElementById('festVideoEmbedContainer');
-    const embedFrame = document.getElementById('festVideoEmbed');
-    const playBtn    = document.getElementById('festVideoPlayBtn');
-    const deleteBtn  = document.getElementById('festVideoDeleteBtn');
-    const closeBtn   = document.getElementById('festVideoCloseBtn');
+    const modal     = document.getElementById('festVideoModal');
+    const titleEl   = document.getElementById('festVideoModalTitle');
+    const linkDisp  = document.getElementById('festVideoLinkDisplay');
+    const embedCont = document.getElementById('festVideoEmbedContainer');
+    const playBtn   = document.getElementById('festVideoPlayBtn');
+    const deleteBtn = document.getElementById('festVideoDeleteBtn');
+    const closeBtn  = document.getElementById('festVideoCloseBtn');
     if (!modal) return;
 
     const url      = cls.video_url;
     const platform = detectVideoPlatform(url);
-    const embedUrl = platform.canEmbed ? toEmbedUrl(url) : null;
+
+    // Embed container gizle — tüm videolar yeni sekmede/uygulamada açılır
+    if (embedCont) embedCont.style.display = 'none';
 
     // Başlık — platform rozeti
     titleEl.innerHTML = `
@@ -474,29 +475,15 @@ function openFestVideoModal(cls) {
         <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
     `;
 
-    linkDisp.textContent = url;
-
-    // Embed varsa göster, yoksa gizle
-    if (embedUrl) {
-        embedFrame.src          = embedUrl;
-        embedCont.style.display = 'block';
-        linkDisp.style.display  = 'none';
-    } else {
-        embedCont.style.display = 'none';
-        embedFrame.src          = '';
-        linkDisp.style.display  = 'block';
-    }
-
-    modal.style.display = 'flex';
+    linkDisp.textContent    = url;
+    linkDisp.style.display  = 'block';
+    modal.style.display     = 'flex';
     refreshIcons();
 
-    // Oynat butonu — embed varsa zaten görünüyor, yoksa yeni sekmede aç
-    playBtn.onclick = () => { window.open(url, '_blank'); };
+    const watchHandler = () => window.open(url, '_blank');
 
-    // Sil
-    deleteBtn.onclick = () => {
+    const deleteHandler = () => {
         modal.style.display = 'none';
-        embedFrame.src      = '';
         openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
             const { error } = await supabase.from('festival_classes')
                 .update({ video_url: null }).eq('id', cls.id);
@@ -505,19 +492,29 @@ function openFestVideoModal(cls) {
             cls.video_url = null;
             const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
             if (idx !== -1) appState.festivalClasses[idx].video_url = null;
+            // Sayfayı yenile
             openFestClassDetail(cls);
-        });
+            cleanup();
+        }, () => { modal.style.display = 'flex'; refreshIcons(); });
     };
 
-    // Kapat
-    closeBtn.onclick = () => {
-        modal.style.display = 'none';
-        embedFrame.src      = '';
+    const closeHandler = () => { modal.style.display = 'none'; cleanup(); };
+    const outsideHandler = (e) => { if (e.target === modal) closeHandler(); };
+
+    const cleanup = () => {
+        playBtn.removeEventListener('click', watchHandler);
+        deleteBtn.removeEventListener('click', deleteHandler);
+        closeBtn.removeEventListener('click', closeHandler);
+        modal.removeEventListener('click', outsideHandler);
     };
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-            embedFrame.src      = '';
-        }
-    };
+
+    playBtn.removeEventListener('click', watchHandler);
+    deleteBtn.removeEventListener('click', deleteHandler);
+    closeBtn.removeEventListener('click', closeHandler);
+    modal.removeEventListener('click', outsideHandler);
+
+    playBtn.addEventListener('click', watchHandler);
+    deleteBtn.addEventListener('click', deleteHandler);
+    closeBtn.addEventListener('click', closeHandler);
+    modal.addEventListener('click', outsideHandler);
 }
