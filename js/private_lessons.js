@@ -255,35 +255,35 @@ function renderDetailView(lesson) {
             </div>
 
             <!-- DERS PARTNERİ -->
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Ders Partneri</span>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <span style="font-size:15px;font-weight:700;color:var(--accent);">Ders Partneri</span>
                 ${hasPartner
-                    ? `<span style="color:var(--text-main);font-size:14px;font-weight:600;">${escapeHtml(lesson.partner_name)}</span>
-                       <span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
-                           <i data-lucide="pencil" size="18"></i>
+                    ? `<span style="color:var(--text-main);font-size:15px;font-weight:600;">${escapeHtml(lesson.partner_name)}</span>
+                       <span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;">
+                           <i data-lucide="pencil" size="15"></i>
                        </span>`
-                    : `<span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
-                           <i data-lucide="circle-plus" size="22"></i>
+                    : `<span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;">
+                           <i data-lucide="circle-plus" size="15"></i>
                        </span>`
                 }
             </div>
 
             <!-- DERS VİDEOSU -->
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Ders Videosu</span>
-                <span class="${vidClass}" id="plVideoIcon" style="display:inline-flex;align-items:center;min-width:32px;min-height:32px;justify-content:center;">
-                    <i data-lucide="video" size="22"></i>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <span style="font-size:15px;font-weight:700;color:var(--accent);">Ders Videosu</span>
+                <span class="${vidClass}" id="plVideoIcon" style="display:inline-flex;align-items:center;justify-content:center;">
+                    <i data-lucide="video" size="15"></i>
                 </span>
             </div>
 
             <!-- ALINAN ÜCRET -->
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-                <span class="sub-header" style="margin:0;border:none;padding:0;font-size:14px;color:var(--accent);">Alınan Ücret</span>
-                <span style="color:var(--primary);font-size:16px;font-weight:700;">${earned}</span>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <span style="font-size:15px;font-weight:700;color:var(--accent);">Alınan Ücret</span>
+                <span style="color:var(--primary);font-size:15px;font-weight:700;">${earned}</span>
             </div>
 
             <!-- DERS NOTU -->
-            <div class="sub-header">Ders Notu</div>
+            <div style="font-size:15px;font-weight:700;color:var(--accent);margin-bottom:10px;margin-top:4px;">Ders Notu</div>
             <textarea id="plDetailNote" rows="5"
                 style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px;resize:vertical;margin-bottom:16px;box-sizing:border-box;"
                 placeholder="Ders notları, figürler, gözlemler...">${escapeHtml(lesson.note || '')}</textarea>
