@@ -15,6 +15,7 @@
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
+import { showWorkshopPayments } from './workshop_payments.js';
 import { refreshIcons, formatDate, isPastDate, openPromptModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
@@ -135,7 +136,7 @@ function renderWorkshopAttendance() {
     document.getElementById('wsAddStudentBtn').onclick    = () => addWorkshopStudent();
     document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
-    document.getElementById('wsPaymentsBtn').onclick      = () => showToast('Çalıştay ödemeleri adım 4.7\'de gelecek.', 'warning');
+    document.getElementById('wsPaymentsBtn').onclick      = () => showWorkshopPayments(appState.currentWorkshopId, appState.currentWorkshopName);
     document.getElementById('wsToggleArchivedBtn').onclick = () => {
         appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
         renderWorkshopAttendance();
