@@ -213,7 +213,9 @@ async function updateFestClass(classId, modal) {
 }
 
 // ---------------------------------------------------------------
-// ADIM 5.5 — Ders detay sayfası (inline düzenleme)
+// ADIM 5.5 — Ders detay sayfası
+// Tüm alanlar tek Kaydet butonuyla kaydedilir.
+// Düzenle/Sil: ders listesindeki ikonlardan yapılır.
 // ---------------------------------------------------------------
 function openFestClassDetail(cls) {
     appState.currentFestClassId = cls.id;
@@ -230,90 +232,62 @@ function openFestClassDetail(cls) {
             <div class="main-title">${escapeHtml(cls.name)}</div>
             ${dt ? `<div style="text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:20px;">${dt}</div>` : ''}
 
-            <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;">
 
                 <!-- Katılımcı Sayısı -->
-                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;">
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
+                <div>
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="users" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Katılımcı Sayısı
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <input type="number" id="fcParticipantInput" value="${cls.participant_count || ''}"
-                            placeholder="Katılımcı sayısı" min="0"
-                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;">
-                        <button id="fcSaveParticipant" class="btn-success" style="flex:none;min-width:auto;width:auto;padding:10px 14px;font-size:13px;">
-                            <i data-lucide="check" size="14" style="display:inline-block;vertical-align:middle;"></i>
-                        </button>
-                    </div>
+                    <input type="number" id="fcParticipantInput" value="${cls.participant_count || ''}"
+                        placeholder="Katılımcı sayısı" min="0"
+                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                 </div>
 
                 <!-- Kazanılan Para -->
-                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;">
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
-                        <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Kazanılan Para (₺)
+                <div>
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
+                        <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Kazanılan Para
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
-                            placeholder="Tutar" min="0"
-                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;">
-                        <button id="fcSaveEarned" class="btn-success" style="flex:none;min-width:auto;width:auto;padding:10px 14px;font-size:13px;">
-                            <i data-lucide="check" size="14" style="display:inline-block;vertical-align:middle;"></i>
-                        </button>
-                    </div>
+                    <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
+                        placeholder="Tutar" min="0"
+                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                 </div>
 
                 <!-- Video URL -->
-                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;">
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
+                <div>
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="video" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Video URL
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <input type="text" id="fcVideoInput" value="${escapeHtml(cls.video_url || '')}"
-                            placeholder="https://youtube.com/..."
-                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;">
-                        <button id="fcSaveVideo" class="btn-success" style="flex:none;min-width:auto;width:auto;padding:10px 14px;font-size:13px;">
-                            <i data-lucide="check" size="14" style="display:inline-block;vertical-align:middle;"></i>
-                        </button>
-                    </div>
-                    ${cls.video_url ? `<a href="${escapeHtml(cls.video_url)}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--primary);">🎬 Videoyu Aç</a>` : ''}
+                    <input type="text" id="fcVideoInput" value="${escapeHtml(cls.video_url || '')}"
+                        placeholder="https://youtube.com/..."
+                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
+                    ${cls.video_url ? `<a href="${escapeHtml(cls.video_url)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--primary);">🎬 Videoyu Aç</a>` : ''}
                 </div>
 
                 <!-- Partner Adı -->
-                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;">
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
+                <div>
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="user-round" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Partner Adı
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <input type="text" id="fcPartnerInput" value="${escapeHtml(cls.partner_name || '')}"
-                            placeholder="Partner adı (opsiyonel)"
-                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;">
-                        <button id="fcSavePartner" class="btn-success" style="flex:none;min-width:auto;width:auto;padding:10px 14px;font-size:13px;">
-                            <i data-lucide="check" size="14" style="display:inline-block;vertical-align:middle;"></i>
-                        </button>
-                    </div>
+                    <input type="text" id="fcPartnerInput" value="${escapeHtml(cls.partner_name || '')}"
+                        placeholder="Partner adı (opsiyonel)"
+                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
                 </div>
 
                 <!-- Ders Notu -->
-                <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:16px;">
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">
+                <div>
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="notebook-pen" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ders Notu
                     </div>
                     <textarea id="fcNoteInput" rows="4" placeholder="Ders notları..."
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;">${escapeHtml(cls.note || '')}</textarea>
-                    <button id="fcSaveNote" class="btn-success" style="margin-top:8px;width:100%;">
-                        <i data-lucide="check" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Notu Kaydet
-                    </button>
                 </div>
 
-                <!-- Düzenle / Sil -->
-                <div style="display:flex;gap:10px;margin-top:4px;">
-                    <button id="fcEditBtn" class="btn-secondary" style="flex:1;">
-                        <i data-lucide="pencil" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Dersi Düzenle
-                    </button>
-                    <button id="fcDeleteBtn" class="btn-danger" style="flex:1;">
-                        <i data-lucide="trash-2" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Dersi Sil
-                    </button>
-                </div>
+                <!-- TEK KAYDET BUTONU -->
+                <button id="fcSaveAllBtn" class="btn-success" style="width:100%;padding:13px;font-size:14px;font-weight:700;">
+                    <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Kaydet
+                </button>
 
             </div>
         </div>
@@ -327,44 +301,30 @@ function openFestClassDetail(cls) {
         });
     };
 
-    // Kaydet butonları
-    document.getElementById('fcSaveParticipant').onclick = () =>
-        saveFestClassField(cls.id, 'participant_count',
-            parseInt(document.getElementById('fcParticipantInput').value) || 0, 'Katılımcı sayısı kaydedildi ✓');
+    // Tek Kaydet butonu — tüm alanları tek seferde kaydeder
+    document.getElementById('fcSaveAllBtn').onclick = async () => {
+        const participant_count = parseInt(document.getElementById('fcParticipantInput').value) || 0;
+        const earned_amount     = parseFloat(document.getElementById('fcEarnedInput').value)    || 0;
+        const video_url         = document.getElementById('fcVideoInput').value.trim()           || null;
+        const partner_name      = document.getElementById('fcPartnerInput').value.trim()         || null;
+        const note              = document.getElementById('fcNoteInput').value.trim()             || null;
 
-    document.getElementById('fcSaveEarned').onclick = () =>
-        saveFestClassField(cls.id, 'earned_amount',
-            parseFloat(document.getElementById('fcEarnedInput').value) || 0, 'Tutar kaydedildi ✓');
+        const { error } = await supabase.from('festival_classes').update({
+            participant_count, earned_amount, video_url, partner_name, note
+        }).eq('id', cls.id);
 
-    document.getElementById('fcSaveVideo').onclick = () =>
-        saveFestClassField(cls.id, 'video_url',
-            document.getElementById('fcVideoInput').value.trim() || null, 'Video kaydedildi ✓');
+        if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
+        showToast('Kaydedildi ✓', 'success');
 
-    document.getElementById('fcSavePartner').onclick = () =>
-        saveFestClassField(cls.id, 'partner_name',
-            document.getElementById('fcPartnerInput').value.trim() || null, 'Partner kaydedildi ✓');
-
-    document.getElementById('fcSaveNote').onclick = () =>
-        saveFestClassField(cls.id, 'note',
-            document.getElementById('fcNoteInput').value.trim() || null, 'Not kaydedildi ✓');
-
-    // Düzenle
-    document.getElementById('fcEditBtn').onclick = () => openFestClassModal(cls);
-
-    // Sil
-    document.getElementById('fcDeleteBtn').onclick = () => {
-        openConfirmModal('Bu dersi silmek istediğinizden emin misiniz?', async () => {
-            const { error } = await supabase.from('festival_classes').delete().eq('id', cls.id);
-            if (error) { showToast('Silme başarısız.', 'error'); return; }
-            showToast('Ders silindi ✓', 'success');
-            await loadFestivalData();
-            renderFestivalDetailView();
+        // Lokal state güncelle
+        const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
+        if (idx !== -1) Object.assign(appState.festivalClasses[idx], {
+            participant_count, earned_amount, video_url, partner_name, note
         });
     };
 
     refreshIcons();
 }
-
 // ---------------------------------------------------------------
 // Tek alan kaydetme yardımcısı
 // ---------------------------------------------------------------
