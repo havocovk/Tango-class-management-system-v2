@@ -7,13 +7,14 @@ import { supabase } from './supabaseClient.js';
 import { COUNTRY_CURRENCY } from './festivals.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate } from './utils.js';
 import { navigateTo } from './router.js';
+import { t } from './i18n.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
 // VIDEO PLATFORM TESPİTİ
 // ---------------------------------------------------------------
 function detectVideoPlatform(url) {
-    if (!url) return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
+    if (!url) return { name: 'Other', color: '#94a3b8', canEmbed: false };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be'))
         return { name: 'YouTube', color: '#FF0000', canEmbed: true };
@@ -27,7 +28,7 @@ function detectVideoPlatform(url) {
         return { name: 'Facebook', color: '#1877F2', canEmbed: false };
     if (lower.includes('tiktok.com'))
         return { name: 'TikTok', color: '#010101', canEmbed: false };
-    return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
+    return { name: 'Other', color: '#94a3b8', canEmbed: false };
 }
 
 // YouTube / Vimeo URL'sini embed URL'sine çevir
@@ -144,7 +145,7 @@ function renderFestivalDetailView() {
 
     let classesHtml = '';
     if (classes.length === 0) {
-        classesHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">Henüz ders eklenmemiş.</div>`;
+        classesHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">${t('festClasses.emptyLessons')}</div>`;
     } else {
         classes.forEach(c => {
             const dateStr = c.lesson_date ? formatDate(c.lesson_date) : '';
@@ -158,7 +159,7 @@ function renderFestivalDetailView() {
                     <div style="font-weight:700;font-size:15px;color:var(--text-main);">${escapeHtml(c.name)}</div>
                     ${dt ? `<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">${dt}</div>` : ''}
                     <div style="font-size:11px;color:var(--primary);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;">
-                        ${c.participant_count ? `<span>👥 ${c.participant_count} katılımcı</span>` : ''}
+                        ${c.participant_count ? `<span>\u{1F465} ${c.participant_count} ${t('festClasses.participantLabel').toLowerCase()}</span>` : ''}
                         ${c.earned_amount     ? `<span>💰 ${Number(c.earned_amount).toLocaleString('tr-TR')} ${c.currency || ''}</span>` : ''}
                         ${platform ? `<span style="color:${platform.color};">🎬 ${platform.name}</span>` : ''}
                     </div>
@@ -177,13 +178,13 @@ function renderFestivalDetailView() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToFestivalsBtn">← Festivaller</div>
-            <div class="main-title">Festival Dersleri</div>
+            <div class="back-link" id="backToFestivalsBtn">${t('festClasses.backToFestivals')}</div>
+            <div class="main-title">${t('festClasses.title')}</div>
             <h2 style="text-align:center;font-size:18px;color:var(--primary);margin-bottom:12px;">${escapeHtml(appState.currentFestivalName || '')}</h2>
             ${infoHtml}
             <div class="nav-buttons" style="margin-bottom:16px;">
                 <button class="btn-success" id="addFestClassBtn">
-                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Ders Ekle
+                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('festClasses.addLesson')}
                 </button>
             </div>
             <div id="festClassesList">${classesHtml}</div>
@@ -214,10 +215,10 @@ function renderFestivalDetailView() {
         el.onclick = (e) => {
             e.stopPropagation();
             const cid = el.dataset.fcId;
-            openConfirmModal('Bu dersi silmek istediğinizden emin misiniz?', async () => {
+            openConfirmModal(t('festClasses.confirmDelete'), async () => {
                 const { error } = await supabase.from('festival_classes').delete().eq('id', cid);
-                if (error) { showToast('Silme başarısız.', 'error'); return; }
-                showToast('Ders silindi ✓', 'success');
+                if (error) { showToast(t('festClasses.toastDeleteFail'), 'error'); return; }
+                showToast(t('festClasses.toastDeleted'), 'success');
                 await loadFestivalData();
                 renderFestivalDetailView();
             });
@@ -232,10 +233,10 @@ function renderFestivalDetailView() {
 // ---------------------------------------------------------------
 function openFestClassModal(existing) {
     const modal = document.getElementById('festClassModal');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
     const isEdit = !!existing;
-    modal.querySelector('h3').textContent = isEdit ? 'Dersi Düzenle' : 'Yeni Ders Ekle';
+    modal.querySelector('h3').textContent = isEdit ? t('festClasses.modalEditTitle') : t('festClasses.modalCreateTitle');
 
     document.getElementById('fcName').value = existing ? (existing.name || '') : '';
     document.getElementById('fcTime').value = existing && existing.lesson_time
@@ -268,16 +269,16 @@ function openFestClassModal(existing) {
 
 async function createFestClass(modal) {
     const name = document.getElementById('fcName').value.trim();
-    if (!name) { showToast('Ders adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('festClasses.nameEmpty'), 'warning'); return; }
     const lesson_date = document.getElementById('fcHiddenDate').value || null;
-    if (!lesson_date) { showToast('Tarih seçiniz.', 'warning'); return; }
+    if (!lesson_date) { showToast(t('festClasses.dateRequired'), 'warning'); return; }
     const lesson_time = document.getElementById('fcTime').value.trim() || null;
 
     const { error } = await supabase.from('festival_classes').insert({
         festival_id: appState.currentFestivalId, name, lesson_date, lesson_time
     });
-    if (error) { showToast('Ders oluşturulamadı: ' + error.message, 'error'); return; }
-    showToast('Ders oluşturuldu ✓', 'success');
+    if (error) { showToast(t('festClasses.toastCreateFail').replace('{msg}', error.message), 'error'); return; }
+    showToast(t('festClasses.toastCreated'), 'success');
     modal.style.display = 'none';
     await loadFestivalData();
     renderFestivalDetailView();
@@ -285,16 +286,16 @@ async function createFestClass(modal) {
 
 async function updateFestClass(classId, modal) {
     const name = document.getElementById('fcName').value.trim();
-    if (!name) { showToast('Ders adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('festClasses.nameEmpty'), 'warning'); return; }
     const lesson_date = document.getElementById('fcHiddenDate').value || null;
-    if (!lesson_date) { showToast('Tarih seçiniz.', 'warning'); return; }
+    if (!lesson_date) { showToast(t('festClasses.dateRequired'), 'warning'); return; }
     const lesson_time = document.getElementById('fcTime').value.trim() || null;
 
     const { error } = await supabase.from('festival_classes').update({
         name, lesson_date, lesson_time
     }).eq('id', classId);
-    if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
-    showToast('Ders güncellendi ✓', 'success');
+    if (error) { showToast(t('festClasses.toastUpdateFail').replace('{msg}', error.message), 'error'); return; }
+    showToast(t('festClasses.toastUpdated'), 'success');
     modal.style.display = 'none';
     await loadFestivalData();
     renderFestivalDetailView();
@@ -315,7 +316,7 @@ function openFestClassDetail(cls) {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToFestDetailBtn">← Festival Dersleri</div>
+            <div class="back-link" id="backToFestDetailBtn">${t('festClasses.backToFestDetail')}</div>
             <div class="main-title">${escapeHtml(cls.name)}</div>
             ${dt ? `<div style="text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:20px;">${dt}</div>` : ''}
 
@@ -324,21 +325,21 @@ function openFestClassDetail(cls) {
                 <!-- Katılımcı Sayısı -->
                 <div>
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
-                        <i data-lucide="users" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Katılımcı Sayısı
+                        <i data-lucide="users" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.participantLabel')}
                     </div>
                     <input type="number" id="fcParticipantInput" value="${cls.participant_count || ''}"
-                        placeholder="Katılımcı sayısı" min="0"
+                        placeholder="${t('festClasses.participantPlaceholder')}" min="0"
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                 </div>
 
                 <!-- Kazanılan Para + Para Birimi -->
                 <div>
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
-                        <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Kazanılan Para
+                        <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.earnedLabel')}
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
-                            placeholder="Tutar" min="0"
+                            placeholder="${t('festClasses.earnedPlaceholder')}" min="0"
                             style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                         ${currencySelectHtml(appState.currentFestival ? appState.currentFestival.location : '', cls.currency || '')}
                     </div>
@@ -347,7 +348,7 @@ function openFestClassDetail(cls) {
                 <!-- Ders Videosu — kamera ikonu (soluk=yok, canlı=var) -->
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:12px;color:var(--text-dim);font-weight:600;">
-                        Ders Videosu
+                        ${t('festClasses.videoLabel')}
                     </span>
                     <span id="fcVideoIcon" class="vid-icon ${hasVideo ? 'active' : ''}" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;">
                         <i data-lucide="video" size="22" style="pointer-events:none;"></i>
@@ -357,25 +358,25 @@ function openFestClassDetail(cls) {
                 <!-- Partner Adı -->
                 <div>
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
-                        <i data-lucide="user-round" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Partner Adı
+                        <i data-lucide="user-round" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.partnerLabel')}
                     </div>
                     <input type="text" id="fcPartnerInput" value="${escapeHtml(cls.partner_name || '')}"
-                        placeholder="Partner adı (opsiyonel)"
+                        placeholder="${t('festClasses.partnerPlaceholder')}"
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
                 </div>
 
                 <!-- Ders Notu -->
                 <div>
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
-                        <i data-lucide="notebook-pen" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ders Notu
+                        <i data-lucide="notebook-pen" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.noteLabel')}
                     </div>
-                    <textarea id="fcNoteInput" rows="4" placeholder="Ders notları..."
+                    <textarea id="fcNoteInput" rows="4" placeholder="${t('festClasses.notePlaceholder')}"
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;">${escapeHtml(cls.note || '')}</textarea>
                 </div>
 
                 <!-- Kaydet -->
                 <button id="fcSaveAllBtn" class="btn-success" style="width:100%;padding:13px;font-size:14px;font-weight:700;">
-                    <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Kaydet
+                    <i data-lucide="save" size="15" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>${t('festClasses.saveAll')}
                 </button>
 
             </div>
@@ -412,8 +413,8 @@ function openFestClassDetail(cls) {
             participant_count, earned_amount, currency, partner_name, note
         }).eq('id', cls.id);
 
-        if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
-        showToast('Kaydedildi ✓', 'success');
+        if (error) { showToast(t('festClasses.toastSaveFail').replace('{msg}', error.message), 'error'); return; }
+        showToast(t('festClasses.toastSaved'), 'success');
 
         const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
         if (idx !== -1) Object.assign(appState.festivalClasses[idx], {
@@ -431,15 +432,15 @@ function openFestVideoAddModal(cls) {
     const { openPromptModal } = window._tcmsUtils || {};
     // utils'ten openPromptModal'ı kullanalım
     import('./utils.js').then(({ openPromptModal }) => {
-        openPromptModal('Video Linki Ekle', 'https://youtube.com/...', async (url) => {
+        openPromptModal(t('festClasses.videoAddTitle'), 'https://youtube.com/...', async (url) => {
             if (!url || !url.startsWith('http')) {
-                showToast('Geçerli bir URL giriniz.', 'warning');
+                showToast(t('festClasses.videoUrlInvalid'), 'warning');
                 return;
             }
             const { error } = await supabase.from('festival_classes')
                 .update({ video_url: url }).eq('id', cls.id);
-            if (error) { showToast('Video kaydedilemedi.', 'error'); return; }
-            showToast('Video eklendi ✓', 'success');
+            if (error) { showToast(t('festClasses.videoSaveFail'), 'error'); return; }
+            showToast(t('festClasses.videoAdded'), 'success');
             cls.video_url = url;
             const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
             if (idx !== -1) appState.festivalClasses[idx].video_url = url;
@@ -484,11 +485,11 @@ function openFestVideoModal(cls) {
 
     const deleteHandler = () => {
         modal.style.display = 'none';
-        openConfirmModal('Bu videoyu silmek istediğinizden emin misiniz?', async () => {
+        openConfirmModal(t('festClasses.videoDeleteConfirm'), async () => {
             const { error } = await supabase.from('festival_classes')
                 .update({ video_url: null }).eq('id', cls.id);
-            if (error) { showToast('Video silinemedi.', 'error'); return; }
-            showToast('Video silindi ✓', 'success');
+            if (error) { showToast(t('festClasses.videoDeleteFail'), 'error'); return; }
+            showToast(t('festClasses.videoDeleted'), 'success');
             cls.video_url = null;
             const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
             if (idx !== -1) appState.festivalClasses[idx].video_url = null;
