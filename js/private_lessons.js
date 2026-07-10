@@ -28,6 +28,22 @@ function todayISO() {
 }
 
 // ---------------------------------------------------------------
+// Modal'ı garantili bul — yoksa DOM'a ekle
+// index.html'e bağımlılığı ortadan kaldırır
+// ---------------------------------------------------------------
+function ensureModal() {
+    let modal = document.getElementById('privateLessonModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'privateLessonModal';
+        modal.className = 'modal';
+        modal.innerHTML = '<div class="modal-content"></div>';
+        document.body.appendChild(modal);
+    }
+    return modal;
+}
+
+// ---------------------------------------------------------------
 // GİRİŞ NOKTASI — router.js tarafından çağrılır (liste ekranı)
 // ---------------------------------------------------------------
 export async function loadPrivateLessons() {
@@ -39,7 +55,6 @@ export async function loadPrivateLessons() {
 // GİRİŞ NOKTASI — router.js tarafından çağrılır (detay ekranı)
 // ---------------------------------------------------------------
 export async function showPrivateLessonDetail(lessonId) {
-    // Önce listeyi çek (zaten appState'te varsa tekrar çekmez)
     if (!appState.privateLessonsList) {
         await fetchPrivateLessons();
     }
@@ -128,7 +143,14 @@ function renderPrivateLessonsView() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="main-title">🎯 Özel Dersler</div>
+            <!-- Geri butonu ÜSTTE -->
+            <span class="back-link" id="plBackBtn">
+                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ana Menü
+            </span>
+
+            <div class="main-title">
+                <i data-lucide="user-round" size="22" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>Özel Dersler
+            </div>
 
             <div class="nav-buttons">
                 <button class="btn-success" id="plAddBtn">
@@ -140,12 +162,6 @@ function renderPrivateLessonsView() {
             </div>
 
             <div id="plList">${listHtml}</div>
-
-            <div style="margin-top:16px;">
-                <span class="back-link" id="plBackBtn">
-                    <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Ana Menü
-                </span>
-            </div>
         </div>
     `;
 
@@ -215,12 +231,13 @@ function renderDetailView(lesson) {
 
     container.innerHTML = `
         <div class="view">
+            <!-- Geri butonu ÜSTTE -->
             <span class="back-link" id="plDetailBackBtn">
                 <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Özel Dersler
             </span>
 
             <div class="main-title" style="margin-top:10px;">
-                ${escapeHtml(lesson.student_name)}
+                <i data-lucide="user-round" size="20" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>${escapeHtml(lesson.student_name)}
             </div>
             <div style="text-align:center; color:var(--text-dim); font-size:13px; margin-top:-12px; margin-bottom:20px;">
                 ${dateStr}${timeStr ? ' · ' + timeStr : ''}${lesson.location ? ' · ' + escapeHtml(lesson.location) : ''}
@@ -271,7 +288,7 @@ function renderDetailView(lesson) {
 
     // Geri
     document.getElementById('plDetailBackBtn').onclick = () => {
-        appState.privateLessonsList = null; // yeniden çekilsin
+        appState.privateLessonsList = null;
         navigateTo('privateLessons');
     };
 
@@ -316,16 +333,15 @@ function renderDetailView(lesson) {
 
 // ---------------------------------------------------------------
 // ADIM 6.2 — Oluşturma / Düzenleme Modalı
+// Modal yoksa DOM'a dinamik olarak eklenir (ensureModal)
 // ---------------------------------------------------------------
 function openLessonModal(existing) {
-    const modal = document.getElementById('privateLessonModal');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
-
+    const modal  = ensureModal();
     const isEdit = !!existing;
     const title  = isEdit ? 'Özel Dersi Düzenle' : 'Yeni Özel Ders Ekle';
 
     modal.querySelector('.modal-content').innerHTML = `
-        <h3 style="margin-top:0; color:var(--primary);">${title}</h3>
+        <h3 style="margin-top:0; color:var(--primary); text-align:left;">${title}</h3>
 
         <input type="text" id="plModalName" placeholder="Öğrenci / kişi adı *" autocomplete="off"
             style="width:100%; margin-bottom:12px;"
@@ -340,7 +356,7 @@ function openLessonModal(existing) {
             <input type="text" id="plModalDateDisplay" readonly placeholder="Tarih seçin *"
                 style="flex:1; background:#1e293b; color:white; cursor:pointer;"
                 value="${existing && existing.lesson_date ? formatDate(existing.lesson_date) : ''}">
-            <span id="plModalCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+            <span id="plModalCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center; min-width:36px; min-height:36px; justify-content:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
         </div>
@@ -352,7 +368,7 @@ function openLessonModal(existing) {
             <input type="text" id="plModalTimeDisplay" readonly placeholder="Saat seçin (opsiyonel)"
                 style="flex:1; background:#1e293b; color:white; cursor:pointer;"
                 value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : ''}">
-            <span id="plModalTimeIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+            <span id="plModalTimeIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center; min-width:36px; min-height:36px; justify-content:center;">
                 <i data-lucide="clock" size="22"></i>
             </span>
         </div>
@@ -383,7 +399,6 @@ function openLessonModal(existing) {
     hiddenDate.onchange = () => {
         dispDate.value = hiddenDate.value ? formatDate(hiddenDate.value) : '';
     };
-    // Display input tıklanınca da takvim açılsın
     dispDate.onclick = () => {
         if (hiddenDate.showPicker) hiddenDate.showPicker();
         else hiddenDate.click();
@@ -428,10 +443,10 @@ async function createLesson(modal) {
     const lesson_date = document.getElementById('plModalHiddenDate').value || null;
     if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
 
-    const lesson_time    = document.getElementById('plModalHiddenTime').value || null;
-    const location       = document.getElementById('plModalLocation').value.trim() || null;
-    const earned_raw     = document.getElementById('plModalEarned').value;
-    const earned_amount  = earned_raw !== '' ? parseFloat(earned_raw) : 0;
+    const lesson_time   = document.getElementById('plModalHiddenTime').value || null;
+    const location      = document.getElementById('plModalLocation').value.trim() || null;
+    const earned_raw    = document.getElementById('plModalEarned').value;
+    const earned_amount = earned_raw !== '' ? parseFloat(earned_raw) : 0;
 
     const { error } = await supabase.from('private_lessons').insert({
         student_name, lesson_date, lesson_time, location, earned_amount
@@ -447,7 +462,7 @@ async function createLesson(modal) {
 }
 
 // ---------------------------------------------------------------
-// Mevcut özel dersi güncelle (isim, tarih, saat, lokasyon, ücret)
+// Mevcut özel dersi güncelle
 // ---------------------------------------------------------------
 async function updateLesson(lessonId, modal) {
     const student_name  = document.getElementById('plModalName').value.trim();
@@ -475,14 +490,13 @@ async function updateLesson(lessonId, modal) {
 }
 
 // ---------------------------------------------------------------
-// Detay sayfasında tek alan güncelle (video, partner, ücret, not)
+// Detay sayfasında tek alan güncelle
 // ---------------------------------------------------------------
 async function updateLessonField(lessonId, fields, successMsg) {
     const { error } = await supabase.from('private_lessons')
         .update(fields).eq('id', lessonId);
     if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
     showToast(successMsg, 'success');
-    // appState'teki kaydı güncelle (sayfayı yeniden çizmeden)
     const idx = (appState.privateLessonsList || []).findIndex(l => l.id === lessonId);
     if (idx !== -1) Object.assign(appState.privateLessonsList[idx], fields);
 }
