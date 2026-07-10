@@ -234,8 +234,8 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-att-cell').forEach(cell => {
         cell.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const studentId = cell.dataset.studentId;
-            const dateId    = cell.dataset.wsdateId;
+            const studentId = parseInt(cell.dataset.studentId);
+            const dateId    = parseInt(cell.dataset.wsdateId);
             const dateObj   = appState.wsDates.find(d => d.id === dateId);
             if (!dateObj || dateObj.is_cancelled) return;
             await toggleWorkshopAttendance(studentId, dateId, cell);
@@ -246,7 +246,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-student-edit').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const studentId = el.dataset.studentId;
+            const studentId = parseInt(el.dataset.studentId);
             const name      = el.dataset.studentName;
             editWorkshopStudent(studentId, name);
         });
@@ -256,7 +256,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-vid-icon').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const dateId = el.dataset.wsdateId;
+            const dateId = parseInt(el.dataset.wsdateId);
             handleWorkshopVideo(dateId);
         });
     });
@@ -265,7 +265,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-partner-edit').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const dateId  = el.dataset.wsdateId;
+            const dateId  = parseInt(el.dataset.wsdateId);
             const current = el.dataset.partner || '';
             openPromptModalWithValue('Partner / Öğretmen', current, 'İsim girin', async (val) => {
                 await updateWorkshopPartner(dateId, val);
@@ -277,7 +277,7 @@ function attachCellListeners() {
     document.querySelectorAll('.ws-note-cell').forEach(el => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            const dateId  = el.dataset.wsdateId;
+            const dateId  = parseInt(el.dataset.wsdateId);
             const current = appState.wsNotesMap[dateId] || '';
             openPromptModalWithValue('Ders Notu', current, 'Not girin', async (val) => {
                 await updateWorkshopNote(dateId, val);
@@ -289,7 +289,7 @@ function attachCellListeners() {
     document.querySelectorAll('#wsHeaderRow th[data-wsdate-id]').forEach(th => {
         th.addEventListener('click', (e) => {
             e.stopPropagation();
-            const dateId    = th.dataset.wsdateId;
+            const dateId    = parseInt(th.dataset.wsdateId);
             const cancelled = th.dataset.cancelled === '1';
             openWorkshopWeekMenu(dateId, cancelled);
         });

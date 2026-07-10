@@ -116,8 +116,8 @@ function renderWorkshopsView() {
     // Çalıştay kartına tıklayınca detaya git
     document.querySelectorAll('[data-ws-goto]').forEach(el => {
         el.addEventListener('click', () => {
-            const wsId = el.dataset.wsGoto;
-            const ws   = (appState.workshopsList || []).find(w => String(w.id) === String(wsId));
+            const wsId = parseInt(el.dataset.wsGoto);
+            const ws   = (appState.workshopsList || []).find(w => w.id === wsId);
             if (ws) navigateTo('workshopDetail', { workshopId: ws.id, workshopName: ws.name });
         });
     });
@@ -126,8 +126,8 @@ function renderWorkshopsView() {
     document.querySelectorAll('.ws-btn-edit[data-ws-id]').forEach(el => {
         el.onclick = (e) => {
             e.stopPropagation();
-            const wsId = el.dataset.wsId;
-            const ws   = (appState.workshopsList || []).find(w => String(w.id) === String(wsId));
+            const wsId = parseInt(el.dataset.wsId);
+            const ws   = (appState.workshopsList || []).find(w => w.id === wsId);
             if (ws) openWorkshopEditModal(ws);
         };
     });
@@ -135,7 +135,7 @@ function renderWorkshopsView() {
     document.querySelectorAll('.ws-btn-archive[data-ws-id]').forEach(el => {
         el.onclick = (e) => {
             e.stopPropagation();
-            const wsId       = el.dataset.wsId;
+            const wsId       = parseInt(el.dataset.wsId);
             const isArchived = el.dataset.wsArchived === '1';
             archiveWorkshop(wsId, !isArchived);
         };
@@ -144,7 +144,7 @@ function renderWorkshopsView() {
     document.querySelectorAll('.ws-btn-delete[data-ws-id]').forEach(el => {
         el.onclick = (e) => {
             e.stopPropagation();
-            const wsId = el.dataset.wsId;
+            const wsId = parseInt(el.dataset.wsId);
             deleteWorkshop(wsId);
         };
     });
