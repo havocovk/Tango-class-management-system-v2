@@ -111,6 +111,7 @@ function renderWorkshopAttendance() {
             ${infoHtml}
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="wsAddStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Öğrenci Ekle</button>
+                <button id="wsImportStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Mevcut Öğrenci</button>
                 <button id="wsAddWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Hafta Ekle</button>
                 <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Ödemeler</button>
             </div>
@@ -131,6 +132,7 @@ function renderWorkshopAttendance() {
     // Butonlar
     document.getElementById('backToWorkshopsBtn').onclick = () => navigateTo('workshops');
     document.getElementById('wsAddStudentBtn').onclick    = () => addWorkshopStudent();
+    document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
     document.getElementById('wsPaymentsBtn').onclick      = () => showToast('Çalıştay ödemeleri adım 4.7\'de gelecek.', 'warning');
 
@@ -338,35 +340,116 @@ async function toggleWorkshopAttendance(studentId, dateId, cell) {
 // Öğrenci ekle
 // ---------------------------------------------------------------
 function addWorkshopStudent() {
-    openPromptModal('Yeni Öğrenci', 'Ad Soyad', async (name) => {
-        if (!name) return;
+    const modal   = document.getElementById('doubleInputModal');
+    const title   = document.getElementById('doubleModalTitle');
+    const input1  = document.getElementById('doubleInput1');
+    const input2  = document.getElementById('doubleInput2');
+    const confirm = document.getElementById('doubleModalConfirm');
+    const cancel  = document.getElementById('doubleModalCancel');
+    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+
+    title.textContent    = 'Yeni Öğrenci';
+    input1.placeholder   = 'Ad Soyad';
+    input2.placeholder   = 'Telefon (opsiyonel)';
+    input1.value         = '';
+    input2.value         = '';
+    modal.style.display  = 'flex';
+    input1.focus();
+
+    confirm.onclick = async () => {
+        const name  = input1.value.trim();
+        const phone = input2.value.trim() || null;
+        if (!name) { showToast('Ad Soyad boş olamaz.', 'warning'); return; }
+        modal.style.display = 'none';
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
         const { error } = await supabase.from('workshop_students').insert({
             workshop_id: appState.currentWorkshopId,
             user_id:     user.id,
-            name:        name,
+            name,
+            phone,
             is_archived: false
         });
         if (error) { showToast('Öğrenci eklenemedi: ' + error.message, 'error'); return; }
         showToast('Öğrenci eklendi ✓', 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
-    });
+    };
+    cancel.onclick = () => { modal.style.display = 'none'; };
 }
 
 // ---------------------------------------------------------------
 // Öğrenci düzenle / sil
 // ---------------------------------------------------------------
 function editWorkshopStudent(studentId, currentName) {
-    openPromptModalWithValue('Öğrenci Düzenle', currentName, 'Ad Soyad', async (newName) => {
-        if (!newName || newName === currentName) return;
-        const { error } = await supabase.from('workshop_students').update({ name: newName }).eq('id', studentId);
+    const modal      = document.getElementById('studentActionModal');
+    const viewMode   = document.getElementById('studentViewMode');
+    const editMode   = document.getElementById('studentEditMode');
+    const nameDisp   = document.getElementById('studentNameDisplay');
+    const editInput  = document.getElementById('studentEditInput');
+    const phoneInput = document.getElementById('studentPhoneInput');
+    const editBtn    = document.getElementById('studentEditBtn');
+    const deleteBtn  = document.getElementById('studentDeleteBtn');
+    const archiveBtn = document.getElementById('studentArchiveBtn');
+    const closeBtn   = document.getElementById('studentModalCloseView');
+    const saveBtn    = document.getElementById('studentSaveBtn');
+    const cancelBtn  = document.getElementById('studentCancelEditBtn');
+    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+
+    // Mevcut öğrenciyi bul (telefon için)
+    const student = appState.wsStudents.find(s => s.id === studentId);
+
+    nameDisp.innerText         = currentName;
+    viewMode.style.display     = 'block';
+    editMode.style.display     = 'none';
+    modal.style.display        = 'flex';
+    refreshIcons();
+
+    editBtn.onclick = () => {
+        editInput.value          = currentName;
+        if (phoneInput) phoneInput.value = student ? (student.phone || '') : '';
+        viewMode.style.display   = 'none';
+        editMode.style.display   = 'block';
+        editInput.focus();
+    };
+
+    saveBtn.onclick = async () => {
+        const newName  = editInput.value.trim();
+        const newPhone = phoneInput ? phoneInput.value.trim() : null;
+        if (!newName) { showToast('Ad boş olamaz.', 'warning'); return; }
+        const updateData = { name: newName };
+        if (phoneInput) updateData.phone = newPhone || null;
+        const { error } = await supabase.from('workshop_students').update(updateData).eq('id', studentId);
         if (error) { showToast('Güncellenemedi.', 'error'); return; }
+        modal.style.display = 'none';
         showToast('Öğrenci güncellendi ✓', 'success');
         await loadWorkshopData();
         renderWorkshopAttendance();
-    });
+    };
+
+    if (archiveBtn) archiveBtn.onclick = async () => {
+        const isArch = student ? student.is_archived : false;
+        const { error } = await supabase.from('workshop_students').update({ is_archived: !isArch }).eq('id', studentId);
+        if (error) { showToast('İşlem başarısız.', 'error'); return; }
+        modal.style.display = 'none';
+        showToast(!isArch ? 'Öğrenci arşivlendi ✓' : 'Arşivden çıkarıldı ✓', 'success');
+        await loadWorkshopData();
+        renderWorkshopAttendance();
+    };
+
+    deleteBtn.onclick = () => {
+        modal.style.display = 'none';
+        openConfirmModal('Bu öğrenciyi silmek istediğinizden emin misiniz?', async () => {
+            const { error } = await supabase.from('workshop_students').delete().eq('id', studentId);
+            if (error) { showToast('Silinemedi.', 'error'); return; }
+            showToast('Öğrenci silindi ✓', 'success');
+            await loadWorkshopData();
+            renderWorkshopAttendance();
+        });
+    };
+
+    closeBtn.onclick   = () => { modal.style.display = 'none'; };
+    cancelBtn.onclick  = () => { viewMode.style.display = 'block'; editMode.style.display = 'none'; };
 }
 
 // ---------------------------------------------------------------
@@ -491,6 +574,82 @@ async function deleteWorkshopWeek(dateId) {
     } catch (err) {
         showToast('Hafta silinemedi: ' + err.message, 'error');
     }
+}
+
+// ---------------------------------------------------------------
+// Mevcut grup dersi öğrencisini çalıştaya aktar
+// ---------------------------------------------------------------
+async function importStudentFromClasses() {
+    const { data: allStudents, error } = await supabase
+        .from('students')
+        .select('id, name, phone, class_id, classes(name)')
+        .eq('is_archived', false)
+        .order('name');
+
+    if (error) { showToast('Öğrenciler yüklenemedi.', 'error'); return; }
+    if (!allStudents || allStudents.length === 0) { showToast('Grup dersinde öğrenci yok.', 'warning'); return; }
+
+    // Zaten çalıştayda olan öğrenci isimlerini al (duplicate önleme)
+    const existingNames = appState.wsStudents.map(s => s.name.trim().toLowerCase());
+
+    // Basit seçim listesi — dynamicModal'ı genişlet
+    const modal    = document.getElementById('dynamicModal');
+    const titleEl  = document.getElementById('dynamicModalTitle');
+    const inputEl  = document.getElementById('dynamicInput');
+    const confirmB = document.getElementById('dynamicModalConfirm');
+    const cancelB  = document.getElementById('dynamicModalCancel');
+    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+
+    titleEl.textContent = 'Öğrenci Seç';
+
+    // Input yerine select listesi göster
+    inputEl.style.display = 'none';
+    let selectEl = document.getElementById('wsImportSelect');
+    if (!selectEl) {
+        selectEl = document.createElement('select');
+        selectEl.id = 'wsImportSelect';
+        selectEl.style.cssText = 'width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
+        inputEl.parentNode.insertBefore(selectEl, inputEl);
+    }
+    selectEl.style.display = 'block';
+    selectEl.innerHTML = allStudents.map(s => {
+        const className  = s.classes ? s.classes.name : '';
+        const alreadyIn  = existingNames.includes(s.name.trim().toLowerCase());
+        return `<option value="${s.id}" data-name="${escapeHtml(s.name)}" data-phone="${escapeHtml(s.phone || '')}" ${alreadyIn ? 'disabled' : ''}>${escapeHtml(s.name)}${className ? ' (' + escapeHtml(className) + ')' : ''}${alreadyIn ? ' ✓' : ''}</option>`;
+    }).join('');
+
+    modal.style.display = 'flex';
+
+    confirmB.onclick = async () => {
+        const selected = selectEl.options[selectEl.selectedIndex];
+        if (!selected || selected.disabled) { showToast('Geçerli bir öğrenci seçin.', 'warning'); return; }
+        const name  = selected.dataset.name;
+        const phone = selected.dataset.phone || null;
+
+        modal.style.display    = 'none';
+        selectEl.style.display = 'none';
+        inputEl.style.display  = 'block';
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+        const { error: insErr } = await supabase.from('workshop_students').insert({
+            workshop_id: appState.currentWorkshopId,
+            user_id:     user.id,
+            name,
+            phone,
+            is_archived: false
+        });
+        if (insErr) { showToast('Öğrenci eklenemedi: ' + insErr.message, 'error'); return; }
+        showToast(name + ' çalıştaya eklendi ✓', 'success');
+        await loadWorkshopData();
+        renderWorkshopAttendance();
+    };
+
+    cancelB.onclick = () => {
+        modal.style.display    = 'none';
+        selectEl.style.display = 'none';
+        inputEl.style.display  = 'block';
+    };
 }
 
 async function toggleWorkshopWeekCancel(dateId, makeCancelled) {
