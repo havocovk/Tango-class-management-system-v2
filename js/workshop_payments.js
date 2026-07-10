@@ -23,6 +23,7 @@
 import { supabase } from './supabaseClient.js';
 import { formatDate, refreshIcons, openDoubleInputModal, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { navigateTo } from './router.js';
+import { t } from './i18n.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
@@ -113,8 +114,8 @@ function isWeekOccurred(dateStr) {
 // ---------------------------------------------------------------
 function headerHtml(modeLabel) {
     return `
-        <div class="back-link" id="wsBackToAttendanceBtn">← Yoklamaya Dön</div>
-        <div class="main-title">Çalıştay Ödemeleri</div>
+        <div class="back-link" id="wsBackToAttendanceBtn">${t('workshopPay.backToAttendance')}</div>
+        <div class="main-title">${t('workshopPay.title')}</div>
         <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:4px; font-weight:600;">
             ${escapeHtml(appState.currentWorkshopName || '')}
         </div>
@@ -165,36 +166,38 @@ function renderUpfrontPayments() {
         <div class="payment-summary">
             <div class="summary-card summary-total">
                 <div class="summary-value">${totalCollected.toLocaleString('tr-TR')} ₺</div>
-                <div class="summary-label">Toplam Tahsil</div>
+                <div class="summary-label">${t('workshopPay.summaryCollected')}</div>
             </div>
             <div class="summary-card summary-danger">
                 <div class="summary-value">${pendingCount}</div>
-                <div class="summary-label">Bekleyen</div>
+                <div class="summary-label">${t('workshopPay.summaryPending')}</div>
             </div>
             <div class="summary-card summary-dates">
                 <div class="summary-value">${visible.length}</div>
-                <div class="summary-label">Öğrenci</div>
+                <div class="summary-label">${t('workshopPay.summaryStudents')}</div>
             </div>
         </div>`;
 
     // Satırlar
     let rowsHtml = '';
     if (visible.length === 0) {
-        rowsHtml = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">Henüz öğrenci eklenmemiş.</td></tr>`;
+        rowsHtml = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">${t('workshopPay.emptyStudents')}</td></tr>`;
     } else {
         visible.forEach((s, idx) => {
             const pay  = appState.wsPayments.find(p => p.student_id === s.id);
             const paid = !!pay;
 
             const badge = paid
-                ? `<span class="debt-badge debt-ok">Ödendi</span>`
-                : `<span class="debt-badge debt-danger">Beklemede</span>`;
+                ? `<span class="debt-badge debt-ok">${t('workshopPay.badgePaid')}</span>`
+                : `<span class="debt-badge debt-danger">${t('workshopPay.badgePending')}</span>`;
 
             const rowStyle = paid ? '' : 'background: rgba(239,68,68,0.07);';
 
             let wa = '';
             if (!paid && s.phone) {
-                const msg = `Merhaba ${s.name}, "${ws.name}" çalıştayı ödemesini hatırlatmak isteriz.` + (totalPrice ? ` Tutar: ${totalPrice}₺.` : '');
+                const msg = totalPrice
+                    ? t('workshopPay.waDebtMsgAmount').replace('{name}', s.name).replace('{ws}', ws.name).replace('{amount}', totalPrice)
+                    : t('workshopPay.waDebtMsg').replace('{name}', s.name).replace('{ws}', ws.name);
                 wa = buildWaLink(s, msg);
             }
 
@@ -216,16 +219,16 @@ function renderUpfrontPayments() {
 
     container.innerHTML = `
         <div class="view">
-            ${headerHtml('Baştan Ödeme')}
+            ${headerHtml(t('workshopPay.modeUpfront'))}
             ${summaryHtml}
             <div class="table-wrapper" style="margin-top:8px;">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Öğrenci</th>
-                            <th style="white-space:nowrap;">Durum</th>
-                            <th style="white-space:nowrap;">Tutar</th>
+                            <th>${t('workshopPay.colStudent')}</th>
+                            <th style="white-space:nowrap;">${t('workshopPay.colStatus')}</th>
+                            <th style="white-space:nowrap;">${t('workshopPay.colAmount')}</th>
                         </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
@@ -241,18 +244,18 @@ function renderUpfrontPayments() {
             const existing = appState.wsPayments.find(p => p.student_id === sid);
 
             if (existing) {
-                openConfirmModal('Bu ödemeyi silmek istediğinizden emin misiniz?', async () => {
+                openConfirmModal(t('workshopPay.paymentDeleteConfirm'), async () => {
                     const { error } = await supabase.from('workshop_payments').delete().eq('id', existing.id);
-                    if (error) { showToast('Ödeme silinemedi.', 'error'); return; }
-                    showToast('Ödeme silindi ✓', 'success');
+                    if (error) { showToast(t('workshopPay.paymentDeleteFail'), 'error'); return; }
+                    showToast(t('workshopPay.paymentDeleted'), 'success');
                     await loadWorkshopPaymentsData();
                     renderWorkshopPaymentsView();
                 });
             } else {
                 const def = totalPrice ? String(totalPrice) : '';
-                openPromptModalWithValue('Ödeme Ekle (₺)', def, 'Tutar', async (val) => {
+                openPromptModalWithValue(t('workshopPay.addPaymentTitle'), def, t('workshopPay.amountPlaceholder'), async (val) => {
                     const amount = parseFloat(val);
-                    if (isNaN(amount) || amount <= 0) { showToast('Lütfen geçerli bir tutar girin.', 'error'); return; }
+                    if (isNaN(amount) || amount <= 0) { showToast(t('workshopPay.invalidAmount'), 'error'); return; }
                     const { error } = await supabase.from('workshop_payments').insert({
                         workshop_id:      appState.currentWorkshopId,
                         student_id:       sid,
@@ -260,8 +263,8 @@ function renderUpfrontPayments() {
                         amount:           amount,
                         weeks_covered:    ws.total_weeks || null
                     });
-                    if (error) { showToast('Ödeme eklenemedi: ' + error.message, 'error'); return; }
-                    showToast('Ödeme eklendi ✓', 'success');
+                    if (error) { showToast(t('workshopPay.paymentAddFail').replace('{msg}', error.message), 'error'); return; }
+                    showToast(t('workshopPay.paymentAdded'), 'success');
                     await loadWorkshopPaymentsData();
                     renderWorkshopPaymentsView();
                 });
@@ -329,13 +332,13 @@ function calcWsStudentDebt(student) {
 
 function getWsDebtBadge(remaining) {
     if (remaining < 0) {
-        return { cls: 'debt-badge debt-danger',  text: `${Math.abs(remaining)} hafta borçlu` };
+        return { cls: 'debt-badge debt-danger',  text: t('workshopPay.badgeDebt').replace('{n}', Math.abs(remaining)) };
     } else if (remaining === 0) {
-        return { cls: 'debt-badge debt-ok',       text: 'Güncel' };
+        return { cls: 'debt-badge debt-ok',       text: t('workshopPay.badgeCurrent') };
     } else if (remaining <= 2) {
-        return { cls: 'debt-badge debt-warning',  text: `${remaining} hafta kaldı` };
+        return { cls: 'debt-badge debt-warning',  text: t('workshopPay.badgeWarning').replace('{n}', remaining) };
     } else {
-        return { cls: 'debt-badge debt-info',     text: `${remaining} hafta avans` };
+        return { cls: 'debt-badge debt-info',     text: t('workshopPay.badgeAdvance').replace('{n}', remaining) };
     }
 }
 
@@ -367,19 +370,19 @@ function renderWeeklyPayments() {
         <div class="payment-summary">
             <div class="summary-card summary-total">
                 <div class="summary-value">${totalCollected.toLocaleString('tr-TR')} ₺</div>
-                <div class="summary-label">Toplam Tahsil</div>
+                <div class="summary-label">${t('workshopPay.summaryCollected')}</div>
             </div>
             <div class="summary-card summary-danger">
                 <div class="summary-value">${debtorCount}</div>
-                <div class="summary-label">Borçlu</div>
+                <div class="summary-label">${t('workshopPay.summaryDebtors')}</div>
             </div>
             <div class="summary-card summary-warning">
                 <div class="summary-value">${warningCount}</div>
-                <div class="summary-label">Az Kaldı</div>
+                <div class="summary-label">${t('workshopPay.summaryWarning')}</div>
             </div>
             <div class="summary-card summary-dates">
                 <div class="summary-value">${occurredWeeks}</div>
-                <div class="summary-label">Ders Yapılan Hafta</div>
+                <div class="summary-label">${t('workshopPay.summaryOccurred')}</div>
             </div>
         </div>`;
 
@@ -391,15 +394,15 @@ function renderWeeklyPayments() {
 
     container.innerHTML = `
         <div class="view">
-            ${headerHtml('Haftalık Ödeme')}
+            ${headerHtml(t('workshopPay.modeWeekly'))}
             ${summaryHtml}
             <div class="table-wrapper" style="margin-top:8px;">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Öğrenci</th>
-                            <th style="white-space:nowrap; min-width:110px;">Durum</th>
+                            <th>${t('workshopPay.colStudent')}</th>
+                            <th style="white-space:nowrap; min-width:110px;">${t('workshopPay.colStatus')}</th>
                             ${headCells}
                         </tr>
                     </thead>
@@ -412,7 +415,7 @@ function renderWeeklyPayments() {
     tbody.innerHTML = '';
 
     if (visible.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${3 + appState.wsDates.length}" style="text-align:center; color:var(--text-dim); padding:20px;">Henüz öğrenci eklenmemiş.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${3 + appState.wsDates.length}" style="text-align:center; color:var(--text-dim); padding:20px;">${t('workshopPay.emptyStudents')}</td></tr>`;
     } else {
         visible.forEach((student, idx) => {
             const { remaining } = debtMap[student.id];
@@ -425,8 +428,8 @@ function renderWeeklyPayments() {
             let wa = '';
             if (student.phone && (remaining < 0 || remaining <= 2)) {
                 const msg = remaining < 0
-                    ? `Merhaba ${student.name}, "${ws.name}" çalıştayı için ${Math.abs(remaining)} haftalık ödemeniz bekleniyor.`
-                    : `Merhaba ${student.name}, "${ws.name}" çalıştayı ödemenizin ${remaining} hafta içinde yenilenmesi gerekiyor.`;
+                    ? t('workshopPay.waWeeklyDebt').replace('{name}', student.name).replace('{ws}', ws.name).replace('{n}', Math.abs(remaining))
+                    : t('workshopPay.waWeeklyWarn').replace('{name}', student.name).replace('{ws}', ws.name).replace('{n}', remaining);
                 wa = buildWaLink(student, msg);
             }
 
@@ -466,20 +469,20 @@ function renderWeeklyPayments() {
                 p => p.student_id === studentId && p.workshop_date_id === dateId
             );
             if (existing) {
-                openConfirmModal('Bu ödemeyi silmek istediğinizden emin misiniz?', async () => {
+                openConfirmModal(t('workshopPay.paymentDeleteConfirm'), async () => {
                     const { error } = await supabase.from('workshop_payments').delete().eq('id', existing.id);
-                    if (error) { showToast('Ödeme silinemedi.', 'error'); return; }
-                    showToast('Ödeme silindi ✓', 'success');
+                    if (error) { showToast(t('workshopPay.paymentDeleteFail'), 'error'); return; }
+                    showToast(t('workshopPay.paymentDeleted'), 'success');
                     await loadWorkshopPaymentsData();
                     renderWorkshopPaymentsView();
                 });
             } else {
                 const defPrice = weeklyPrice ? String(weeklyPrice) : '';
-                openDoubleInputModal('Ödeme Ekle', 'Tutar (₺)', 'Hafta sayısı', async (amount, weeks) => {
+                openDoubleInputModal(t('workshopPay.addPaymentDouble'), t('workshopPay.amountPlaceholder'), t('workshopPay.weeksPlaceholder'), async (amount, weeks) => {
                     const amountNum = parseFloat(amount);
                     const weeksNum  = parseInt(weeks);
                     if (isNaN(amountNum) || amountNum <= 0 || isNaN(weeksNum) || weeksNum <= 0) {
-                        showToast('Lütfen geçerli pozitif değerler girin.', 'error');
+                        showToast(t('workshopPay.invalidAmount'), 'error');
                         return;
                     }
                     const { error } = await supabase.from('workshop_payments').insert({
@@ -489,8 +492,8 @@ function renderWeeklyPayments() {
                         amount:           amountNum,
                         weeks_covered:    weeksNum
                     });
-                    if (error) { showToast('Ödeme eklenemedi: ' + error.message, 'error'); return; }
-                    showToast('Ödeme eklendi ✓', 'success');
+                    if (error) { showToast(t('workshopPay.paymentAddFail').replace('{msg}', error.message), 'error'); return; }
+                    showToast(t('workshopPay.paymentAdded'), 'success');
                     await loadWorkshopPaymentsData();
                     renderWorkshopPaymentsView();
                 }, defPrice, '1');
