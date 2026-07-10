@@ -14,9 +14,55 @@
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
+import { COUNTRY_CURRENCY } from './festivals.js';
 import { refreshIcons, openConfirmModal, openPromptModalWithValue, showToast, escapeHtml, formatDate } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+
+// ---------------------------------------------------------------
+// Para birimi dropdown HTML'i
+// Festivaldeki ülkeye göre o ülkenin para birimi en üstte gelir,
+// ardından $ USD ve € EUR sabit olarak yer alır, sonra diğerleri.
+// ---------------------------------------------------------------
+function currencySelectHtml(festivalLocation, savedCurrency) {
+    // Ülkeyi location string'inden al: 'Paris, Fransa' → 'Fransa'
+    let countryName = '';
+    if (festivalLocation) {
+        const parts = festivalLocation.split(',');
+        countryName = parts.length >= 2 ? parts[parts.length - 1].trim() : '';
+    }
+    const countryCurrency = COUNTRY_CURRENCY[countryName] || null;
+
+    // Sabit listeler
+    const allCurrencies = [
+        '₺ TRY','$ USD','€ EUR','£ GBP','₽ RUB','¥ JPY','¥ CNY',
+        '₩ KRW','₹ INR','R$ BRL','C$ CAD','A$ AUD','Fr CHF',
+        'kr SEK','kr NOK','kr DKK','zł PLN','Kč CZK','Ft HUF',
+        'lei RON','лв BGN','дин RSD','₴ UAH','$ ARS','$ MXN',
+        '$ COP','$ CLP','S/ PEN','$ UYU','R ZAR','£ EGP',
+        'د.م. MAD','₦ NGN','KSh KES','ر.س SAR','د.إ AED',
+        '₪ ILS','฿ THB','S$ SGD','RM MYR','Rp IDR','₱ PHP',
+        '₫ VND','₨ PKR','৳ BDT','NZ$ NZD','HK$ HKD','NT$ TWD',
+    ];
+
+    // Önce ülke para birimi, sonra USD/EUR (zaten listede yoksa), sonra kalanlar
+    const top = [];
+    if (countryCurrency) top.push(countryCurrency);
+    if (!top.includes('$ USD')) top.push('$ USD');
+    if (!top.includes('€ EUR')) top.push('€ EUR');
+    const rest = allCurrencies.filter(c => !top.includes(c));
+    const ordered = [...top, ...rest];
+
+    const selected = savedCurrency || top[0] || '$ USD';
+    const opts = ordered.map(c =>
+        `<option value="${c}" ${c === selected ? 'selected' : ''}>${c}</option>`
+    ).join('');
+
+    return `<select id="fcCurrencySelect"
+        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:110px;">
+        ${opts}
+    </select>`;
+}
 
 // ---------------------------------------------------------------
 // Giriş noktası — router.js çağırır
@@ -87,7 +133,7 @@ function renderFestivalDetailView() {
                     ${dt ? `<div style="font-size:12px;color:var(--text-dim);margin-top:3px;">${dt}</div>` : ''}
                     <div style="font-size:11px;color:var(--primary);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;">
                         ${c.participant_count ? `<span>👥 ${c.participant_count} katılımcı</span>` : ''}
-                        ${c.earned_amount     ? `<span>💰 ${Number(c.earned_amount).toLocaleString('tr-TR')}₺</span>` : ''}
+                        ${c.earned_amount     ? `<span>💰 ${Number(c.earned_amount).toLocaleString('tr-TR')} ${c.currency || ''}</span>` : ''}
                         ${c.video_url         ? `<span>🎬 Video</span>` : ''}
                     </div>
                 </div>
@@ -244,14 +290,17 @@ function openFestClassDetail(cls) {
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                 </div>
 
-                <!-- Kazanılan Para -->
+                <!-- Kazanılan Para + Para Birimi -->
                 <div>
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Kazanılan Para
                     </div>
-                    <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
-                        placeholder="Tutar" min="0"
-                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
+                            placeholder="Tutar" min="0"
+                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
+                        ${currencySelectHtml(appState.currentFestival ? appState.currentFestival.location : '', cls.currency || '')}
+                    </div>
                 </div>
 
                 <!-- Video URL -->
@@ -305,12 +354,13 @@ function openFestClassDetail(cls) {
     document.getElementById('fcSaveAllBtn').onclick = async () => {
         const participant_count = parseInt(document.getElementById('fcParticipantInput').value) || 0;
         const earned_amount     = parseFloat(document.getElementById('fcEarnedInput').value)    || 0;
+        const currency          = document.getElementById('fcCurrencySelect') ? document.getElementById('fcCurrencySelect').value : null;
         const video_url         = document.getElementById('fcVideoInput').value.trim()           || null;
         const partner_name      = document.getElementById('fcPartnerInput').value.trim()         || null;
         const note              = document.getElementById('fcNoteInput').value.trim()             || null;
 
         const { error } = await supabase.from('festival_classes').update({
-            participant_count, earned_amount, video_url, partner_name, note
+            participant_count, earned_amount, currency, video_url, partner_name, note
         }).eq('id', cls.id);
 
         if (error) { showToast('Kayıt başarısız: ' + error.message, 'error'); return; }
@@ -319,7 +369,7 @@ function openFestClassDetail(cls) {
         // Lokal state güncelle
         const idx = (appState.festivalClasses || []).findIndex(c => String(c.id) === String(cls.id));
         if (idx !== -1) Object.assign(appState.festivalClasses[idx], {
-            participant_count, earned_amount, video_url, partner_name, note
+            participant_count, earned_amount, currency, video_url, partner_name, note
         });
     };
 

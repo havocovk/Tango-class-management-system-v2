@@ -1,12 +1,97 @@
 // ---------------------------------------------------------------
 // festivals.js — FESTİVAL LİSTESİ MODÜLÜ
 // ADIM 5.1 + 5.2 — Festival listesi, oluşturma, düzenleme, arşiv
+// Lokasyon: Şehir (metin) + Ülke (dropdown, tüm dünya)
+// Para birimi: ülkeye göre otomatik belirlenir
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
+
+// ---------------------------------------------------------------
+// ÜLKE → PARA BİRİMİ EŞLEŞTİRME TABLOSU
+// ---------------------------------------------------------------
+export const COUNTRY_CURRENCY = {
+    'Türkiye': '₺ TRY', 'Amerika Birleşik Devletleri': '$ USD',
+    'Almanya': '€ EUR', 'Fransa': '€ EUR', 'İtalya': '€ EUR',
+    'İspanya': '€ EUR', 'Hollanda': '€ EUR', 'Belçika': '€ EUR',
+    'Avusturya': '€ EUR', 'Portekiz': '€ EUR', 'Yunanistan': '€ EUR',
+    'Finlandiya': '€ EUR', 'İrlanda': '€ EUR', 'Lüksemburg': '€ EUR',
+    'Malta': '€ EUR', 'Kıbrıs': '€ EUR', 'Slovenya': '€ EUR',
+    'Slovakya': '€ EUR', 'Estonya': '€ EUR', 'Letonya': '€ EUR',
+    'Litvanya': '€ EUR', 'Hırvatistan': '€ EUR',
+    'Birleşik Krallık': '£ GBP', 'Rusya': '₽ RUB',
+    'Japonya': '¥ JPY', 'Çin': '¥ CNY', 'Güney Kore': '₩ KRW',
+    'Hindistan': '₹ INR', 'Brezilya': 'R$ BRL', 'Kanada': 'C$ CAD',
+    'Avustralya': 'A$ AUD', 'İsviçre': 'Fr CHF', 'İsveç': 'kr SEK',
+    'Norveç': 'kr NOK', 'Danimarka': 'kr DKK', 'Polonya': 'zł PLN',
+    'Çekya': 'Kč CZK', 'Macaristan': 'Ft HUF', 'Romanya': 'lei RON',
+    'Bulgaristan': 'лв BGN', 'Sırbistan': 'дин RSD', 'Ukrayna': '₴ UAH',
+    'Arjantin': '$ ARS', 'Meksika': '$ MXN', 'Kolombiya': '$ COP',
+    'Şili': '$ CLP', 'Peru': 'S/ PEN', 'Uruguay': '$ UYU',
+    'Güney Afrika': 'R ZAR', 'Mısır': '£ EGP', 'Fas': 'د.م. MAD',
+    'Nijerya': '₦ NGN', 'Kenya': 'KSh KES',
+    'Suudi Arabistan': 'ر.س SAR', 'Birleşik Arap Emirlikleri': 'د.إ AED',
+    'İsrail': '₪ ILS', 'Tayland': '฿ THB', 'Singapur': 'S$ SGD',
+    'Malezya': 'RM MYR', 'Endonezya': 'Rp IDR', 'Filipinler': '₱ PHP',
+    'Vietnam': '₫ VND', 'Pakistan': '₨ PKR', 'Bangladeş': '৳ BDT',
+    'Yeni Zelanda': 'NZ$ NZD', 'Hong Kong': 'HK$ HKD',
+    'Tayvan': 'NT$ TWD',
+};
+
+// Ülke listesi — dropdown için alfabetik sırada
+const COUNTRIES = [
+    'Almanya','Amerika Birleşik Devletleri','Arjantin','Avustralya','Avusturya',
+    'Bangladeş','Belçika','Birleşik Arap Emirlikleri','Birleşik Krallık',
+    'Brezilya','Bulgaristan','Çekya','Çin','Danimarka','Endonezya',
+    'Estonya','Filipinler','Finlandiya','Fransa','Güney Afrika','Güney Kore',
+    'Hindistan','Hollanda','Hong Kong','Hırvatistan','İndonezya','İrlanda',
+    'İspanya','İsrail','İsveç','İsviçre','İtalya','Japonya','Kanada',
+    'Kenya','Kolombiya','Kıbrıs','Letonya','Litvanya','Lüksemburg',
+    'Malezya','Malta','Macaristan','Fas','Meksika','Mısır','Nijerya',
+    'Norveç','Pakistan','Peru','Polonya','Portekiz','Romanya','Rusya',
+    'Singapur','Sırbistan','Slovakya','Slovenya','Suudi Arabistan',
+    'Şili','Tayvan','Tayland','Türkiye','Ukrayna','Uruguay',
+    'Vietnam','Yeni Zelanda','Yunanistan',
+];
+
+// ---------------------------------------------------------------
+// Lokasyon string'ini şehir ve ülkeye ayır: "Paris, Fransa"
+// ---------------------------------------------------------------
+function parseLocation(locationStr) {
+    if (!locationStr) return { city: '', country: '' };
+    const parts = locationStr.split(',');
+    if (parts.length >= 2) {
+        return { city: parts[0].trim(), country: parts.slice(1).join(',').trim() };
+    }
+    return { city: locationStr.trim(), country: '' };
+}
+
+// Şehir + ülkeden location string'i oluştur
+function buildLocation(city, country) {
+    city    = (city    || '').trim();
+    country = (country || '').trim();
+    if (city && country) return `${city}, ${country}`;
+    if (city)            return city;
+    if (country)         return country;
+    return null;
+}
+
+// ---------------------------------------------------------------
+// Ülke dropdown HTML'i üret
+// ---------------------------------------------------------------
+function countrySelectHtml(selectedCountry) {
+    const opts = COUNTRIES.map(c =>
+        `<option value="${escapeHtml(c)}" ${c === selectedCountry ? 'selected' : ''}>${escapeHtml(c)}</option>`
+    ).join('');
+    return `<select id="festCountry"
+        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-bottom:12px;">
+        <option value="">-- Ülke seçin --</option>
+        ${opts}
+    </select>`;
+}
 
 // ---------------------------------------------------------------
 // Giriş noktası — router.js çağırır
@@ -40,9 +125,9 @@ function renderFestivalsView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
-    const active   = (appState.festivalsList || []).filter(f => !f.is_archived);
-    const archived = (appState.festivalsList || []).filter(f =>  f.is_archived);
-    const showArch = appState.showArchivedFestivals || false;
+    const active    = (appState.festivalsList || []).filter(f => !f.is_archived);
+    const archived  = (appState.festivalsList || []).filter(f =>  f.is_archived);
+    const showArch  = appState.showArchivedFestivals || false;
     const displayed = showArch ? archived : active;
 
     let listHtml = '';
@@ -52,10 +137,10 @@ function renderFestivalsView() {
         </div>`;
     } else {
         displayed.forEach(f => {
-            const opacity  = f.is_archived ? 'opacity:0.5;' : '';
-            const dateStr  = f.start_date ? formatDate(f.start_date) : '';
-            const dateEnd  = f.end_date   ? ' – ' + formatDate(f.end_date) : '';
-            const loc      = f.location   ? escapeHtml(f.location) + ' · ' : '';
+            const opacity = f.is_archived ? 'opacity:0.5;' : '';
+            const dateStr = f.start_date ? formatDate(f.start_date) : '';
+            const dateEnd = f.end_date   ? ' – ' + formatDate(f.end_date) : '';
+            const loc     = f.location   ? escapeHtml(f.location) + ' · ' : '';
 
             listHtml += `
             <div class="class-card" style="${opacity}" data-festival-id="${f.id}">
@@ -99,8 +184,8 @@ function renderFestivalsView() {
         </div>
     `;
 
-    document.getElementById('backToMenuBtn').onclick    = () => navigateTo('mainMenu');
-    document.getElementById('addFestivalBtn').onclick   = () => openFestivalModal();
+    document.getElementById('backToMenuBtn').onclick  = () => navigateTo('mainMenu');
+    document.getElementById('addFestivalBtn').onclick = () => openFestivalModal();
     document.getElementById('toggleArchivedFestivalsBtn').onclick = () => {
         appState.showArchivedFestivals = !appState.showArchivedFestivals;
         renderFestivalsView();
@@ -152,31 +237,57 @@ function openFestivalModal(existing) {
     const isEdit = !!existing;
     modal.querySelector('h3').textContent = isEdit ? 'Festivali Düzenle' : 'Yeni Festival Ekle';
 
-    // Alanları doldur / sıfırla
-    document.getElementById('festName').value     = existing ? (existing.name     || '') : '';
-    document.getElementById('festLocation').value = existing ? (existing.location || '') : '';
+    // Mevcut lokasyonu şehir/ülke olarak ayır
+    const { city, country } = parseLocation(existing ? existing.location : '');
 
-    const startDisp   = document.getElementById('festStartDateDisplay');
-    const startHidden = document.getElementById('festHiddenStartDate');
-    const endDisp     = document.getElementById('festEndDateDisplay');
-    const endHidden   = document.getElementById('festHiddenEndDate');
+    // Modal içeriğini dinamik olarak oluştur
+    modal.querySelector('.modal-content').innerHTML = `
+        <h3 style="margin-top:0; color:var(--primary);">${isEdit ? 'Festivali Düzenle' : 'Yeni Festival Ekle'}</h3>
 
-    if (existing && existing.start_date) {
-        startHidden.value = existing.start_date;
-        startDisp.value   = formatDate(existing.start_date);
-    } else {
-        startHidden.value = '';
-        startDisp.value   = '';
-    }
-    if (existing && existing.end_date) {
-        endHidden.value = existing.end_date;
-        endDisp.value   = formatDate(existing.end_date);
-    } else {
-        endHidden.value = '';
-        endDisp.value   = '';
-    }
+        <input type="text" id="festName" placeholder="Festival adı" autocomplete="off"
+            style="width:100%; margin-bottom:12px;" value="${escapeHtml(existing ? existing.name || '' : '')}">
+
+        <input type="text" id="festCity" placeholder="Şehir" autocomplete="off"
+            style="width:100%; margin-bottom:12px;" value="${escapeHtml(city)}">
+
+        ${countrySelectHtml(country)}
+
+        <!-- Başlangıç tarihi -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="text" id="festStartDateDisplay" readonly placeholder="Başlangıç tarihi"
+                style="flex:1; background:#1e293b; color:white;"
+                value="${existing && existing.start_date ? formatDate(existing.start_date) : ''}">
+            <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="festHiddenStartDate" style="display:none;"
+            value="${existing && existing.start_date ? existing.start_date : ''}">
+
+        <!-- Bitiş tarihi -->
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+            <input type="text" id="festEndDateDisplay" readonly placeholder="Bitiş tarihi (opsiyonel)"
+                style="flex:1; background:#1e293b; color:white;"
+                value="${existing && existing.end_date ? formatDate(existing.end_date) : ''}">
+            <span id="festEndCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
+                <i data-lucide="calendar" size="22"></i>
+            </span>
+        </div>
+        <input type="date" id="festHiddenEndDate" style="display:none;"
+            value="${existing && existing.end_date ? existing.end_date : ''}">
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="festSaveBtn">Kaydet</button>
+            <button class="btn-secondary" id="festCancelBtn">İptal</button>
+        </div>
+    `;
 
     // Takvim ikonları
+    const startHidden = document.getElementById('festHiddenStartDate');
+    const startDisp   = document.getElementById('festStartDateDisplay');
+    const endHidden   = document.getElementById('festHiddenEndDate');
+    const endDisp     = document.getElementById('festEndDateDisplay');
+
     document.getElementById('festStartCalIcon').onclick = () => {
         if (startHidden.showPicker) startHidden.showPicker();
     };
@@ -192,24 +303,25 @@ function openFestivalModal(existing) {
 
     document.getElementById('festSaveBtn').onclick = () =>
         isEdit ? updateFestival(existing.id, modal) : createFestival(modal);
-    document.getElementById('festCancelBtn').onclick = () => {
-        modal.style.display = 'none';
-    };
+    document.getElementById('festCancelBtn').onclick = () => { modal.style.display = 'none'; };
 
     modal.style.display = 'flex';
     document.getElementById('festName').focus();
+    refreshIcons();
 }
 
 // ---------------------------------------------------------------
 // Festival oluştur
 // ---------------------------------------------------------------
 async function createFestival(modal) {
-    const name     = document.getElementById('festName').value.trim();
+    const name = document.getElementById('festName').value.trim();
     if (!name) { showToast('Festival adı boş olamaz.', 'warning'); return; }
 
-    const location   = document.getElementById('festLocation').value.trim()       || null;
-    const start_date = document.getElementById('festHiddenStartDate').value        || null;
-    const end_date   = document.getElementById('festHiddenEndDate').value          || null;
+    const city       = document.getElementById('festCity').value.trim();
+    const country    = document.getElementById('festCountry').value;
+    const location   = buildLocation(city, country) || null;
+    const start_date = document.getElementById('festHiddenStartDate').value || null;
+    const end_date   = document.getElementById('festHiddenEndDate').value   || null;
 
     if (!start_date) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
 
@@ -235,9 +347,11 @@ async function updateFestival(festId, modal) {
     const name = document.getElementById('festName').value.trim();
     if (!name) { showToast('Festival adı boş olamaz.', 'warning'); return; }
 
-    const location   = document.getElementById('festLocation').value.trim()  || null;
-    const start_date = document.getElementById('festHiddenStartDate').value   || null;
-    const end_date   = document.getElementById('festHiddenEndDate').value     || null;
+    const city       = document.getElementById('festCity').value.trim();
+    const country    = document.getElementById('festCountry').value;
+    const location   = buildLocation(city, country) || null;
+    const start_date = document.getElementById('festHiddenStartDate').value || null;
+    const end_date   = document.getElementById('festHiddenEndDate').value   || null;
 
     if (!start_date) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
 
@@ -248,7 +362,6 @@ async function updateFestival(festId, modal) {
     if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
 
     showToast('Festival güncellendi ✓', 'success');
-    modal.querySelector('h3').textContent = 'Yeni Festival Ekle';
     modal.style.display = 'none';
     await fetchFestivals();
     renderFestivalsView();
