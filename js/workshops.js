@@ -50,7 +50,7 @@ function renderWorkshopsView() {
 
     if (displayed.length === 0) {
         listHtml = `<div style="text-align:center; color:var(--text-dim); padding:20px;">
-            ${showArch ? t('workshops.emptyArchived') : t('workshops.empty')
+            ${showArch ? t('workshops.emptyArchived') : t('workshops.empty')}
         </div>`;
     } else {
         displayed.forEach(w => {
