@@ -20,6 +20,74 @@ import { navigateTo } from './router.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
+// VIDEO PLATFORM TESPİTİ VE EMBED
+// ---------------------------------------------------------------
+function detectVideoPlatform(url) {
+    if (!url) return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
+    const lower = url.toLowerCase();
+    if (lower.includes('youtube.com') || lower.includes('youtu.be'))
+        return { name: 'YouTube', color: '#FF0000', canEmbed: true };
+    if (lower.includes('vimeo.com'))
+        return { name: 'Vimeo', color: '#1AB7EA', canEmbed: true };
+    if (lower.includes('drive.google.com'))
+        return { name: 'Google Drive', color: '#34A853', canEmbed: false };
+    if (lower.includes('instagram.com'))
+        return { name: 'Instagram', color: '#E1306C', canEmbed: false };
+    if (lower.includes('facebook.com') || lower.includes('fb.watch'))
+        return { name: 'Facebook', color: '#1877F2', canEmbed: false };
+    if (lower.includes('tiktok.com'))
+        return { name: 'TikTok', color: '#010101', canEmbed: false };
+    return { name: 'Diğer', color: '#94a3b8', canEmbed: false };
+}
+
+// YouTube veya Vimeo URL'sini embed URL'sine çevir
+function toEmbedUrl(url) {
+    const lower = url.toLowerCase();
+    // YouTube: watch?v=ID veya youtu.be/ID → embed/ID
+    if (lower.includes('youtube.com/watch')) {
+        try {
+            const u  = new URL(url);
+            const id = u.searchParams.get('v');
+            if (id) return `https://www.youtube.com/embed/${id}`;
+        } catch(e) {}
+    }
+    if (lower.includes('youtu.be/')) {
+        const id = url.split('youtu.be/')[1].split('?')[0];
+        if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    if (lower.includes('youtube.com/shorts/')) {
+        const id = url.split('/shorts/')[1].split('?')[0];
+        if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    // Vimeo: vimeo.com/ID → player.vimeo.com/video/ID
+    if (lower.includes('vimeo.com/')) {
+        const id = url.split('vimeo.com/')[1].split('?')[0].split('/')[0];
+        if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+    }
+    return null;
+}
+
+// Video bölümü HTML'i — embed veya link
+function buildVideoHtml(videoUrl) {
+    if (!videoUrl) return '';
+    const platform  = detectVideoPlatform(videoUrl);
+    const embedUrl  = platform.canEmbed ? toEmbedUrl(videoUrl) : null;
+    const badge     = `<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;margin-left:6px;vertical-align:middle;">${platform.name}</span>`;
+
+    if (embedUrl) {
+        return `
+            <div style="margin-top:6px;">
+                <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:10px;overflow:hidden;background:#000;">
+                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen
+                        style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+                </div>
+                <div style="margin-top:6px;">${badge} <a href="${escapeHtml(videoUrl)}" target="_blank" style="font-size:11px;color:var(--primary);">Yeni sekmede aç</a></div>
+            </div>`;
+    }
+    return `<div style="margin-top:6px;">${badge} <a href="${escapeHtml(videoUrl)}" target="_blank" style="font-size:11px;color:var(--primary);">Videoyu Aç</a></div>`;
+}
+
+// ---------------------------------------------------------------
 // Para birimi dropdown HTML'i
 // Festivaldeki ülkeye göre o ülkenin para birimi en üstte gelir,
 // ardından $ USD ve € EUR sabit olarak yer alır, sonra diğerleri.
@@ -309,9 +377,9 @@ function openFestClassDetail(cls) {
                         <i data-lucide="video" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>Video URL
                     </div>
                     <input type="text" id="fcVideoInput" value="${escapeHtml(cls.video_url || '')}"
-                        placeholder="https://youtube.com/..."
+                        placeholder="YouTube, Vimeo, Google Drive, Instagram..."
                         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
-                    ${cls.video_url ? `<a href="${escapeHtml(cls.video_url)}" target="_blank" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--primary);">🎬 Videoyu Aç</a>` : ''}
+                    ${buildVideoHtml(cls.video_url)}
                 </div>
 
                 <!-- Partner Adı -->
