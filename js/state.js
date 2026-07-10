@@ -57,5 +57,6 @@ export const appState = {
     wsAttendanceMap: {},
     wsVideoMap: {},
     wsPartnerMap: {},
-    wsNotesMap: {}
+    wsNotesMap: {},
+    showArchivedWsStudents: false
 };

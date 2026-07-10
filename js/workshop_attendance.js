@@ -114,6 +114,7 @@ function renderWorkshopAttendance() {
                 <button id="wsImportStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Mevcut Öğrenci</button>
                 <button id="wsAddWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Hafta Ekle</button>
                 <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Ödemeler</button>
+                <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? 'Arşivi Gizle' : 'Arşivi Göster'}</button>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -135,6 +136,10 @@ function renderWorkshopAttendance() {
     document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
     document.getElementById('wsPaymentsBtn').onclick      = () => showToast('Çalıştay ödemeleri adım 4.7\'de gelecek.', 'warning');
+    document.getElementById('wsToggleArchivedBtn').onclick = () => {
+        appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
+        renderWorkshopAttendance();
+    };
 
     attachCellListeners();
     refreshIcons();
@@ -160,7 +165,7 @@ function buildHeader() {
 function buildStudentRows() {
     const tbody = document.getElementById('wsStudentRows');
     tbody.innerHTML = '';
-    const visible = appState.wsStudents.filter(s => !s.is_archived);
+    const visible = appState.wsStudents.filter(s => appState.showArchivedWsStudents ? true : !s.is_archived);
 
     if (visible.length === 0) {
         tbody.innerHTML = `<tr><td colspan="${2 + appState.wsDates.length}" style="text-align:center;color:var(--text-dim);padding:20px;">Henüz öğrenci eklenmemiş.</td></tr>`;
@@ -382,61 +387,87 @@ function addWorkshopStudent() {
 // Öğrenci düzenle / sil
 // ---------------------------------------------------------------
 function editWorkshopStudent(studentId, currentName) {
-    const modal      = document.getElementById('studentActionModal');
-    const viewMode   = document.getElementById('studentViewMode');
-    const editMode   = document.getElementById('studentEditMode');
-    const nameDisp   = document.getElementById('studentNameDisplay');
-    const editInput  = document.getElementById('studentEditInput');
-    const phoneInput = document.getElementById('studentPhoneInput');
-    const editBtn    = document.getElementById('studentEditBtn');
-    const deleteBtn  = document.getElementById('studentDeleteBtn');
-    const archiveBtn = document.getElementById('studentArchiveBtn');
-    const closeBtn   = document.getElementById('studentModalCloseView');
-    const saveBtn    = document.getElementById('studentSaveBtn');
-    const cancelBtn  = document.getElementById('studentCancelEditBtn');
+    const modal         = document.getElementById('studentActionModal');
+    const viewMode      = document.getElementById('studentViewMode');
+    const editMode      = document.getElementById('studentEditMode');
+    const nameDisp      = document.getElementById('studentNameDisplay');
+    const editInput     = document.getElementById('studentEditInput');
+    const phoneInput    = document.getElementById('studentPhoneInput');
+    const editBtn       = document.getElementById('studentEditBtn');
+    const phoneBtn      = document.getElementById('studentPhoneBtn');
+    const deleteBtn     = document.getElementById('studentDeleteBtn');
+    const archiveBtn    = document.getElementById('studentArchiveBtn');
+    const closeBtn      = document.getElementById('studentModalCloseView');
+    const saveBtn       = document.getElementById('studentSaveBtn');
+    const cancelEditBtn = document.getElementById('studentCancelEditBtn');
+    const editTitle     = document.getElementById('studentEditModeTitle');
     if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
 
-    // Mevcut öğrenciyi bul (telefon için)
     const student = appState.wsStudents.find(s => s.id === studentId);
+    const isArchived = student ? !!student.is_archived : false;
+
+    // Tüm onclick'leri temizle (önceki bağlamalardan kalan)
+    editBtn.onclick       = null;
+    if (phoneBtn) phoneBtn.onclick = null;
+    deleteBtn.onclick     = null;
+    if (archiveBtn) archiveBtn.onclick = null;
+    closeBtn.onclick      = null;
+    saveBtn.onclick       = null;
+    cancelEditBtn.onclick = null;
 
     nameDisp.innerText         = currentName;
     viewMode.style.display     = 'block';
     editMode.style.display     = 'none';
     modal.style.display        = 'flex';
+
+    // Arşiv ikonu — duruma göre değiştir
+    if (archiveBtn) {
+        archiveBtn.innerHTML = isArchived
+            ? '<i data-lucide="archive-restore" size="22"></i>'
+            : '<i data-lucide="archive" size="22"></i>';
+        archiveBtn.title = isArchived ? 'Arşivden çıkar' : 'Arşivle';
+    }
     refreshIcons();
 
+    // Kalem → sadece isim alanı
     editBtn.onclick = () => {
-        editInput.value          = currentName;
-        if (phoneInput) phoneInput.value = student ? (student.phone || '') : '';
-        viewMode.style.display   = 'none';
-        editMode.style.display   = 'block';
+        viewMode.style.display  = 'none';
+        editMode.style.display  = 'block';
+        if (editTitle) editTitle.textContent = 'Adı Düzenle';
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'none';
+        editInput.value = currentName;
         editInput.focus();
     };
 
-    saveBtn.onclick = async () => {
-        const newName  = editInput.value.trim();
-        const newPhone = phoneInput ? phoneInput.value.trim() : null;
-        if (!newName) { showToast('Ad boş olamaz.', 'warning'); return; }
-        const updateData = { name: newName };
-        if (phoneInput) updateData.phone = newPhone || null;
-        const { error } = await supabase.from('workshop_students').update(updateData).eq('id', studentId);
-        if (error) { showToast('Güncellenemedi.', 'error'); return; }
-        modal.style.display = 'none';
-        showToast('Öğrenci güncellendi ✓', 'success');
-        await loadWorkshopData();
-        renderWorkshopAttendance();
-    };
+    // Telefon ikonu → sadece telefon alanı
+    if (phoneBtn) {
+        phoneBtn.onclick = () => {
+            viewMode.style.display  = 'none';
+            editMode.style.display  = 'block';
+            if (editTitle) editTitle.textContent = 'Telefonu Düzenle';
+            editInput.style.display = 'none';
+            if (phoneInput) {
+                phoneInput.style.display = 'block';
+                phoneInput.value = student ? (student.phone || '') : '';
+                phoneInput.focus();
+            }
+        };
+    }
 
-    if (archiveBtn) archiveBtn.onclick = async () => {
-        const isArch = student ? student.is_archived : false;
-        const { error } = await supabase.from('workshop_students').update({ is_archived: !isArch }).eq('id', studentId);
-        if (error) { showToast('İşlem başarısız.', 'error'); return; }
-        modal.style.display = 'none';
-        showToast(!isArch ? 'Öğrenci arşivlendi ✓' : 'Arşivden çıkarıldı ✓', 'success');
-        await loadWorkshopData();
-        renderWorkshopAttendance();
-    };
+    // Arşivle / arşivden çıkar
+    if (archiveBtn) {
+        archiveBtn.onclick = async () => {
+            const { error } = await supabase.from('workshop_students').update({ is_archived: !isArchived }).eq('id', studentId);
+            if (error) { showToast('İşlem başarısız.', 'error'); return; }
+            modal.style.display = 'none';
+            showToast(!isArchived ? 'Öğrenci arşivlendi ✓' : 'Arşivden çıkarıldı ✓', 'success');
+            await loadWorkshopData();
+            renderWorkshopAttendance();
+        };
+    }
 
+    // Sil
     deleteBtn.onclick = () => {
         modal.style.display = 'none';
         openConfirmModal('Bu öğrenciyi silmek istediğinizden emin misiniz?', async () => {
@@ -445,11 +476,43 @@ function editWorkshopStudent(studentId, currentName) {
             showToast('Öğrenci silindi ✓', 'success');
             await loadWorkshopData();
             renderWorkshopAttendance();
-        });
+        }, () => { modal.style.display = 'flex'; });
     };
 
-    closeBtn.onclick   = () => { modal.style.display = 'none'; };
-    cancelBtn.onclick  = () => { viewMode.style.display = 'block'; editMode.style.display = 'none'; };
+    // Kapat
+    closeBtn.onclick = () => { modal.style.display = 'none'; };
+
+    // Kaydet
+    saveBtn.onclick = async () => {
+        const isNameMode = !phoneInput || editInput.style.display !== 'none';
+        if (isNameMode) {
+            const newName = editInput.value.trim();
+            if (!newName) return;
+            const { error } = await supabase.from('workshop_students').update({ name: newName }).eq('id', studentId);
+            if (error) { showToast('Güncellenemedi.', 'error'); return; }
+            nameDisp.innerText = newName;
+            currentName = newName;
+        } else {
+            const newPhone = phoneInput ? phoneInput.value.trim() : null;
+            const { error } = await supabase.from('workshop_students').update({ phone: newPhone || null }).eq('id', studentId);
+            if (error) { showToast('Güncellenemedi.', 'error'); return; }
+        }
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'block';
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+        showToast('Güncellendi ✓', 'success');
+        await loadWorkshopData();
+        renderWorkshopAttendance();
+    };
+
+    // İptal
+    cancelEditBtn.onclick = () => {
+        editInput.style.display = 'block';
+        if (phoneInput) phoneInput.style.display = 'block';
+        viewMode.style.display = 'block';
+        editMode.style.display = 'none';
+    };
 }
 
 // ---------------------------------------------------------------
