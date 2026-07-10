@@ -29,7 +29,7 @@ function currencySelectHtml(selectedCurrency) {
         `<option value="${c}" ${c === sel ? 'selected' : ''}>${escapeHtml(c)}</option>`
     ).join('');
     return `<select id="plModalCurrency"
-        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:110px;flex:0 0 auto;">
+        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
         ${opts}
     </select>`;
 }
@@ -446,11 +446,11 @@ function openLessonModal(existing) {
             value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : '19:00'}">
 
         <!-- Ücret + Para Birimi yan yana -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;width:100%;">
             <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
-                style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:0;"
+                style="width:55%;box-sizing:border-box;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;"
                 value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
-            ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
+            <div style="width:45%;box-sizing:border-box;">${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}</div>
         </div>
 
         <div style="display:flex;gap:10px;">
