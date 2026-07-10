@@ -8,6 +8,7 @@
 import { supabase } from './supabaseClient.js';
 import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate } from './utils.js';
 import { navigateTo } from './router.js';
+import { t } from './i18n.js';
 import { appState } from './state.js';
 
 // ---------------------------------------------------------------
@@ -88,7 +89,7 @@ function countrySelectHtml(selectedCountry) {
     ).join('');
     return `<select id="festCountry"
         style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-bottom:12px;">
-        <option value="">-- Ülke seçin --</option>
+        <option value="">${t('festivals.countryPlaceholder')}</option>
         ${opts}
     </select>`;
 }
@@ -111,7 +112,7 @@ async function fetchFestivals() {
         .order('start_date', { ascending: false });
 
     if (error) {
-        showToast('Festivaller yüklenemedi.', 'error');
+        showToast(t('festivals.toastLoadFail'), 'error');
         appState.festivalsList = [];
     } else {
         appState.festivalsList = data || [];
@@ -133,7 +134,7 @@ function renderFestivalsView() {
     let listHtml = '';
     if (displayed.length === 0) {
         listHtml = `<div style="text-align:center; color:var(--text-dim); padding:20px;">
-            ${showArch ? 'Arşivlenmiş festival yok.' : 'Henüz festival eklenmemiş.'}
+            ${showArch ? t('festivals.emptyArchived') : t('festivals.empty')}
         </div>`;
     } else {
         displayed.forEach(f => {
@@ -167,18 +168,18 @@ function renderFestivalsView() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToMenuBtn">← Ana Menü</div>
-            <div class="main-title">Festivaller</div>
+            <div class="back-link" id="backToMenuBtn">${t('festivals.backToMenu')}</div>
+            <div class="main-title">${t('festivals.title')}</div>
             <div id="festivalsListContainer">${listHtml}</div>
             <div class="nav-buttons" style="margin-top:20px;">
                 <button class="btn-success" id="addFestivalBtn">
-                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>Festival Ekle
+                    <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('festivals.add')}
                 </button>
             </div>
             <div class="nav-buttons" style="margin-top:10px;">
                 <button class="btn-secondary" id="toggleArchivedFestivalsBtn">
                     <i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>
-                    ${showArch ? 'Arşivi Gizle' : 'Arşivi Göster'}
+                    ${showArch ? t('festivals.hideArchive') : t('festivals.showArchive')}
                 </button>
             </div>
         </div>
@@ -232,29 +233,29 @@ function renderFestivalsView() {
 // ---------------------------------------------------------------
 function openFestivalModal(existing) {
     const modal = document.getElementById('festivalCreateModal');
-    if (!modal) { showToast('Modal bulunamadı.', 'error'); return; }
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
 
     const isEdit = !!existing;
-    modal.querySelector('h3').textContent = isEdit ? 'Festivali Düzenle' : 'Yeni Festival Ekle';
+    modal.querySelector('h3').textContent = isEdit ? t('festivals.modalEditTitle') : t('festivals.modalCreateTitle');
 
     // Mevcut lokasyonu şehir/ülke olarak ayır
     const { city, country } = parseLocation(existing ? existing.location : '');
 
     // Modal içeriğini dinamik olarak oluştur
     modal.querySelector('.modal-content').innerHTML = `
-        <h3 style="margin-top:0; color:var(--primary);">${isEdit ? 'Festivali Düzenle' : 'Yeni Festival Ekle'}</h3>
+        <h3 style="margin-top:0; color:var(--primary);">${isEdit ? t('festivals.modalEditTitle') : t('festivals.modalCreateTitle')}</h3>
 
-        <input type="text" id="festName" placeholder="Festival adı" autocomplete="off"
+        <input type="text" id="festName" placeholder="${t('festivals.namePlaceholder')}" autocomplete="off"
             style="width:100%; margin-bottom:12px;" value="${escapeHtml(existing ? existing.name || '' : '')}">
 
-        <input type="text" id="festCity" placeholder="Şehir" autocomplete="off"
+        <input type="text" id="festCity" placeholder="${t('festivals.cityPlaceholder')}" autocomplete="off"
             style="width:100%; margin-bottom:12px;" value="${escapeHtml(city)}">
 
         ${countrySelectHtml(country)}
 
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <input type="text" id="festStartDateDisplay" readonly placeholder="Başlangıç tarihi"
+            <input type="text" id="festStartDateDisplay" readonly placeholder="${t('festivals.startDatePlaceholder')}"
                 style="flex:1; background:#1e293b; color:white;"
                 value="${existing && existing.start_date ? formatDate(existing.start_date) : ''}">
             <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
@@ -266,7 +267,7 @@ function openFestivalModal(existing) {
 
         <!-- Bitiş tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
-            <input type="text" id="festEndDateDisplay" readonly placeholder="Bitiş tarihi (opsiyonel)"
+            <input type="text" id="festEndDateDisplay" readonly placeholder="${t('festivals.endDatePlaceholder')}"
                 style="flex:1; background:#1e293b; color:white;"
                 value="${existing && existing.end_date ? formatDate(existing.end_date) : ''}">
             <span id="festEndCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
@@ -277,8 +278,8 @@ function openFestivalModal(existing) {
             value="${existing && existing.end_date ? existing.end_date : ''}">
 
         <div style="display:flex; gap:10px;">
-            <button class="btn-success" id="festSaveBtn">Kaydet</button>
-            <button class="btn-secondary" id="festCancelBtn">İptal</button>
+            <button class="btn-success" id="festSaveBtn">${t('festivals.save')}</button>
+            <button class="btn-secondary" id="festCancelBtn">${t('common.cancel')}</button>
         </div>
     `;
 
@@ -315,7 +316,7 @@ function openFestivalModal(existing) {
 // ---------------------------------------------------------------
 async function createFestival(modal) {
     const name = document.getElementById('festName').value.trim();
-    if (!name) { showToast('Festival adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('festivals.nameEmpty'), 'warning'); return; }
 
     const city       = document.getElementById('festCity').value.trim();
     const country    = document.getElementById('festCountry').value;
@@ -323,18 +324,18 @@ async function createFestival(modal) {
     const start_date = document.getElementById('festHiddenStartDate').value || null;
     const end_date   = document.getElementById('festHiddenEndDate').value   || null;
 
-    if (!start_date) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
+    if (!start_date) { showToast(t('festivals.startDateEmpty'), 'warning'); return; }
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { showToast('Oturum bulunamadı.', 'error'); return; }
+    if (!user) { showToast(t('festivals.sessionNotFound'), 'error'); return; }
 
     const { error } = await supabase.from('festivals').insert({
         user_id: user.id, name, location, start_date, end_date
     });
 
-    if (error) { showToast('Festival oluşturulamadı: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('festivals.toastCreateFail').replace('{msg}', error.message), 'error'); return; }
 
-    showToast('Festival oluşturuldu ✓', 'success');
+    showToast(t('festivals.toastCreated'), 'success');
     modal.style.display = 'none';
     await fetchFestivals();
     renderFestivalsView();
@@ -345,7 +346,7 @@ async function createFestival(modal) {
 // ---------------------------------------------------------------
 async function updateFestival(festId, modal) {
     const name = document.getElementById('festName').value.trim();
-    if (!name) { showToast('Festival adı boş olamaz.', 'warning'); return; }
+    if (!name) { showToast(t('festivals.nameEmpty'), 'warning'); return; }
 
     const city       = document.getElementById('festCity').value.trim();
     const country    = document.getElementById('festCountry').value;
@@ -353,15 +354,15 @@ async function updateFestival(festId, modal) {
     const start_date = document.getElementById('festHiddenStartDate').value || null;
     const end_date   = document.getElementById('festHiddenEndDate').value   || null;
 
-    if (!start_date) { showToast('Başlangıç tarihi seçiniz.', 'warning'); return; }
+    if (!start_date) { showToast(t('festivals.startDateEmpty'), 'warning'); return; }
 
     const { error } = await supabase.from('festivals').update({
         name, location, start_date, end_date
     }).eq('id', festId);
 
-    if (error) { showToast('Güncelleme başarısız: ' + error.message, 'error'); return; }
+    if (error) { showToast(t('festivals.toastUpdateFail').replace('{msg}', error.message), 'error'); return; }
 
-    showToast('Festival güncellendi ✓', 'success');
+    showToast(t('festivals.toastUpdated'), 'success');
     modal.style.display = 'none';
     await fetchFestivals();
     renderFestivalsView();
@@ -373,8 +374,8 @@ async function updateFestival(festId, modal) {
 async function archiveFestival(festId, makeArchived) {
     const { error } = await supabase.from('festivals')
         .update({ is_archived: makeArchived }).eq('id', festId);
-    if (error) { showToast('İşlem başarısız.', 'error'); return; }
-    showToast(makeArchived ? 'Festival arşivlendi ✓' : 'Festival arşivden çıkarıldı ✓', 'success');
+    if (error) { showToast(t('festivals.toastArchiveFail'), 'error'); return; }
+    showToast(makeArchived ? t('festivals.toastArchived') : t('festivals.toastUnarchived'), 'success');
     if (makeArchived) appState.showArchivedFestivals = false;
     await fetchFestivals();
     renderFestivalsView();
@@ -384,10 +385,10 @@ async function archiveFestival(festId, makeArchived) {
 // Sil
 // ---------------------------------------------------------------
 async function deleteFestival(festId) {
-    openConfirmModal('Bu festivali silmek istediğinizden emin misiniz? Tüm dersler de silinir.', async () => {
+    openConfirmModal(t('festivals.confirmDelete'), async () => {
         const { error } = await supabase.from('festivals').delete().eq('id', festId);
-        if (error) { showToast('Silme işlemi başarısız.', 'error'); return; }
-        showToast('Festival silindi ✓', 'success');
+        if (error) { showToast(t('festivals.toastDeleteFail'), 'error'); return; }
+        showToast(t('festivals.toastDeleted'), 'success');
         await fetchFestivals();
         renderFestivalsView();
     });
