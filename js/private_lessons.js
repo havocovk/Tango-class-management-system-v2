@@ -445,13 +445,13 @@ function openLessonModal(existing) {
             style="width:100%;margin-bottom:12px;"
             value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : '19:00'}">
 
-        <!-- Ücret -->
-        <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
-            style="width:100%;margin-bottom:8px;"
-            value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
-        <!-- Para Birimi -->
-        ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
-        <div style="margin-bottom:12px;"></div>
+        <!-- Ücret + Para Birimi yan yana -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+            <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
+                style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:0;"
+                value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
+            ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
+        </div>
 
         <div style="display:flex;gap:10px;">
             <button class="btn-success" id="plModalSaveBtn">Kaydet</button>
