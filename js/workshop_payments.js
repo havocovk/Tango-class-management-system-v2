@@ -301,7 +301,7 @@ function calcWsStudentDebt(student) {
         if (d.is_cancelled) return;                 // iptal → kimseye sayılmaz
         if (!isWeekOccurred(d.lesson_date)) return; // gelecek hafta → henüz sayılmaz
         const status = appState.wsAttendanceMap[`${student.id}_${d.id}`] || '';
-        if (status === 'S') return;                 // o hafta henüz kayıtlı değildi
+        if (status !== '+') return;                 // sadece geldi (+) işaretli haftalar borç doğurur
         validDates++;
     });
 
