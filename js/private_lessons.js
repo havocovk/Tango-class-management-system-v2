@@ -437,21 +437,21 @@ function openLessonModal(existing) {
         <input type="date" id="plModalHiddenDate" style="display:none;"
             value="${existing && existing.lesson_date ? existing.lesson_date : ''}">
 
-        <!-- Saat: mevcut sistemle aynı — type="text", maxlength=5, placeholder SS:DD -->
+        <!-- Saat: zorunlu, 24 saat formatı, varsayılan 19:00 -->
         <input type="text" id="plModalTime"
-            placeholder="Saat (opsiyonel, örn: 19:00)"
+            placeholder="SS:DD (örn: 19:00)"
             maxlength="5"
             autocomplete="off"
             style="width:100%;margin-bottom:12px;"
-            value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : ''}">
+            value="${existing && existing.lesson_time ? formatTime(existing.lesson_time) : '19:00'}">
 
-        <!-- Ücret + Para Birimi -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
-            <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
-                style="flex:1;"
-                value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
-            ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
-        </div>
+        <!-- Ücret -->
+        <input type="number" id="plModalEarned" placeholder="Alınan ücret *"
+            style="width:100%;margin-bottom:8px;"
+            value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
+        <!-- Para Birimi -->
+        ${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}
+        <div style="margin-bottom:12px;"></div>
 
         <div style="display:flex;gap:10px;">
             <button class="btn-success" id="plModalSaveBtn">Kaydet</button>
@@ -471,17 +471,6 @@ function openLessonModal(existing) {
     hiddenDate.onchange = () => {
         dispDate.value = hiddenDate.value ? formatDate(hiddenDate.value) : '';
     };
-
-    // Saat doğrulaması: sadece HH:MM formatı (00:00–23:59)
-    document.getElementById('plModalTime').addEventListener('blur', function() {
-        const val = this.value.trim();
-        if (!val) return;
-        const valid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(val);
-        if (!valid) {
-            showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning');
-            this.value = '';
-        }
-    });
 
     document.getElementById('plModalSaveBtn').onclick  = () =>
         isEdit ? updateLesson(existing.id, modal) : createLesson(modal);
@@ -505,10 +494,9 @@ async function createLesson(modal) {
     if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
 
     const timeVal = document.getElementById('plModalTime').value.trim();
-    if (timeVal && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(timeVal)) {
-        showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning'); return;
-    }
-    const lesson_time   = timeVal || null;
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    const lesson_time = timeVal;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
     if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
@@ -539,10 +527,9 @@ async function updateLesson(lessonId, modal) {
     if (!lesson_date)  { showToast('Tarih seçiniz.', 'warning'); return; }
 
     const timeVal = document.getElementById('plModalTime').value.trim();
-    if (timeVal && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(timeVal)) {
-        showToast('Saat SS:DD formatında olmalı (örn: 19:00)', 'warning'); return;
-    }
-    const lesson_time   = timeVal || null;
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timePattern.test(timeVal)) { showToast('Geçerli bir saat girin (örn: 19:00)', 'warning'); return; }
+    const lesson_time = timeVal;
     const location      = document.getElementById('plModalLocation').value.trim() || null;
     const earned_raw    = document.getElementById('plModalEarned').value;
     if (earned_raw === '') { showToast('Alınan ücreti giriniz.', 'warning'); return; }
