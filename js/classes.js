@@ -43,7 +43,7 @@ function renderClassesView() {
                 <button id="weeklyStatsBtn" class="btn-info"><i data-lucide="bar-chart-2" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.weeklyStats'))}</button>
             </div>
             <div class="nav-buttons" style="margin-top:10px;">
-                <button id="toggleArchivedClassesBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedClasses ? 'Arşivi Gizle' : 'Arşivi Göster'}</button>
+                <button id="toggleArchivedClassesBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedClasses ? t('workshops.hideArchive') : t('workshops.showArchive')}</button>
             </div>
         </div>
     `;
