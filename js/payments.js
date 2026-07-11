@@ -87,6 +87,7 @@ function calcStudentDebt(student) {
         if (d.is_cancelled) return; // iptal → kimseye sayılmaz
         const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
         if (status === 'S') return; // bu öğrenci o hafta henüz kayıtlı değildi
+        if (status === 'I') return; // bu öğrenci o hafta geçici ara verdi
         studentValidDates++;
     });
 
