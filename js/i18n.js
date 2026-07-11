@@ -25,8 +25,8 @@ import { en } from '../locales/en.js';
 const DICTS = { tr, en };
 
 export const AVAILABLE_LANGS = [
-    { code: 'tr', label: 'Türkçe',  short: 'TR' },
-    { code: 'en', label: 'English', short: 'EN' }
+    { code: 'tr', label: 'Türkçe',  short: 'TR', flag: '🇹🇷' },
+    { code: 'en', label: 'English', short: 'EN', flag: '🇬🇧' }
 ];
 
 const STORAGE_KEY  = 'tcms_lang';  // tarayıcıda dilin saklandığı anahtar
@@ -178,7 +178,7 @@ function renderLangSwitcher() {
             'background:' + (isActive ? 'var(--primary)' : 'transparent')
         ].join(';');
         return `<div class="lang-option" data-lang="${l.code}" style="${optStyle}">
-                    <span style="opacity:0.7; min-width:22px;">${l.short}</span>
+                    <span style="min-width:22px;font-size:16px;">${l.flag}</span>
                     <span>${l.label}</span>
                 </div>`;
     }).join('');
@@ -205,7 +205,7 @@ function renderLangSwitcher() {
     container.innerHTML = `
         <div style="position:relative; display:flex; justify-content:flex-end; width:100%;">
             <button id="langSwitchBtn" type="button" style="${btnStyle}">
-                <span>🌐</span><span>${active.short}</span><span style="font-size:10px;">▾</span>
+                <span style="font-size:16px;">${active.flag}</span><span>${active.short}</span><span style="font-size:10px;">▾</span>
             </button>
             <div id="langSwitchMenu" style="${menuStyle}">${optionsHtml}</div>
         </div>

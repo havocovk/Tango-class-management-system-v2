@@ -25,12 +25,15 @@ let currentRoute = { screen: 'mainMenu', params: {} };
 function setViewVisibility(screen) {
     const mainMenuView = document.getElementById('mainMenuView');
     const dynamicView  = document.getElementById('dynamicView');
+    const langSwitcher = document.getElementById('langSwitcher');
     if (screen === 'mainMenu') {
         if (mainMenuView) mainMenuView.style.display = 'block';
         if (dynamicView)  dynamicView.style.display  = 'none';
+        if (langSwitcher) langSwitcher.style.display = 'block';
     } else {
         if (mainMenuView) mainMenuView.style.display = 'none';
         if (dynamicView)  dynamicView.style.display  = 'block';
+        if (langSwitcher) langSwitcher.style.display = 'none';
     }
 }
 
