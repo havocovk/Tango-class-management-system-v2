@@ -175,7 +175,7 @@ function renderPrivateLessonsView() {
     container.innerHTML = `
         <div class="view">
             <span class="back-link" id="plBackBtn">
-                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('privateLessons.backToMenu')}
+                ${t('privateLessons.backToMenu')}
             </span>
             <div class="main-title">
                 <i data-lucide="user-round" size="22" style="display:inline-block;vertical-align:middle;margin-right:6px;"></i>${t('privateLessons.title')}
