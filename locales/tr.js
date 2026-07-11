@@ -37,7 +37,7 @@ export const tr = {
         backToClasses: '← Sınıflar',
         backToAttendance: '← Yoklama Sayfası',
         backGeneric: '← Geri',
-        backToMainMenu: '← Ana Menü'
+        backToMainMenu: 'Ana Menü'
     },
 
     // --- Giriş (login) ekranı ---
