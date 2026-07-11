@@ -36,7 +36,8 @@ export const en = {
         backToSchools: '← Schools',
         backToClasses: '← Classes',
         backToAttendance: '← Attendance',
-        backGeneric: '← Back'
+        backGeneric: '← Back',
+        backToMainMenu: '← Main Menu'
     },
 
     // --- Login screen ---

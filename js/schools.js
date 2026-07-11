@@ -87,7 +87,8 @@ function renderSchoolsView() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
+            <span class="back-link" id="backToMainMenu"><i data-lucide="arrow-left" size="16" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(t('nav.backToMainMenu'))}</span>
+            <div class="main-title">${escapeHtml(t('mainMenu.groupClasses'))}</div>
             ${lastClassHtml}
             ${debtSummaryHtml}
             <div class="sub-header">${escapeHtml(t('schools.header'))}</div>
@@ -163,6 +164,9 @@ function renderSchoolsView() {
             } catch (e) { /* yoksay */ }
         });
     }
+
+    const backBtn = document.getElementById('backToMainMenu');
+    if (backBtn) backBtn.addEventListener('click', () => navigateTo('mainMenu'));
 
     refreshIcons();
 }

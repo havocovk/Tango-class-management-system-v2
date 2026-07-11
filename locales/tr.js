@@ -36,7 +36,8 @@ export const tr = {
         backToSchools: '← Okullar',
         backToClasses: '← Sınıflar',
         backToAttendance: '← Yoklama Sayfası',
-        backGeneric: '← Geri'
+        backGeneric: '← Geri',
+        backToMainMenu: '← Ana Menü'
     },
 
     // --- Giriş (login) ekranı ---
