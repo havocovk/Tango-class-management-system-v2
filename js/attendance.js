@@ -196,7 +196,7 @@ function buildTableHTML() {
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToClassesBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToClasses'))}</div>
-                <button id="csvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('attendance.csvDownload')}</button>
+                <button id="csvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
             </div>
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
