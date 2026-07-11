@@ -835,8 +835,9 @@ function downloadWorkshopAttCsv() {
     const a    = document.createElement('a');
     a.href     = url;
     const today3   = new Date().toISOString().split('T')[0];
-    const studio3  = (appState.currentWorkshop && appState.currentWorkshop.studio_name || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
-    const wsName3  = (appState.currentWorkshopName || 'calistay').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const slug3 = str => str.replace(/ç/g,'c').replace(/Ç/g,'C').replace(/ğ/g,'g').replace(/Ğ/g,'G').replace(/ı/g,'i').replace(/İ/g,'I').replace(/ö/g,'o').replace(/Ö/g,'O').replace(/ş/g,'s').replace(/Ş/g,'S').replace(/ü/g,'u').replace(/Ü/g,'U').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/ +/g,'_');
+    const studio3  = slug3(appState.currentWorkshop && appState.currentWorkshop.studio_name || '');
+    const wsName3  = slug3(appState.currentWorkshopName || 'calistay');
     a.download = `${today3}_${studio3}_${wsName3}_${t('workshopAtt.csvSuffixAtt')}.csv`;
     a.click();
     URL.revokeObjectURL(url);

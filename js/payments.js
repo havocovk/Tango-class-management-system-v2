@@ -367,8 +367,9 @@ function downloadPaymentsCsv() {
     const a    = document.createElement('a');
     a.href     = url;
     const today2 = new Date().toISOString().split('T')[0];
-    const school2 = (appState.currentSchoolName || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
-    const cls2    = (appState.currentClassName  || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const slug2 = str => str.replace(/ç/g,'c').replace(/Ç/g,'C').replace(/ğ/g,'g').replace(/Ğ/g,'G').replace(/ı/g,'i').replace(/İ/g,'I').replace(/ö/g,'o').replace(/Ö/g,'O').replace(/ş/g,'s').replace(/Ş/g,'S').replace(/ü/g,'u').replace(/Ü/g,'U').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/ +/g,'_');
+    const school2 = slug2(appState.currentSchoolName || '');
+    const cls2    = slug2(appState.currentClassName  || '');
     a.download = `${today2}_${school2}_${cls2}_${t('attendance.csvSuffixPay')}.csv`;
     a.click();
     URL.revokeObjectURL(url);

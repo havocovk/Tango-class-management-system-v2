@@ -438,8 +438,9 @@ function downloadAttendanceCsv() {
     const a    = document.createElement('a');
     a.href     = url;
     const today1 = new Date().toISOString().split('T')[0];
-    const school1 = (appState.currentSchoolName || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
-    const cls1    = (appState.currentClassName  || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const slug1 = str => str.replace(/ç/g,'c').replace(/Ç/g,'C').replace(/ğ/g,'g').replace(/Ğ/g,'G').replace(/ı/g,'i').replace(/İ/g,'I').replace(/ö/g,'o').replace(/Ö/g,'O').replace(/ş/g,'s').replace(/Ş/g,'S').replace(/ü/g,'u').replace(/Ü/g,'U').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/ +/g,'_');
+    const school1 = slug1(appState.currentSchoolName || '');
+    const cls1    = slug1(appState.currentClassName  || '');
     a.download = `${today1}_${school1}_${cls1}_${t('attendance.csvSuffixAtt')}.csv`;
     a.click();
     URL.revokeObjectURL(url);

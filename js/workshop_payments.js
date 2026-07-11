@@ -553,8 +553,9 @@ function downloadWorkshopPayCsv() {
     const a    = document.createElement('a');
     a.href     = url;
     const today4   = new Date().toISOString().split('T')[0];
-    const studio4  = (appState.currentWorkshop && appState.currentWorkshop.studio_name || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
-    const wsName4  = (appState.currentWorkshopName || 'calistay').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const slug4 = str => str.replace(/ç/g,'c').replace(/Ç/g,'C').replace(/ğ/g,'g').replace(/Ğ/g,'G').replace(/ı/g,'i').replace(/İ/g,'I').replace(/ö/g,'o').replace(/Ö/g,'O').replace(/ş/g,'s').replace(/Ş/g,'S').replace(/ü/g,'u').replace(/Ü/g,'U').replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/ +/g,'_');
+    const studio4  = slug4(appState.currentWorkshop && appState.currentWorkshop.studio_name || '');
+    const wsName4  = slug4(appState.currentWorkshopName || 'calistay');
     a.download = `${today4}_${studio4}_${wsName4}_${t('workshopAtt.csvSuffixPay')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
