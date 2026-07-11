@@ -471,6 +471,7 @@ export const tr = {
         noteLabel:          'Ders Notu',
         notePlaceholder:    'Ders notları...',
         saveAll:            'Kaydet',
+        saveBtn:            'Oluştur',
         videoAddTitle:      'Video Linki Ekle',
         videoUrlInvalid:    'Geçerli bir URL giriniz.',
         videoAdded:         'Video eklendi \u2713',

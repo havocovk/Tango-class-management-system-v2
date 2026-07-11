@@ -471,6 +471,7 @@ export const en = {
         noteLabel:          'Lesson Note',
         notePlaceholder:    'Lesson notes...',
         saveAll:            'Save',
+        saveBtn:            'Create',
         videoAddTitle:      'Add Video Link',
         videoUrlInvalid:    'Please enter a valid URL.',
         videoAdded:         'Video added \u2713',

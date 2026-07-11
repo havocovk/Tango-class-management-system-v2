@@ -137,8 +137,8 @@ function renderFestivalDetailView() {
         infoHtml = `
         <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <div style="font-size:12px;color:var(--text-dim);line-height:1.9;">
-                ${loc     ? '<div><b>Lokasyon:</b> ' + loc + '</div>' : ''}
-                ${dateStr ? '<div><b>Tarih:</b> ' + dateStr + dateEnd + '</div>' : ''}
+                ${loc     ? '<div><b>' + t('festClasses.locationLabel') + ':</b> ' + loc + '</div>' : ''}
+                ${dateStr ? '<div><b>' + t('festClasses.dateLabel') + ':</b> ' + dateStr + dateEnd + '</div>' : ''}
             </div>
         </div>`;
     }
@@ -239,6 +239,11 @@ function openFestClassModal(existing) {
     modal.querySelector('h3').textContent = isEdit ? t('festClasses.modalEditTitle') : t('festClasses.modalCreateTitle');
 
     document.getElementById('fcName').value = existing ? (existing.name || '') : '';
+    document.getElementById('fcName').placeholder        = t('festClasses.namePlaceholder');
+    document.getElementById('fcDateDisplay').placeholder  = t('festClasses.datePlaceholder') || 'Date';
+    document.getElementById('fcTime').placeholder         = t('festClasses.timePlaceholder') || 'HH:MM';
+    document.getElementById('fcSaveBtn').textContent      = isEdit ? t('common.save') : t('festClasses.saveBtn');
+    document.getElementById('fcCancelBtn').textContent    = t('common.cancel');
     document.getElementById('fcTime').value = existing && existing.lesson_time
         ? existing.lesson_time.substring(0, 5) : '19:00';
 
