@@ -79,7 +79,9 @@ export const tr = {
         toastUpdated: 'Okul adı güncellendi ✓',
         toastEditFail: 'Okul adı güncellenemedi. Bağlantıyı kontrol edin.',
         toastDeleted: 'Okul silindi ✓',
-        toastDeleteFail: 'Okul silinemedi. Bağlantıyı kontrol edin.'
+        toastDeleteFail: 'Okul silinemedi. Bağlantıyı kontrol edin.',
+        backup: 'Yedekle',
+        restore: 'Geri Yükle'
     },
 
     // --- Sınıflar ekranı ---

@@ -79,7 +79,9 @@ export const en = {
         toastUpdated: 'School name updated ✓',
         toastEditFail: "Couldn't update school name. Check your connection.",
         toastDeleted: 'School deleted ✓',
-        toastDeleteFail: "Couldn't delete school. Check your connection."
+        toastDeleteFail: "Couldn't delete school. Check your connection.",
+        backup: 'Backup',
+        restore: 'Restore'
     },
 
     // --- Classes screen ---

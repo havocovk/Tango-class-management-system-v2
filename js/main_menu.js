@@ -10,6 +10,7 @@
 import { navigateTo } from './router.js';
 import { refreshIcons, escapeHtml } from './utils.js';
 import { t } from './i18n.js';
+import { exportBackup, importBackup } from './backup.js';
 
 // ---------------------------------------------------------------
 // loadMainMenu — router.js tarafından çağrılır.
@@ -32,6 +33,20 @@ function renderMainMenu() {
             <div class="main-menu-title">${escapeHtml(t('nav.appTitle'))}</div>
 
             <div class="main-menu-grid">
+                <!-- Yedekle / Geri Yükle -->
+                <button class="menu-btn menu-btn-backup" id="menuBtnBackup" style="grid-column:1;">
+                    <div class="menu-btn-icon"><i data-lucide="hard-drive-download" size="26"></i></div>
+                    <span class="menu-btn-label">${escapeHtml(t('schools.backup'))}</span>
+                </button>
+
+                <button class="menu-btn menu-btn-restore" id="menuBtnRestore" style="grid-column:2;">
+                    <div class="menu-btn-icon"><i data-lucide="hard-drive-upload" size="26"></i></div>
+                    <span class="menu-btn-label">${escapeHtml(t('schools.restore'))}</span>
+                </button>
+
+                <!-- Boşluk ayırıcı -->
+                <div style="grid-column:1 / -1; height:1px; background:var(--border); margin:4px 0;"></div>
+
 
                 <!-- Grup Dersleri -->
                 <button class="menu-btn menu-btn-group" id="menuBtnGroup">
@@ -90,6 +105,9 @@ function renderMainMenu() {
         // Adım 6'da geliştirilecek; şimdilik placeholder toast
         navigateTo('privateLessons');
     };
+
+    document.getElementById('menuBtnBackup').onclick = () => exportBackup();
+    document.getElementById('menuBtnRestore').onclick = () => importBackup();
 
     refreshIcons();
 }
