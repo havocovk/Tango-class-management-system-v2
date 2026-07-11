@@ -41,6 +41,7 @@ export async function toggleAttendance(studentId, courseDateId) {
     if (current === '') newStatus = '+';
     else if (current === '+') newStatus = '-';
     else if (current === '-') newStatus = 'S';
+    else if (current === 'S') newStatus = 'I';
     else newStatus = '';
 
     // ADIM 7.2 — ÇEVRİMDIŞIYSA: Supabase'e gitmeyiz. Değişikliği bellekte
@@ -59,6 +60,7 @@ export async function toggleAttendance(studentId, courseDateId) {
             if (newStatus === '+') offlineIcon = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (newStatus === '-') offlineIcon = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
             else if (newStatus === 'S') offlineIcon = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
+            else if (newStatus === 'I') offlineIcon = '<i data-lucide="user-minus" style="color:var(--accent);" size="18"></i>';
             offlineCell.innerHTML = offlineIcon;
             refreshIcons();
         }
@@ -103,6 +105,7 @@ export async function toggleAttendance(studentId, courseDateId) {
         if (newStatus === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
         else if (newStatus === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
         else if (newStatus === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
+        else if (newStatus === 'I') iconHtml = '<i data-lucide="user-minus" style="color:var(--accent);" size="18"></i>';
         cell.innerHTML = iconHtml;
         refreshIcons();
     }

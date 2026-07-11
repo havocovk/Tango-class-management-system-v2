@@ -172,6 +172,7 @@ export function renderAttendanceView() {
             if (status === '+') iconHtml = '<i data-lucide="check-circle-2" class="icon-present" size="18"></i>';
             else if (status === '-') iconHtml = '<i data-lucide="x-circle" class="icon-absent" size="18"></i>';
             else if (status === 'S') iconHtml = '<i data-lucide="user-x" style="color:var(--text-dim);" size="18"></i>';
+            else if (status === 'I') iconHtml = '<i data-lucide="user-minus" style="color:var(--accent);" size="18"></i>';
             const cellCancelClass = cancelled ? ' cell-cancelled' : '';
             row += `<td class="att-cell${cellCancelClass}" data-student-id="${student.id}" data-date-id="${date.id}">${iconHtml}</td>`;
         });
@@ -423,7 +424,7 @@ function goBackToClasses() {
 function downloadAttendanceCsv() {
     const headers = ['Öğrenci', ...appState.courseDates.map(d => d.date)];
     const rows = appState.students.map(s => {
-        const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', '': '' };
+        const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', 'I': 'İnaktif', '': '' };
         return [
             s.name,
             ...appState.courseDates.map(d => statusMap[appState.attendanceMap[`${s.id}_${d.id}`] || ''] || '')

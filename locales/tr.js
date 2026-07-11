@@ -142,7 +142,11 @@ export const tr = {
         noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
         csvDownload: 'CSV İndir',
         searchPlaceholder: 'Öğrenci ara...',
-        archivedStudentsTooltip: 'Arşivlenmiş öğrenciler'
+        archivedStudentsTooltip: 'Arşivlenmiş öğrenciler',
+        statusPresent: 'Geldi',
+        statusAbsent: 'Gelmedi',
+        statusSkipped: 'S — Sonradan katıldı',
+        statusInactive: 'I — İnaktif (geçici ara)'
     },
 
     // --- Yoklama veri işlemleri (attendanceActions.js) toast'ları ---

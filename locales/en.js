@@ -142,7 +142,11 @@ export const en = {
         noteModalPlaceholder: 'e.g. Cruzada, Ocho Cortado (leave empty + OK to delete)',
         csvDownload: 'CSV Download',
         searchPlaceholder: 'Search student...',
-        archivedStudentsTooltip: 'Archived students'
+        archivedStudentsTooltip: 'Archived students',
+        statusPresent: 'Present',
+        statusAbsent: 'Absent',
+        statusSkipped: 'S — Joined later',
+        statusInactive: 'I — Inactive (temporary break)'
     },
 
     // --- Attendance data actions (attendanceActions.js) toasts ---
