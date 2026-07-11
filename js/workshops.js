@@ -173,6 +173,22 @@ function openWorkshopCreateModal() {
     document.getElementById('wsStartDateDisplay').value = '';
     document.getElementById('wsHiddenDatePicker').value = '';
 
+    // Placeholder ve metinleri aktif dile gore guncelle
+    document.getElementById('wsName').placeholder        = t('workshops.namePlaceholder') || 'Workshop name';
+    document.getElementById('wsStudio').placeholder      = t('workshops.studioPlaceholder') || 'Studio / Venue name (optional)';
+    document.getElementById('wsStartDateDisplay').placeholder = t('workshops.startDatePlaceholder') || 'Start date';
+    document.getElementById('wsTotalWeeks').placeholder  = t('workshops.weeksPlaceholder') || 'Number of weeks (4, 6, 8...)';
+    document.getElementById('wsTheme').placeholder       = t('workshops.themePlaceholder') || 'Theme (optional)';
+    document.getElementById('wsTotalPrice').placeholder  = t('workshops.totalPricePlaceholder') || 'Total fee (₺)';
+    document.getElementById('wsWeeklyPrice').placeholder = t('workshops.weeklyPricePlaceholder') || 'Weekly fee (₺)';
+    const upfrontOpt = document.querySelector('#wsPaymentType option[value="upfront"]');
+    const weeklyOpt  = document.querySelector('#wsPaymentType option[value="weekly"]');
+    if (upfrontOpt) upfrontOpt.textContent = t('workshops.payTypeUpfront');
+    if (weeklyOpt)  weeklyOpt.textContent  = t('workshops.payTypeWeekly');
+    document.getElementById('wsCreateConfirmBtn').textContent = t('workshops.createBtn') || 'Create';
+    document.getElementById('wsCreateCancelBtn').textContent  = t('common.cancel') || 'Cancel';
+    modal.querySelector('h3').textContent = t('workshops.modalCreateTitle');
+
     // Ödeme türü değişince fiyat alanını göster/gizle
     document.getElementById('wsUpfrontPriceRow').style.display = 'block';
     document.getElementById('wsWeeklyPriceRow').style.display  = 'none';

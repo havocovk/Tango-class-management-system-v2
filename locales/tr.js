@@ -282,7 +282,15 @@ export const tr = {
         toastLoadFail:      'Çalıştaylar yüklenemedi.',
         confirmDelete:      'Bu çalıştayı silmek istediğinizden emin misiniz? Tüm tarihler, öğrenciler ve ödemeler de silinir.',
         nameEmpty:          'Çalıştay adı boş olamaz.',
-        timeInvalid:        'Geçerli bir saat girin (örn: 19:00)'
+        timeInvalid:        'Geçerli bir saat girin (örn: 19:00)',
+        namePlaceholder:    'Çalıştay adı',
+        studioPlaceholder:  'Stüdyo / Mekan adı (opsiyonel)',
+        startDatePlaceholder: 'Başlangıç tarihi',
+        weeksPlaceholder:   'Hafta sayısı (4, 6, 8...)',
+        themePlaceholder:   'Tema (opsiyonel, örn: Vals, Tango)',
+        totalPricePlaceholder: 'Toplam ücret (₺)',
+        weeklyPricePlaceholder: 'Haftalık ücret (₺)',
+        createBtn:          'Oluştur'
     },
 
     // --- Çalıştay Yoklama (workshop_attendance.js) ---

@@ -282,7 +282,15 @@ export const en = {
         toastLoadFail:      'Could not load workshops.',
         confirmDelete:      'Are you sure you want to delete this workshop? All dates, students and payments will also be removed.',
         nameEmpty:          'Workshop name cannot be empty.',
-        timeInvalid:        'Enter a valid time (e.g. 19:00)'
+        timeInvalid:        'Enter a valid time (e.g. 19:00)',
+        namePlaceholder:    'Workshop name',
+        studioPlaceholder:  'Studio / Venue name (optional)',
+        startDatePlaceholder: 'Start date',
+        weeksPlaceholder:   'Number of weeks (4, 6, 8...)',
+        themePlaceholder:   'Theme (optional, e.g. Vals, Tango)',
+        totalPricePlaceholder: 'Total fee (₺)',
+        weeklyPricePlaceholder: 'Weekly fee (₺)',
+        createBtn:          'Create'
     },
 
     // --- Workshop Attendance (workshop_attendance.js) ---

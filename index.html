@@ -69,7 +69,7 @@
             </span>
         </div>
         <input type="date" id="hiddenDatePicker" style="display:none;">
-        <input type="text" id="newClassTime" value="19:00" placeholder="HH:MM (e.g. 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:15px;">
+        <input type="text" id="newClassTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:15px;">
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="newClassConfirmBtn" data-i18n="newClass.create">Oluştur</button>
             <button class="btn-secondary" id="newClassCancelBtn" data-i18n="common.cancel">İptal</button>
@@ -169,7 +169,7 @@
         <!-- Gizli date picker -->
         <input type="date" id="hiddenEditClassDatePicker" style="display:none;">
         <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;" data-i18n="editClass.info">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
-        <input type="text" id="editClassTime" placeholder="HH:MM (e.g. 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
+        <input type="text" id="editClassTime" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="editClassSaveBtn" data-i18n="common.save">Kaydet</button>
             <button class="btn-secondary" id="editClassCancelBtn" data-i18n="common.cancel">İptal</button>
@@ -272,16 +272,16 @@
         <h3 style="margin-top:0; color:var(--primary);">Yeni Çalıştay Oluştur</h3>
 
         <!-- Çalıştay adı -->
-        <input type="text" id="wsName" placeholder="Workshop name" autocomplete="off"
+        <input type="text" id="wsName" placeholder="Çalıştay adı" autocomplete="off"
             style="width:100%; margin-bottom:12px;">
 
         <!-- Stüdyo adı -->
-        <input type="text" id="wsStudio" placeholder="Studio / Venue name (optional)" autocomplete="off"
+        <input type="text" id="wsStudio" placeholder="Stüdyo / Mekan adı (opsiyonel)" autocomplete="off"
             style="width:100%; margin-bottom:12px;">
 
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <input type="text" id="wsStartDateDisplay" readonly placeholder="Start date"
+            <input type="text" id="wsStartDateDisplay" readonly placeholder="Başlangıç tarihi"
                 style="flex:1; background:#1e293b; color:white;">
             <span id="wsCalendarIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
@@ -290,39 +290,39 @@
         <input type="date" id="wsHiddenDatePicker" style="display:none;">
 
         <!-- Saat -->
-        <input type="text" id="wsTime" value="19:00" placeholder="HH:MM (e.g. 19:00)" maxlength="5" autocomplete="off"
+        <input type="text" id="wsTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off"
             style="width:100%; margin-bottom:12px;">
 
         <!-- Hafta sayısı -->
-        <input type="number" id="wsTotalWeeks" placeholder="Number of weeks (4, 6, 8...)" min="1" max="52"
+        <input type="number" id="wsTotalWeeks" placeholder="Hafta sayısı (4, 6, 8...)" min="1" max="52"
             style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
 
         <!-- Tema -->
-        <input type="text" id="wsTheme" placeholder="Theme (optional, e.g. Vals, Tango)" autocomplete="off"
+        <input type="text" id="wsTheme" placeholder="Tema (opsiyonel, örn: Vals, Tango)" autocomplete="off"
             style="width:100%; margin-bottom:12px;">
 
         <!-- Ödeme türü -->
         <select id="wsPaymentType"
             style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
-            <option value="upfront">Upfront Payment</option>
-            <option value="weekly">Weekly Payment</option>
+            <option value="upfront">Baştan Ödeme</option>
+            <option value="weekly">Haftalık Ödeme</option>
         </select>
 
         <!-- Baştan ödeme fiyatı -->
         <div id="wsUpfrontPriceRow" style="margin-bottom:12px;">
-            <input type="number" id="wsTotalPrice" placeholder="Total fee (₺)" min="0"
+            <input type="number" id="wsTotalPrice" placeholder="Toplam ücret (₺)" min="0"
                 style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
         </div>
 
         <!-- Haftalık ödeme fiyatı -->
         <div id="wsWeeklyPriceRow" style="margin-bottom:12px; display:none;">
-            <input type="number" id="wsWeeklyPrice" placeholder="Weekly fee (₺)" min="0"
+            <input type="number" id="wsWeeklyPrice" placeholder="Haftalık ücret (₺)" min="0"
                 style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
         </div>
 
         <div style="display:flex; gap:10px;">
-            <button class="btn-success" id="wsCreateConfirmBtn">Create</button>
-            <button class="btn-secondary" id="wsCreateCancelBtn">Cancel</button>
+            <button class="btn-success" id="wsCreateConfirmBtn">Oluştur</button>
+            <button class="btn-secondary" id="wsCreateCancelBtn">İptal</button>
         </div>
     </div>
 </div>
@@ -340,7 +340,7 @@
 
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <input type="text" id="festStartDateDisplay" readonly placeholder="Start date"
+            <input type="text" id="festStartDateDisplay" readonly placeholder="Başlangıç tarihi"
                 style="flex:1; background:#1e293b; color:white;">
             <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
@@ -384,7 +384,7 @@
         <input type="date" id="fcHiddenDate" style="display:none;">
 
         <!-- Saat -->
-        <input type="text" id="fcTime" value="19:00" placeholder="HH:MM (e.g. 19:00)" maxlength="5" autocomplete="off"
+        <input type="text" id="fcTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off"
             style="width:100%; margin-bottom:20px;">
 
         <div style="display:flex; gap:10px;">
