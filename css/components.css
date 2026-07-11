@@ -388,6 +388,8 @@ tfoot th.sticky-col:nth-child(2) {
     animation: fadeIn 0.4s ease-out forwards;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(100vh - 100px);
     gap: 0;
 }
 
@@ -397,7 +399,7 @@ tfoot th.sticky-col:nth-child(2) {
     font-size: 22px;
     font-weight: 800;
     margin-top: 16px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     color: var(--primary);
     text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
 }
@@ -407,7 +409,7 @@ tfoot th.sticky-col:nth-child(2) {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 0;
 }
 
 /* Her bir büyük menü butonu */
