@@ -181,7 +181,7 @@ function renderPaymentsView() {
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToAttendanceBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToAttendance'))}</div>
-                <button id="paymentCsvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>CSV İndir</button>
+                <button id="paymentCsvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('attendance.csvDownload')}</button>
             </div>
             <div class="main-title">${escapeHtml(t('payments.title'))}</div>
             <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:16px; font-weight:600;">
@@ -191,7 +191,7 @@ function renderPaymentsView() {
             ${summaryHtml}
 
             <div style="margin:8px 0 6px;">
-                <input id="paySearchInput" type="text" placeholder="Öğrenci ara..." style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <input id="paySearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
             </div>
             <div class="table-wrapper" style="margin-top:8px;">
                 <table>
