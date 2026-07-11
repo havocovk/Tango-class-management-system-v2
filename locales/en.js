@@ -133,7 +133,10 @@ export const en = {
         partnerModalTitle: 'Partner / Teacher Name',
         partnerModalPlaceholder: 'Enter a name (leave empty and press OK to remove)',
         noteModalTitle: 'Lesson Note',
-        noteModalPlaceholder: 'e.g. Cruzada, Ocho Cortado (leave empty + OK to delete)'
+        noteModalPlaceholder: 'e.g. Cruzada, Ocho Cortado (leave empty + OK to delete)',
+        csvDownload: 'CSV Download',
+        searchPlaceholder: 'Search student...',
+        archivedStudentsTooltip: 'Archived students'
     },
 
     // --- Attendance data actions (attendanceActions.js) toasts ---

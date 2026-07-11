@@ -195,7 +195,7 @@ function buildTableHTML() {
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToClassesBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToClasses'))}</div>
-                <button id="csvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>CSV İndir</button>
+                <button id="csvBtn" class="btn-secondary" style="flex:none; min-width:auto; width:auto; padding:8px 12px; font-size:12px;"><i data-lucide="download" size="14" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('attendance.csvDownload')}</button>
             </div>
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
@@ -204,8 +204,8 @@ function buildTableHTML() {
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
-                <input id="studentSearchInput" type="text" placeholder="Öğrenci ara..." style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
-                <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="Arşivlenmiş öğrenciler"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
+                <input id="studentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="${t('attendance.archivedStudentsTooltip')}"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
             </div>
             <div class="table-wrapper">
                 <table>

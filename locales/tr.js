@@ -133,7 +133,10 @@ export const tr = {
         partnerModalTitle: 'Partner Adı',
         partnerModalPlaceholder: 'İsim girin (boş bırakıp Tamam derseniz silinir)',
         noteModalTitle: 'Ders Notu',
-        noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)'
+        noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
+        csvDownload: 'CSV İndir',
+        searchPlaceholder: 'Öğrenci ara...',
+        archivedStudentsTooltip: 'Arşivlenmiş öğrenciler'
     },
 
     // --- Yoklama veri işlemleri (attendanceActions.js) toast'ları ---
