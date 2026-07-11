@@ -114,7 +114,10 @@ function isWeekOccurred(dateStr) {
 // ---------------------------------------------------------------
 function headerHtml(modeLabel) {
     return `
-        <div class="back-link" id="wsBackToAttendanceBtn">${t('workshopPay.backToAttendance')}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div class="back-link" id="wsBackToAttendanceBtn" style="margin-bottom:0;">${t('workshopPay.backToAttendance')}</div>
+            <button id="wsPayCsvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('workshopAtt.csvDownload')}</button>
+        </div>
         <div class="main-title">${t('workshopPay.title')}</div>
         <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:4px; font-weight:600;">
             ${escapeHtml(appState.currentWorkshopName || '')}
@@ -130,6 +133,8 @@ function wireBackButton() {
         workshopId:   appState.currentWorkshopId,
         workshopName: appState.currentWorkshopName
     });
+    const csvBtn = document.getElementById('wsPayCsvBtn');
+    if (csvBtn) csvBtn.onclick = () => downloadWorkshopPayCsv();
 }
 
 // ---------------------------------------------------------------
@@ -503,4 +508,51 @@ function renderWeeklyPayments() {
 
     wireBackButton();
     refreshIcons();
+}
+// ---------------------------------------------------------------
+// Çalıştay Ödemeleri CSV Dışa Aktar
+// ---------------------------------------------------------------
+function downloadWorkshopPayCsv() {
+    const ws      = appState.currentWorkshop;
+    const mode    = (ws && ws.payment_type) ? ws.payment_type : 'upfront';
+    const visible = appState.wsStudents.filter(s => !s.is_archived);
+
+    let headers, rows;
+
+    if (mode === 'upfront') {
+        headers = ['Öğrenci', 'Durum', 'Tutar'];
+        rows = visible.map(s => {
+            const pay  = appState.wsPayments.find(p => p.student_id === s.id);
+            const paid = !!pay;
+            return [
+                s.name,
+                paid ? 'Ödendi' : 'Beklemede',
+                paid ? (Number(pay.amount).toLocaleString('tr-TR') + '₺') : ''
+            ];
+        });
+    } else {
+        headers = ['Öğrenci', 'Durum', ...appState.wsDates.map(d => d.lesson_date)];
+        rows = visible.map(s => {
+            const d = calcWsStudentDebt(s);
+            const status = d.remaining < 0
+                ? `${Math.abs(d.remaining)} ders borçlu`
+                : d.remaining === 0 ? 'Güncel'
+                : `${d.remaining} ders avans`;
+            const cells = appState.wsDates.map((date, dateIdx) => {
+                return checkWsIsPaid(s.id, dateIdx) ? '✓' : '';
+            });
+            return [s.name, status, ...cells];
+        });
+    }
+
+    const csv = [headers, ...rows]
+        .map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${appState.currentWorkshopName || 'calistay'}_odemeler.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }

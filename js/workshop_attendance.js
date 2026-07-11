@@ -107,7 +107,10 @@ function renderWorkshopAttendance() {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToWorkshopsBtn">${t('workshopAtt.backToWorkshops')}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <div class="back-link" id="backToWorkshopsBtn" style="margin-bottom:0;">${t('workshopAtt.backToWorkshops')}</div>
+                <button id="wsCsvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('workshopAtt.csvDownload')}</button>
+            </div>
             <div class="main-title">${t('workshopAtt.title')}</div>
             <h2 style="text-align:center;font-size:18px;color:var(--primary);">${escapeHtml(appState.currentWorkshopName || '')}</h2>
             ${infoHtml}
@@ -134,6 +137,7 @@ function renderWorkshopAttendance() {
 
     // Butonlar
     document.getElementById('backToWorkshopsBtn').onclick = () => navigateTo('workshops');
+    document.getElementById('wsCsvBtn').onclick           = () => downloadWorkshopAttCsv();
     document.getElementById('wsAddStudentBtn').onclick    = () => addWorkshopStudent();
     document.getElementById('wsImportStudentBtn').onclick  = () => importStudentFromClasses();
     document.getElementById('wsAddWeekBtn').onclick       = () => addWorkshopWeek();
@@ -807,4 +811,30 @@ async function toggleWorkshopWeekCancel(dateId, makeCancelled) {
     showToast(makeCancelled ? t('workshopAtt.weekCancelled') : t('workshopAtt.weekUncancelled'), 'success');
     await loadWorkshopData();
     renderWorkshopAttendance();
+}
+// ---------------------------------------------------------------
+// Çalıştay Yoklama CSV Dışa Aktar
+// ---------------------------------------------------------------
+function downloadWorkshopAttCsv() {
+    const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', 'I': 'İnaktif', '': '' };
+    const headers = ['Öğrenci', ...appState.wsDates.map(d => d.lesson_date)];
+    const rows = appState.wsStudents
+        .filter(s => !s.is_archived)
+        .map(s => [
+            s.name,
+            ...appState.wsDates.map(d => {
+                const st = appState.wsAttendanceMap[`${s.id}_${d.id}`] || '';
+                return statusMap[st] || '';
+            })
+        ]);
+    const csv = [headers, ...rows]
+        .map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${appState.currentWorkshopName || 'calistay'}_yoklama.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
 }

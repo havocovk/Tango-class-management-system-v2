@@ -376,7 +376,8 @@ export const tr = {
         weekUncancelled:    'İptal geri alındı \u2713',
         weekToggleFail:     'İşlem başarısız.',
         attSaveFail:        'Yoklama kaydedilemedi: {msg}',
-        sessionNotFound:    'Oturum bulunamadı.'
+        sessionNotFound:    'Oturum bulunamadı.',
+        csvDownload:        'CSV İndir'
     },
 
     // --- Çalıştay Ödemeleri (workshop_payments.js) ---
@@ -447,7 +448,8 @@ export const tr = {
         toastDeleteFail:    'Silme işlemi başarısız.',
         toastLoadFail:      'Festivaller yüklenemedi.',
         confirmDelete:      'Bu festivali silmek istediğinizden emin misiniz? Tüm dersler de silinir.',
-        sessionNotFound:    'Oturum bulunamadı.'
+        sessionNotFound:    'Oturum bulunamadı.',
+        csvDownload:        'CSV İndir'
     },
 
     // --- Festival Dersleri (festival_classes.js) ---

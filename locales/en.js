@@ -376,7 +376,8 @@ export const en = {
         weekUncancelled:    'Cancellation undone \u2713',
         weekToggleFail:     'Action failed.',
         attSaveFail:        'Could not save attendance: {msg}',
-        sessionNotFound:    'Session not found.'
+        sessionNotFound:    'Session not found.',
+        csvDownload:        'CSV Download'
     },
 
     // --- Workshop Payments (workshop_payments.js) ---
@@ -447,7 +448,8 @@ export const en = {
         toastDeleteFail:    'Delete failed.',
         toastLoadFail:      'Could not load festivals.',
         confirmDelete:      'Are you sure you want to delete this festival? All lessons will also be removed.',
-        sessionNotFound:    'Session not found.'
+        sessionNotFound:    'Session not found.',
+        csvDownload:        'CSV Download'
     },
 
     // --- Festival Classes (festival_classes.js) ---
