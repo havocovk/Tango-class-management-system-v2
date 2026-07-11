@@ -247,7 +247,7 @@ function renderDetailView(lesson) {
     container.innerHTML = `
         <div class="view">
             <span class="back-link" id="plDetailBackBtn">
-                <i data-lucide="arrow-left" size="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('privateLessons.backToList')}
+                ${t('privateLessons.backToList')}
             </span>
 
             <div class="main-title" style="margin-top:10px;">${t('privateLessons.detailTitle')}</div>
