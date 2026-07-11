@@ -33,20 +33,6 @@ function renderMainMenu() {
             <div class="main-menu-title">${escapeHtml(t('nav.appTitle'))}</div>
 
             <div class="main-menu-grid">
-                <!-- Yedekle / Geri Yükle -->
-                <button class="menu-btn menu-btn-backup" id="menuBtnBackup" style="grid-column:1;">
-                    <div class="menu-btn-icon"><i data-lucide="hard-drive-download" size="26"></i></div>
-                    <span class="menu-btn-label">${escapeHtml(t('schools.backup'))}</span>
-                </button>
-
-                <button class="menu-btn menu-btn-restore" id="menuBtnRestore" style="grid-column:2;">
-                    <div class="menu-btn-icon"><i data-lucide="hard-drive-upload" size="26"></i></div>
-                    <span class="menu-btn-label">${escapeHtml(t('schools.restore'))}</span>
-                </button>
-
-                <!-- Boşluk ayırıcı -->
-                <div style="grid-column:1 / -1; height:1px; background:var(--border); margin:4px 0;"></div>
-
 
                 <!-- Grup Dersleri -->
                 <button class="menu-btn menu-btn-group" id="menuBtnGroup">
@@ -81,6 +67,49 @@ function renderMainMenu() {
                 </button>
 
             </div>
+
+            <!-- Yedekle / Geri Yükle — ince outline butonlar -->
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button id="menuBtnBackup" style="
+                    flex:1;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap:7px;
+                    padding:10px 8px;
+                    background:transparent;
+                    border:1.5px solid var(--primary);
+                    border-radius:10px;
+                    color:var(--primary);
+                    font-size:13px;
+                    font-weight:600;
+                    cursor:pointer;
+                    min-width:0;
+                ">
+                    <i data-lucide="hard-drive-download" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
+                    ${escapeHtml(t('schools.backup'))}
+                </button>
+                <button id="menuBtnRestore" style="
+                    flex:1;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap:7px;
+                    padding:10px 8px;
+                    background:transparent;
+                    border:1.5px solid var(--accent);
+                    border-radius:10px;
+                    color:var(--accent);
+                    font-size:13px;
+                    font-weight:600;
+                    cursor:pointer;
+                    min-width:0;
+                ">
+                    <i data-lucide="hard-drive-upload" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
+                    ${escapeHtml(t('schools.restore'))}
+                </button>
+            </div>
+
         </div>
     `;
 
