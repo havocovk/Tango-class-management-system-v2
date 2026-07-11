@@ -32,7 +32,7 @@ export const tr = {
     // --- Üst/genel navigasyon ---
     nav: {
         logout: '⎋ Çıkış',
-        appTitle: 'Tango Sınıf Yönetim Sistemi',
+        appTitle: 'Tango Dersleri Yönetim Sistemi',
         backToSchools: '← Okullar',
         backToClasses: '← Sınıflar',
         backToAttendance: '← Yoklama Sayfası',
@@ -41,7 +41,7 @@ export const tr = {
 
     // --- Giriş (login) ekranı ---
     login: {
-        title: 'Tango Sınıf Yönetimi',
+        title: 'Tango Dersleri Yönetim Sistemi',
         subtitle: 'Devam etmek için giriş yapın',
         email: 'E-posta',
         password: 'Şifre',

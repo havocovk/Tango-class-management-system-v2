@@ -32,7 +32,7 @@ export const en = {
     // --- Top / general navigation ---
     nav: {
         logout: '⎋ Log out',
-        appTitle: 'Tango Class Management System',
+        appTitle: 'Tango Classes Management System',
         backToSchools: '← Schools',
         backToClasses: '← Classes',
         backToAttendance: '← Attendance',
@@ -41,7 +41,7 @@ export const en = {
 
     // --- Login screen ---
     login: {
-        title: 'Tango Class Management',
+        title: 'Tango Classes Management System',
         subtitle: 'Sign in to continue',
         email: 'Email',
         password: 'Password',
