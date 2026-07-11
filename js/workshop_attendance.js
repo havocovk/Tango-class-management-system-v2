@@ -834,7 +834,10 @@ function downloadWorkshopAttCsv() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `${appState.currentWorkshopName || 'calistay'}_yoklama.csv`;
+    const today3   = new Date().toISOString().split('T')[0];
+    const studio3  = (appState.currentWorkshop && appState.currentWorkshop.studio_name || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const wsName3  = (appState.currentWorkshopName || 'calistay').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    a.download = `${today3}_${studio3}_${wsName3}_${t('workshopAtt.csvSuffixAtt')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 }

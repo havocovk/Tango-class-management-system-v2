@@ -142,7 +142,9 @@ export const tr = {
         partnerModalPlaceholder: 'İsim girin (boş bırakıp Tamam derseniz silinir)',
         noteModalTitle: 'Ders Notu',
         noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
-        csvDownload: 'CSV İndir',
+        csvDownload:    'CSV İndir',
+        csvSuffixAtt:   'yoklama',
+        csvSuffixPay:   'odemeler',
         searchPlaceholder: 'Öğrenci ara...',
         archivedStudentsTooltip: 'Arşivlenmiş öğrenciler',
         statusPresent: 'Geldi',
@@ -377,7 +379,9 @@ export const tr = {
         weekToggleFail:     'İşlem başarısız.',
         attSaveFail:        'Yoklama kaydedilemedi: {msg}',
         sessionNotFound:    'Oturum bulunamadı.',
-        csvDownload:        'CSV İndir'
+        csvDownload:        'CSV İndir',
+        csvSuffixAtt:       'yoklama',
+        csvSuffixPay:       'odemeler'
     },
 
     // --- Çalıştay Ödemeleri (workshop_payments.js) ---

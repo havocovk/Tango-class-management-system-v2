@@ -142,7 +142,9 @@ export const en = {
         partnerModalPlaceholder: 'Enter a name (leave empty and press OK to remove)',
         noteModalTitle: 'Lesson Note',
         noteModalPlaceholder: 'e.g. Cruzada, Ocho Cortado (leave empty + OK to delete)',
-        csvDownload: 'CSV Download',
+        csvDownload:    'CSV Download',
+        csvSuffixAtt:   'attendance',
+        csvSuffixPay:   'payments',
         searchPlaceholder: 'Search student...',
         archivedStudentsTooltip: 'Archived students',
         statusPresent: 'Present',
@@ -377,7 +379,9 @@ export const en = {
         weekToggleFail:     'Action failed.',
         attSaveFail:        'Could not save attendance: {msg}',
         sessionNotFound:    'Session not found.',
-        csvDownload:        'CSV Download'
+        csvDownload:        'CSV Download',
+        csvSuffixAtt:       'attendance',
+        csvSuffixPay:       'payments'
     },
 
     // --- Workshop Payments (workshop_payments.js) ---

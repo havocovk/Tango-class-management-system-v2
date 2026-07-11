@@ -552,7 +552,10 @@ function downloadWorkshopPayCsv() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `${appState.currentWorkshopName || 'calistay'}_odemeler.csv`;
+    const today4   = new Date().toISOString().split('T')[0];
+    const studio4  = (appState.currentWorkshop && appState.currentWorkshop.studio_name || '').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    const wsName4  = (appState.currentWorkshopName || 'calistay').replace(/[^a-zA-Z0-9�-� ]/g, '').trim().replace(/ /g, '_');
+    a.download = `${today4}_${studio4}_${wsName4}_${t('workshopAtt.csvSuffixPay')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 }
