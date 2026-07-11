@@ -31,23 +31,58 @@ function renderSchoolsView() {
     const container = document.getElementById('dynamicView');
     if (!container) return;
 
-    // ADIM 3.3 — Borçlu özet paneli
+    // ADIM 3.3 — Borçlu özet paneli (sınıf bazlı + katlanabilir)
     let debtSummaryHtml = '';
     if (appState._debtSummary) {
         const { debtors, warning } = appState._debtSummary;
         const debtorCount  = debtors.length;
         const warningCount = warning.length;
         if (debtorCount > 0 || warningCount > 0) {
-            const debtorItems = debtors.map(function(d) {
-                return '<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
-            }).join(', ');
-            const warningItems = warning.map(function(d) {
-                return '<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
-            }).join(', ');
+            // Sınıf bazlı gruplama
+            const byClass = {};
+            debtors.forEach(function(d) {
+                const key = d.classId + '|' + d.className;
+                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], warning: [] };
+                byClass[key].debtors.push(d);
+            });
+            warning.forEach(function(d) {
+                const key = d.classId + '|' + d.className;
+                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], warning: [] };
+                byClass[key].warning.push(d);
+            });
+
+            // Detay içeriği (başlangıçta gizli)
+            let detailHtml = '';
+            Object.values(byClass).forEach(function(cls) {
+                detailHtml += '<div style="margin-top:10px;border-top:1px solid rgba(239,68,68,0.2);padding-top:8px;">';
+                detailHtml += '<div style="font-weight:700;color:var(--text-main);margin-bottom:4px;font-size:12px;">' + escapeHtml(cls.className) + '</div>';
+                if (cls.debtors.length > 0) {
+                    const items = cls.debtors.map(function(d) {
+                        return '<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
+                    }).join(', ');
+                    detailHtml += '<div><span style="color:#ef4444;font-weight:700;">' + t('schools.debtLabel') + ':</span> ' + items + '</div>';
+                }
+                if (cls.warning.length > 0) {
+                    const items = cls.warning.map(function(d) {
+                        return '<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
+                    }).join(', ');
+                    detailHtml += '<div><span style="color:var(--accent);font-weight:700;">' + t('schools.warningLabel') + ':</span> ' + items + '</div>';
+                }
+                detailHtml += '</div>';
+            });
+
+            // Özet satırı
+            let summaryText = '';
+            if (debtorCount > 0) summaryText += '<span style="color:#ef4444;font-weight:700;">' + debtorCount + ' ' + t('schools.debtLabel') + '</span>';
+            if (debtorCount > 0 && warningCount > 0) summaryText += '<span style="color:var(--text-dim);">, </span>';
+            if (warningCount > 0) summaryText += '<span style="color:var(--accent);font-weight:700;">' + warningCount + ' ' + t('schools.warningLabel') + '</span>';
+
             let panelHtml = '<div id="debtSummaryPanel" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;">';
-            panelHtml += '<div style="font-weight:700;color:#ef4444;margin-bottom:6px;">⚠ Ödeme Durumu</div>';
-            if (debtorCount > 0) panelHtml += '<div><span style="color:#ef4444;font-weight:700;">' + debtorCount + ' borçlu:</span> ' + debtorItems + '</div>';
-            if (warningCount > 0) panelHtml += '<div><span style="color:var(--accent);font-weight:700;">' + warningCount + ' bitiyor:</span> ' + warningItems + '</div>';
+            panelHtml += '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" id="debtSummaryToggle">';
+            panelHtml += '<div>⚠ <span style="font-weight:700;color:#ef4444;">' + t('schools.debtPanelTitle') + '</span> — ' + summaryText + '</div>';
+            panelHtml += '<span id="debtToggleIcon" style="color:var(--primary);font-size:16px;margin-left:8px;">▼</span>';
+            panelHtml += '</div>';
+            panelHtml += '<div id="debtSummaryDetail" style="display:none;">' + detailHtml + '</div>';
             panelHtml += '</div>';
             debtSummaryHtml = panelHtml;
         }
@@ -129,6 +164,22 @@ function renderSchoolsView() {
         });
     }
     document.getElementById('addSchoolBtn').onclick = () => addSchool();
+
+    // Katlanabilir panel toggle
+    const toggleBtn = document.getElementById('debtSummaryToggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            const detail = document.getElementById('debtSummaryDetail');
+            const icon   = document.getElementById('debtToggleIcon');
+            if (detail.style.display === 'none') {
+                detail.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                detail.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        });
+    }
 
     // ADIM 3.3 — Borçlu paneli tıklama olayları
     document.querySelectorAll('[data-debt-class]').forEach(el => {

@@ -82,7 +82,10 @@ export const tr = {
         toastDeleted: 'Okul silindi ✓',
         toastDeleteFail: 'Okul silinemedi. Bağlantıyı kontrol edin.',
         backup: 'Yedekle',
-        restore: 'Geri Yükle'
+        restore: 'Geri Yükle',
+        debtPanelTitle: 'Ödeme Durumu',
+        debtLabel: 'borçlu',
+        warningLabel: 'bitiyor'
     },
 
     // --- Sınıflar ekranı ---

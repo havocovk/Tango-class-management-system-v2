@@ -82,7 +82,10 @@ export const en = {
         toastDeleted: 'School deleted ✓',
         toastDeleteFail: "Couldn't delete school. Check your connection.",
         backup: 'Backup',
-        restore: 'Restore'
+        restore: 'Restore',
+        debtPanelTitle: 'Payment Status',
+        debtLabel: 'in debt',
+        warningLabel: 'expiring'
     },
 
     // --- Classes screen ---
