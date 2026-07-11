@@ -310,8 +310,7 @@ export async function loadDebtSummary() {
             dates.forEach(d => {
                 if (d.is_cancelled) return;
                 const status = attMap[`${student.id}_${d.id}`] || '';
-                if (status === 'S') return;
-                if (status === 'I') return;
+                if (status !== '+' && status !== '-') return;
                 validDates++;
             });
 
