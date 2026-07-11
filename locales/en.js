@@ -85,7 +85,9 @@ export const en = {
         restore: 'Restore',
         debtPanelTitle: 'Payment Status',
         debtLabel: 'in debt',
-        warningLabel: 'expiring'
+        threeMonthLabel: '3-month package ending',
+        debtorsTitle: 'Students in Debt',
+        threeMonthTitle: '3-Month Package Ending'
     },
 
     // --- Classes screen ---

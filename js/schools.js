@@ -34,39 +34,39 @@ function renderSchoolsView() {
     // ADIM 3.3 — Borçlu özet paneli (sınıf bazlı + katlanabilir)
     let debtSummaryHtml = '';
     if (appState._debtSummary) {
-        const { debtors, warning } = appState._debtSummary;
-        const debtorCount  = debtors.length;
-        const warningCount = warning.length;
-        if (debtorCount > 0 || warningCount > 0) {
+        const { debtors, threeMonth } = appState._debtSummary;
+        const debtorCount     = debtors.length;
+        const threeMonthCount = threeMonth.length;
+        if (debtorCount > 0 || threeMonthCount > 0) {
             // Sınıf bazlı gruplama
             const byClass = {};
             debtors.forEach(function(d) {
                 const key = d.classId + '|' + d.className;
-                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], warning: [] };
+                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], threeMonth: [] };
                 byClass[key].debtors.push(d);
             });
-            warning.forEach(function(d) {
+            threeMonth.forEach(function(d) {
                 const key = d.classId + '|' + d.className;
-                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], warning: [] };
-                byClass[key].warning.push(d);
+                if (!byClass[key]) byClass[key] = { className: d.className, classId: d.classId, debtors: [], threeMonth: [] };
+                byClass[key].threeMonth.push(d);
             });
 
             // Detay içeriği (başlangıçta gizli)
             let detailHtml = '';
             Object.values(byClass).forEach(function(cls) {
                 detailHtml += '<div style="margin-top:10px;border-top:1px solid rgba(239,68,68,0.2);padding-top:8px;">';
-                detailHtml += '<div style="font-weight:700;color:var(--text-main);margin-bottom:4px;font-size:12px;">' + escapeHtml(cls.className) + '</div>';
+                detailHtml += '<div style="font-weight:700;color:var(--text-main);margin-bottom:6px;font-size:13px;">' + escapeHtml(cls.className) + '</div>';
                 if (cls.debtors.length > 0) {
                     const items = cls.debtors.map(function(d) {
                         return '<span style="cursor:pointer;text-decoration:underline;color:#ef4444;" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
                     }).join(', ');
-                    detailHtml += '<div><span style="color:#ef4444;font-weight:700;">' + t('schools.debtLabel') + ':</span> ' + items + '</div>';
+                    detailHtml += '<div style="margin-bottom:4px;"><span style="color:#ef4444;font-weight:700;">' + t('schools.debtorsTitle') + ':</span><br>' + items + '</div>';
                 }
-                if (cls.warning.length > 0) {
-                    const items = cls.warning.map(function(d) {
+                if (cls.threeMonth.length > 0) {
+                    const items = cls.threeMonth.map(function(d) {
                         return '<span style="cursor:pointer;text-decoration:underline;color:var(--accent);" data-debt-class="' + d.classId + '" data-debt-cname="' + escapeHtml(d.className) + '">' + escapeHtml(d.studentName) + '</span>';
                     }).join(', ');
-                    detailHtml += '<div><span style="color:var(--accent);font-weight:700;">' + t('schools.warningLabel') + ':</span> ' + items + '</div>';
+                    detailHtml += '<div style="margin-bottom:4px;"><span style="color:var(--accent);font-weight:700;">' + t('schools.threeMonthTitle') + ':</span><br>' + items + '</div>';
                 }
                 detailHtml += '</div>';
             });
@@ -74,8 +74,8 @@ function renderSchoolsView() {
             // Özet satırı
             let summaryText = '';
             if (debtorCount > 0) summaryText += '<span style="color:#ef4444;font-weight:700;">' + debtorCount + ' ' + t('schools.debtLabel') + '</span>';
-            if (debtorCount > 0 && warningCount > 0) summaryText += '<span style="color:var(--text-dim);">, </span>';
-            if (warningCount > 0) summaryText += '<span style="color:var(--accent);font-weight:700;">' + warningCount + ' ' + t('schools.warningLabel') + '</span>';
+            if (debtorCount > 0 && threeMonthCount > 0) summaryText += '<span style="color:var(--text-dim);">, </span>';
+            if (threeMonthCount > 0) summaryText += '<span style="color:var(--accent);font-weight:700;">' + threeMonthCount + ' ' + t('schools.threeMonthLabel') + '</span>';
 
             let panelHtml = '<div id="debtSummaryPanel" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;">';
             panelHtml += '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" id="debtSummaryToggle">';
@@ -295,11 +295,11 @@ export async function loadDebtSummary() {
         const classSchoolMap = {};
         (allClasses || []).forEach(c => { classSchoolMap[c.id] = c.school_id; });
 
-        const debtors  = [];
-        const warning  = [];
+        const debtors     = [];
+        const threeMonth  = [];
 
         for (const student of (allStudents || [])) {
-            // ADIM 5.1 — Arşivlenmiş öğrenci ve sınıfları borç özetine alma
+            // Arşivlenmiş öğrenci ve sınıfları atla
             if (student.is_archived) continue;
             const cls = (allClasses || []).find(c => c.id === student.class_id);
             if (!cls) continue;
@@ -318,16 +318,20 @@ export async function loadDebtSummary() {
             const totalPaidWeeks  = studentPayments.reduce((sum, p) => sum + (p.weeks_covered || 0), 0);
             const remaining = totalPaidWeeks - validDates;
 
+            // Borçlu: aktif ders sayısı ödenen haftadan fazla
             if (remaining < 0) {
-                // Borçlu: ödediğinden fazla ders geçmiş
                 debtors.push({ studentName: student.name, classId: cls.id, className: cls.name });
-            } else if (remaining >= 0 && remaining <= 2 && totalPaidWeeks > 0 && validDates > 0) {
-                // Paketi bitmek üzere: 0, 1 veya 2 ders kaldı
-                warning.push({ studentName: student.name, classId: cls.id, className: cls.name });
+            }
+
+            // Üç aylık paketi bitenler: weeks_covered=12 olan ödeme var
+            // ve öğrenci 10+ aktif haftayı tamamlamış
+            const hasThreeMonth = studentPayments.some(p => p.weeks_covered === 12);
+            if (hasThreeMonth && validDates >= 10) {
+                threeMonth.push({ studentName: student.name, classId: cls.id, className: cls.name });
             }
         }
 
-        appState._debtSummary = { debtors, warning, classSchoolMap };
+        appState._debtSummary = { debtors, threeMonth, classSchoolMap };
     } catch (e) {
         console.warn('[debtSummary] hata:', e);
     }

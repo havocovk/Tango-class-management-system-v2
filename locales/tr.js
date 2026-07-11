@@ -85,7 +85,9 @@ export const tr = {
         restore: 'Geri Yükle',
         debtPanelTitle: 'Ödeme Durumu',
         debtLabel: 'borçlu',
-        warningLabel: 'bitiyor'
+        threeMonthLabel: 'üç aylık paketi bitiyor',
+        debtorsTitle: 'Borçlu Öğrenciler',
+        threeMonthTitle: 'Üç Aylık Paketi Bitenler'
     },
 
     // --- Sınıflar ekranı ---
