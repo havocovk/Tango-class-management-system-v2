@@ -685,6 +685,7 @@ function openWorkshopWeekMenu(dateId, isCancelled) {
     if (!modal) { showToast('Menu not found.', 'error'); return; }
 
     title.textContent = t('workshopAtt.weekActions');
+    deleteBtn.innerHTML = `<i data-lucide="trash-2" size="15"></i>${t('workshopAtt.weekDeleteLabel') || 'Delete Week'}`;
 
     // İptal butonu metnini duruma göre ayarla
     cancelBtn.innerHTML = isCancelled
