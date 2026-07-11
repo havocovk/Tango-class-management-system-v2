@@ -87,7 +87,7 @@ function renderSchoolsView() {
 
     container.innerHTML = `
         <div class="view">
-            <span class="back-link" id="backToMainMenu"><i data-lucide="arrow-left" size="16" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>${escapeHtml(t('nav.backToMainMenu'))}</span>
+            <span class="back-link" id="backToMainMenu">${escapeHtml(t('nav.backToMainMenu'))}</span>
             <div class="main-title">${escapeHtml(t('mainMenu.groupClasses'))}</div>
             ${lastClassHtml}
             ${debtSummaryHtml}

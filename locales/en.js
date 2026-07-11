@@ -37,7 +37,7 @@ export const en = {
         backToClasses: '← Classes',
         backToAttendance: '← Attendance',
         backGeneric: '← Back',
-        backToMainMenu: 'Main Menu'
+        backToMainMenu: '← Main Menu'
     },
 
     // --- Login screen ---
