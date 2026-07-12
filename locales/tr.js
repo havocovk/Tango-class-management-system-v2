@@ -106,7 +106,13 @@ export const tr = {
         editDateExists: 'Bu tarih zaten mevcut. Eklenmedi.',
         editDateInsertFail: 'Tarih eklenirken hata: {msg}',
         deleteConfirm: 'Sınıf silinecek. Tüm öğrenciler, yoklamalar ve videolar da silinir. Emin misiniz?',
-        deleteFail: 'Hata: {msg}'
+        deleteFail: 'Hata: {msg}',
+        archiveFail: 'İşlem başarısız. Bağlantıyı kontrol edin.',
+        archived: 'Sınıf arşivlendi ✓',
+        unarchived: 'Sınıf arşivden çıkarıldı ✓',
+        archivedLabel: '(arşiv)',
+        duplicateName: 'Bu isimde bir sınıf zaten mevcut.',
+        timeInvalid: 'Geçerli bir saat girin (örn: 19:00)'
     },
 
     // --- Yeni Sınıf modalı (index.html) ---
@@ -269,7 +275,16 @@ export const tr = {
         paymentAdded: 'Ödeme eklendi ✓',
         waDebtMsg: 'Merhaba {name}! {class} derslerindeki ders paketiniz doldu 🙏 Yeni paket için bizi arayabilirsiniz.',
         waRemainMsg: 'Merhaba {name}! {class} derslerindeki ders paketinizden {n} ders hakkınız kaldı 🙏 Paketi yenilemek için bizi arayabilirsiniz.',
-        months: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+        months: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+        csvColStudent: 'Öğrenci',
+        csvColStatus: 'Durum',
+        csvColAmount: 'Tutar',
+        csvStatusDebt: '{n} ders borçlu',
+        csvStatusCurrent: 'Güncel',
+        csvStatusAdvance: '{n} ders avans',
+        csvStatusPaid: 'Ödendi',
+        csvStatusPending: 'Beklemede',
+        invalidAmount: 'Lütfen geçerli pozitif değerler girin.'
     },
 
     // --- Ana Menü (main_menu.js) ---
@@ -355,7 +370,7 @@ export const tr = {
         studentUpdated:     'Güncellendi \u2713',
         studentUpdateFail:  'Güncellenemedi.',
         studentArchived:    'Öğrenci arşivlendi \u2713',
-        studentUnarchived:  'Arşivden çıkarıldı \u2713',
+        studentUnarchived:  'Öğrenci arşivden çıkarıldı \u2713',
         studentArchiveFail: 'İşlem başarısız.',
         studentDeleted:     'Öğrenci silindi \u2713',
         studentDeleteFail:  'Silinemedi.',
@@ -391,7 +406,14 @@ export const tr = {
         sessionNotFound:    'Oturum bulunamadı.',
         csvDownload:        'CSV İndir',
         csvSuffixAtt:       'yoklama',
-        csvSuffixPay:       'odemeler'
+        csvSuffixPay:       'odemeler',
+        csvColStudent:      'Öğrenci',
+        csvStatusPresent:   'Geldi',
+        csvStatusAbsent:    'Gelmedi',
+        csvStatusSkipped:   'Mazeretli',
+        csvStatusInactive:  'İnaktif',
+        studentArchivedFull:  'Öğrenci arşivlendi ✓',
+        studentUnarchivedFull: 'Öğrenci arşivden çıkarıldı ✓'
     },
 
     // --- Çalıştay Ödemeleri (workshop_payments.js) ---

@@ -291,7 +291,7 @@ function renderPaymentsView() {
                     const amountNum = parseInt(amount);
                     const weeksNum  = parseInt(weeks);
                     if (isNaN(amountNum) || amountNum <= 0 || isNaN(weeksNum) || weeksNum <= 0) {
-                        showToast('Lütfen geçerli pozitif değerler girin.', 'error');
+                        showToast(t('payments.invalidAmount'), 'error');
                         return;
                     }
                     const { error } = await supabase.from('payments').insert({
@@ -341,13 +341,17 @@ function renderPaymentsView() {
 // ADIM 3.1 — ÖDEME CSV DIŞA AKTARMA
 // ---------------------------------------------------------------
 function downloadPaymentsCsv() {
-    const headers = ['Öğrenci', 'Durum', ...appState.courseDates.map(d => d.date)];
+    const headers = [t('payments.csvColStudent'), t('payments.csvColStatus'), ...appState.courseDates.map(d => d.date)];
     const rows = appState.students.map(s => {
         const studentPayments = appState.payments.filter(p => p.student_id === s.id);
         const totalWeeks = studentPayments.reduce((sum, p) => sum + (p.weeks_covered || 0), 0);
         const usedDates  = appState.courseDates.filter(d => !d.is_cancelled).length;
         const diff = totalWeeks - usedDates;
-        const status = diff < 0 ? `${Math.abs(diff)} ders borçlu` : diff === 0 ? 'Güncel' : `${diff} ders avans`;
+        const status = diff < 0
+            ? t('payments.csvStatusDebt', { n: Math.abs(diff) })
+            : diff === 0
+                ? t('payments.csvStatusCurrent')
+                : t('payments.csvStatusAdvance', { n: diff });
         const cells = appState.courseDates.map(d => {
             const paid = studentPayments.some(p => {
                 const startIdx = appState.courseDates.findIndex(cd => cd.id === p.start_date_id);

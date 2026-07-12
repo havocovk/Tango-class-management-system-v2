@@ -106,7 +106,13 @@ export const en = {
         editDateExists: 'This date already exists. Not added.',
         editDateInsertFail: 'Error while adding date: {msg}',
         deleteConfirm: 'This class will be deleted. All students, attendance and videos will also be removed. Are you sure?',
-        deleteFail: 'Error: {msg}'
+        deleteFail: 'Error: {msg}',
+        archiveFail: 'Action failed. Check your connection.',
+        archived: 'Class archived ✓',
+        unarchived: 'Class unarchived ✓',
+        archivedLabel: '(archived)',
+        duplicateName: 'A class with this name already exists.',
+        timeInvalid: 'Enter a valid time (e.g. 19:00)'
     },
 
     // --- New Class modal (index.html) ---
@@ -269,7 +275,16 @@ export const en = {
         paymentAdded: 'Payment added ✓',
         waDebtMsg: 'Hi {name}! Your lesson package for the {class} classes has run out 🙏 Feel free to call us for a new package.',
         waRemainMsg: 'Hi {name}! You have {n} lessons left in your {class} class package 🙏 Feel free to call us to renew.',
-        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        csvColStudent: 'Student',
+        csvColStatus: 'Status',
+        csvColAmount: 'Amount',
+        csvStatusDebt: '{n} lessons owed',
+        csvStatusCurrent: 'Up to date',
+        csvStatusAdvance: '{n} lessons in advance',
+        csvStatusPaid: 'Paid',
+        csvStatusPending: 'Pending',
+        invalidAmount: 'Please enter valid positive values.'
     },
 
     // --- Main Menu (main_menu.js) ---
@@ -355,7 +370,7 @@ export const en = {
         studentUpdated:     'Updated \u2713',
         studentUpdateFail:  'Could not update.',
         studentArchived:    'Student archived \u2713',
-        studentUnarchived:  'Unarchived \u2713',
+        studentUnarchived:  'Student unarchived \u2713',
         studentArchiveFail: 'Action failed.',
         studentDeleted:     'Student deleted \u2713',
         studentDeleteFail:  'Could not delete.',
@@ -391,7 +406,14 @@ export const en = {
         sessionNotFound:    'Session not found.',
         csvDownload:        'CSV Download',
         csvSuffixAtt:       'attendance',
-        csvSuffixPay:       'payments'
+        csvSuffixPay:       'payments',
+        csvColStudent:      'Student',
+        csvStatusPresent:   'Present',
+        csvStatusAbsent:    'Absent',
+        csvStatusSkipped:   'Excused',
+        csvStatusInactive:  'Inactive',
+        studentArchivedFull:  'Student archived ✓',
+        studentUnarchivedFull: 'Student unarchived ✓'
     },
 
     // --- Workshop Payments (workshop_payments.js) ---

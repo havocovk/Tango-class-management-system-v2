@@ -520,24 +520,25 @@ function downloadWorkshopPayCsv() {
     let headers, rows;
 
     if (mode === 'upfront') {
-        headers = ['Öğrenci', 'Durum', 'Tutar'];
+        headers = [t('payments.csvColStudent'), t('payments.csvColStatus'), t('payments.csvColAmount')];
         rows = visible.map(s => {
             const pay  = appState.wsPayments.find(p => p.student_id === s.id);
             const paid = !!pay;
             return [
                 s.name,
-                paid ? 'Ödendi' : 'Beklemede',
+                paid ? t('payments.csvStatusPaid') : t('payments.csvStatusPending'),
                 paid ? (Number(pay.amount).toLocaleString('tr-TR') + '₺') : ''
             ];
         });
     } else {
-        headers = ['Öğrenci', 'Durum', ...appState.wsDates.map(d => d.lesson_date)];
+        headers = [t('payments.csvColStudent'), t('payments.csvColStatus'), ...appState.wsDates.map(d => d.lesson_date)];
         rows = visible.map(s => {
             const d = calcWsStudentDebt(s);
             const status = d.remaining < 0
-                ? `${Math.abs(d.remaining)} ders borçlu`
-                : d.remaining === 0 ? 'Güncel'
-                : `${d.remaining} ders avans`;
+                ? t('payments.csvStatusDebt', { n: Math.abs(d.remaining) })
+                : d.remaining === 0
+                    ? t('payments.csvStatusCurrent')
+                    : t('payments.csvStatusAdvance', { n: d.remaining });
             const cells = appState.wsDates.map((date, dateIdx) => {
                 return checkWsIsPaid(s.id, dateIdx) ? '✓' : '';
             });

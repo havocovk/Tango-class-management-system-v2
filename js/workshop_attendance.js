@@ -816,8 +816,8 @@ async function toggleWorkshopWeekCancel(dateId, makeCancelled) {
 // Çalıştay Yoklama CSV Dışa Aktar
 // ---------------------------------------------------------------
 function downloadWorkshopAttCsv() {
-    const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', 'I': 'İnaktif', '': '' };
-    const headers = ['Öğrenci', ...appState.wsDates.map(d => d.lesson_date)];
+    const statusMap = { '+': t('workshopAtt.csvStatusPresent'), '-': t('workshopAtt.csvStatusAbsent'), 'S': t('workshopAtt.csvStatusSkipped'), 'I': t('workshopAtt.csvStatusInactive'), '': '' };
+    const headers = [t('workshopAtt.csvColStudent'), ...appState.wsDates.map(d => d.lesson_date)];
     const rows = appState.wsStudents
         .filter(s => !s.is_archived)
         .map(s => [

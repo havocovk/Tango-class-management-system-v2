@@ -68,7 +68,7 @@ function renderClassesView() {
             if (cls.is_archived) card.style.opacity = '0.5';
             const archiveIcon = cls.is_archived ? 'archive-restore' : 'archive';
             card.innerHTML = `
-                <div style="flex:1; cursor:pointer; font-weight:600;" data-id="${cls.id}">${escapeHtml(cls.name)}${cls.is_archived ? ' <span style="font-size:11px;color:var(--text-dim);">(arşiv)</span>' : ''}</div>
+                <div style="flex:1; cursor:pointer; font-weight:600;" data-id="${cls.id}">${escapeHtml(cls.name)}${cls.is_archived ? ` <span style="font-size:11px;color:var(--text-dim);">(${t('classes.archivedLabel')})</span>` : ''}</div>
                 <div style="display:flex; gap:15px;">
                     <span class="btn-icon-edit" data-id="${cls.id}" data-name="${escapeHtml(cls.name)}"><i data-lucide="pencil" size="20"></i></span>
                     <span class="btn-icon-archive" data-id="${cls.id}" style="color:var(--accent); cursor:pointer; display:inline-flex;"><i data-lucide="${archiveIcon}" size="20"></i></span>
@@ -121,10 +121,10 @@ async function archiveClass(classId, makeArchived) {
         .update({ is_archived: makeArchived })
         .eq('id', classId);
     if (error) {
-        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('classes.archiveFail'), 'error');
         return;
     }
-    showToast(makeArchived ? 'Sınıf arşivlendi ✓' : 'Sınıf arşivden çıkarıldı ✓', 'success');
+    showToast(makeArchived ? t('classes.archived') : t('classes.unarchived'), 'success');
 
     // ADIM 5.1 — Sınıf arşivlendiğinde "arşivi göster" modunu kapat ki
     // sınıf listeden hemen gizlensin.
@@ -182,7 +182,7 @@ function openNewClassModal() {
             return;
         }
         const duplicate = appState.classesList.some(c => c.name.trim().toLowerCase() === className.trim().toLowerCase());
-        if (duplicate) { showToast('Bu isimde bir sınıf zaten mevcut.', 'warning'); return; }
+        if (duplicate) { showToast(t('classes.duplicateName'), 'warning'); return; }
         const selectedISO = hiddenDatePicker.value;
         if (!selectedISO) {
             alert(t('classes.alertNoDate'));
@@ -194,7 +194,7 @@ function openNewClassModal() {
         let lessonTime = newClassTimeInput ? newClassTimeInput.value.trim() : '19:00';
         const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (!timePattern.test(lessonTime)) {
-            showToast('Geçerli bir saat girin (örn: 19:00)', 'warning');
+            showToast(t('classes.timeInvalid'), 'warning');
             return;
         }
 
@@ -292,7 +292,7 @@ async function editClass(classId, oldName) {
             const timeVal = editTimeInput.value.trim();
             const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
             if (timeVal && !timePattern.test(timeVal)) {
-                showToast('Geçerli bir saat girin (örn: 19:00)', 'warning');
+                showToast(t('classes.timeInvalid'), 'warning');
                 return;
             }
             updateData.lesson_time = timeVal || '19:00';
