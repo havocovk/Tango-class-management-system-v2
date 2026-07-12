@@ -92,7 +92,7 @@ export const tr = {
 
     // --- Sınıflar ekranı ---
     classes: {
-        header: 'Sınıf Listesi - {school}',
+        header: 'Sınıf Listesi',
         newClass: 'Yeni Sınıf',
         weeklyStats: 'Haftalık İstatistikler',
         empty: 'Henüz sınıf yok. Yeni sınıf ekleyin.',

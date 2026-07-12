@@ -92,7 +92,7 @@ export const en = {
 
     // --- Classes screen ---
     classes: {
-        header: 'Class List - {school}',
+        header: 'Class List',
         newClass: 'New Class',
         weeklyStats: 'Weekly Statistics',
         empty: 'No classes yet. Add a new class.',

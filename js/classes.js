@@ -35,8 +35,8 @@ function renderClassesView() {
     container.innerHTML = `
         <div class="view">
             <div class="back-link" id="backToSchoolsBtn">${escapeHtml(t('nav.backToSchools'))}</div>
-            <div class="main-title">${escapeHtml(t('nav.appTitle'))}</div>
-            <div class="sub-header">${escapeHtml(t('classes.header', { school: appState.currentSchoolName }))}</div>
+            <div class="main-title">${escapeHtml(appState.currentSchoolName)}</div>
+            <div class="sub-header">${escapeHtml(t('classes.header'))}</div>
             <div id="classesListContainer"></div>
             <div class="nav-buttons">
                 <button id="newClassBtn" class="btn-success"><i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('classes.newClass'))}</button>
