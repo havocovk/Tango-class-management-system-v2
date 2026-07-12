@@ -30,42 +30,45 @@ function renderMainMenu() {
 
     view.innerHTML = `
         <div class="main-menu-view">
-            <div class="main-menu-title">${escapeHtml(t('nav.appTitle'))}</div>
 
-            <div class="main-menu-grid">
+            <div class="main-menu-center">
+                <div class="main-menu-title">${escapeHtml(t('nav.appTitle'))}</div>
 
-                <!-- Grup Dersleri -->
-                <button class="menu-btn menu-btn-group" id="menuBtnGroup">
-                    <div class="menu-btn-icon">
-                        <i data-lucide="school" size="26"></i>
-                    </div>
-                    <span class="menu-btn-label">${escapeHtml(t('mainMenu.groupClasses'))}</span>
-                </button>
+                <div class="main-menu-grid">
 
-                <!-- Çalıştaylar -->
-                <button class="menu-btn menu-btn-workshop" id="menuBtnWorkshop">
-                    <div class="menu-btn-icon">
-                        <i data-lucide="layers" size="26"></i>
-                    </div>
-                    <span class="menu-btn-label">${escapeHtml(t('mainMenu.workshops'))}</span>
-                </button>
+                    <!-- Grup Dersleri -->
+                    <button class="menu-btn menu-btn-group" id="menuBtnGroup">
+                        <div class="menu-btn-icon">
+                            <i data-lucide="school" size="26"></i>
+                        </div>
+                        <span class="menu-btn-label">${escapeHtml(t('mainMenu.groupClasses'))}</span>
+                    </button>
 
-                <!-- Festivaller -->
-                <button class="menu-btn menu-btn-festival" id="menuBtnFestival">
-                    <div class="menu-btn-icon">
-                        <i data-lucide="music-2" size="26"></i>
-                    </div>
-                    <span class="menu-btn-label">${escapeHtml(t('mainMenu.festivals'))}</span>
-                </button>
+                    <!-- Çalıştaylar -->
+                    <button class="menu-btn menu-btn-workshop" id="menuBtnWorkshop">
+                        <div class="menu-btn-icon">
+                            <i data-lucide="layers" size="26"></i>
+                        </div>
+                        <span class="menu-btn-label">${escapeHtml(t('mainMenu.workshops'))}</span>
+                    </button>
 
-                <!-- Özel Dersler -->
-                <button class="menu-btn menu-btn-private" id="menuBtnPrivate">
-                    <div class="menu-btn-icon">
-                        <i data-lucide="user-round" size="26"></i>
-                    </div>
-                    <span class="menu-btn-label">${escapeHtml(t('mainMenu.privateLessons'))}</span>
-                </button>
+                    <!-- Festivaller -->
+                    <button class="menu-btn menu-btn-festival" id="menuBtnFestival">
+                        <div class="menu-btn-icon">
+                            <i data-lucide="music-2" size="26"></i>
+                        </div>
+                        <span class="menu-btn-label">${escapeHtml(t('mainMenu.festivals'))}</span>
+                    </button>
 
+                    <!-- Özel Dersler -->
+                    <button class="menu-btn menu-btn-private" id="menuBtnPrivate">
+                        <div class="menu-btn-icon">
+                            <i data-lucide="user-round" size="26"></i>
+                        </div>
+                        <span class="menu-btn-label">${escapeHtml(t('mainMenu.privateLessons'))}</span>
+                    </button>
+
+                </div>
             </div>
 
             <!-- Yedekle / Geri Yükle — ince outline butonlar -->
