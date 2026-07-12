@@ -193,7 +193,7 @@ export function handleWorkshopVideo(dateId) {
         if (titleEl) {
             titleEl.innerHTML = `
                 <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
-                <span style="vertical-align:middle;"> Ders Videosu</span>
+                <span style="vertical-align:middle;"> ${escapeHtml(t('modals.videoTitle'))}</span>
                 <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
             `;
         }
