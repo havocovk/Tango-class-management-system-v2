@@ -150,7 +150,12 @@ export const en = {
         statusPresent: 'Present',
         statusAbsent: 'Absent',
         statusSkipped: 'S — Joined later',
-        statusInactive: 'I — Inactive (temporary break)'
+        statusInactive: 'I — Inactive (temporary break)',
+        csvColStudent: 'Student',
+        csvStatusPresent: 'Present',
+        csvStatusAbsent: 'Absent',
+        csvStatusSkipped: 'Excused',
+        csvStatusInactive: 'Inactive'
     },
 
     // --- Attendance data actions (attendanceActions.js) toasts ---
@@ -170,7 +175,12 @@ export const en = {
         attUpdateFail: "Couldn't update attendance. Check your connection.",
         weekCancelled: 'Lesson cancelled ✓',
         weekUncancelled: 'Cancellation undone ✓',
-        weekToggleFail: 'Action failed. Check your connection.'
+        weekToggleFail: 'Action failed. Check your connection.',
+        archiveFail: 'Action failed. Check your connection.',
+        studentArchived: 'Student archived ✓',
+        studentUnarchived: 'Student unarchived ✓',
+        archiveTooltipUnarchive: 'Unarchive',
+        archiveTooltipArchive: 'Archive'
     },
 
     // --- Attendance modals (attendanceModals.js) ---
@@ -552,6 +562,25 @@ export const en = {
         videoDeleted:       'Video deleted \u2713',
         videoDeleteConfirm: 'Are you sure you want to delete this video?',
         videoTitle:         'Private Lesson Video'
+    },
+
+    // --- Country list (festivals.js) ---
+    countries: {
+        list: [
+            'Germany','United States','Argentina','Australia','Austria',
+            'Bangladesh','Belgium','United Arab Emirates','United Kingdom',
+            'Brazil','Bulgaria','Czech Republic','China','Denmark','Indonesia',
+            'Estonia','Philippines','Finland','France','South Africa','South Korea',
+            'India','Netherlands','Hong Kong','Croatia','Indonesia','Ireland',
+            'Spain','Israel','Sweden','Switzerland','Italy','Japan','Canada',
+            'Kenya','Colombia','Cyprus','Latvia','Lithuania','Luxembourg',
+            'Malaysia','Malta','Hungary','Morocco','Mexico','Egypt','Nigeria',
+            'Norway','Pakistan','Peru','Poland','Portugal','Romania','Russia',
+            'Singapore','Serbia','Slovakia','Slovenia','Saudi Arabia',
+            'Chile','Taiwan','Thailand','Turkey','Ukraine','Uruguay',
+            'Vietnam','New Zealand','Greece'
+        ],
+        videoPlatformOther: 'Other'
     },
 
     // --- Weekly statistics / attendance chart ---

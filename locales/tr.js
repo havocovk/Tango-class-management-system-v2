@@ -150,7 +150,12 @@ export const tr = {
         statusPresent: 'Geldi',
         statusAbsent: 'Gelmedi',
         statusSkipped: 'S — Sonradan katıldı',
-        statusInactive: 'I — İnaktif (geçici ara)'
+        statusInactive: 'I — İnaktif (geçici ara)',
+        csvColStudent: 'Öğrenci',
+        csvStatusPresent: 'Geldi',
+        csvStatusAbsent: 'Gelmedi',
+        csvStatusSkipped: 'Mazeretli',
+        csvStatusInactive: 'İnaktif'
     },
 
     // --- Yoklama veri işlemleri (attendanceActions.js) toast'ları ---
@@ -170,7 +175,12 @@ export const tr = {
         attUpdateFail: 'Yoklama güncellenemedi. Bağlantıyı kontrol edin.',
         weekCancelled: 'Ders iptal edildi ✓',
         weekUncancelled: 'İptal geri alındı ✓',
-        weekToggleFail: 'İşlem başarısız. Bağlantıyı kontrol edin.'
+        weekToggleFail: 'İşlem başarısız. Bağlantıyı kontrol edin.',
+        archiveFail: 'İşlem başarısız. Bağlantıyı kontrol edin.',
+        studentArchived: 'Öğrenci arşivlendi ✓',
+        studentUnarchived: 'Öğrenci arşivden çıkarıldı ✓',
+        archiveTooltipUnarchive: 'Arşivden çıkar',
+        archiveTooltipArchive: 'Arşivle'
     },
 
     // --- Yoklama modalları (attendanceModals.js) ---
@@ -552,6 +562,25 @@ export const tr = {
         videoDeleted:       'Video silindi \u2713',
         videoDeleteConfirm: 'Bu videoyu silmek istediğinizden emin misiniz?',
         videoTitle:         'Özel Ders Videosu'
+    },
+
+    // --- Ülke listesi (festivals.js) ---
+    countries: {
+        list: [
+            'Almanya','Amerika Birleşik Devletleri','Arjantin','Avustralya','Avusturya',
+            'Bangladeş','Belçika','Birleşik Arap Emirlikleri','Birleşik Krallık',
+            'Brezilya','Bulgaristan','Çekya','Çin','Danimarka','Endonezya',
+            'Estonya','Filipinler','Finlandiya','Fransa','Güney Afrika','Güney Kore',
+            'Hindistan','Hollanda','Hong Kong','Hırvatistan','İndonezya','İrlanda',
+            'İspanya','İsrail','İsveç','İsviçre','İtalya','Japonya','Kanada',
+            'Kenya','Kolombiya','Kıbrıs','Letonya','Litvanya','Lüksemburg',
+            'Malezya','Malta','Macaristan','Fas','Meksika','Mısır','Nijerya',
+            'Norveç','Pakistan','Peru','Polonya','Portekiz','Romanya','Rusya',
+            'Singapur','Sırbistan','Slovakya','Slovenya','Suudi Arabistan',
+            'Şili','Tayvan','Tayland','Türkiye','Ukrayna','Uruguay',
+            'Vietnam','Yeni Zelanda','Yunanistan'
+        ],
+        videoPlatformOther: 'Diğer'
     },
 
     // --- Haftalık istatistikler / katılım grafiği ---

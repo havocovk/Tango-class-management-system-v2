@@ -161,10 +161,10 @@ export async function archiveStudent(studentId, makeArchived) {
         .update({ is_archived: makeArchived })
         .eq('id', studentId);
     if (error) {
-        showToast('İşlem başarısız. Bağlantıyı kontrol edin.', 'error');
+        showToast(t('actions.archiveFail'), 'error');
         return;
     }
-    showToast(makeArchived ? 'Öğrenci arşivlendi ✓' : 'Öğrenci arşivden çıkarıldı ✓', 'success');
+    showToast(makeArchived ? t('actions.studentArchived') : t('actions.studentUnarchived'), 'success');
 
     // ADIM 5.1 — Bir öğrenci arşivlendiğinde "arşivi göster" modunu kapat
     // ki öğrenci listeden hemen gizlensin. Arşivden çıkarıldığında ise

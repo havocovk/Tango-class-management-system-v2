@@ -422,9 +422,9 @@ function goBackToClasses() {
 // ADIM 3.1 — YOKLAMA CSV DIŞA AKTARMA
 // ---------------------------------------------------------------
 function downloadAttendanceCsv() {
-    const headers = ['Öğrenci', ...appState.courseDates.map(d => d.date)];
+    const headers = [t('attendance.csvColStudent'), ...appState.courseDates.map(d => d.date)];
     const rows = appState.students.map(s => {
-        const statusMap = { '+': 'Geldi', '-': 'Gelmedi', 'S': 'Mazeretli', 'I': 'İnaktif', '': '' };
+        const statusMap = { '+': t('attendance.csvStatusPresent'), '-': t('attendance.csvStatusAbsent'), 'S': t('attendance.csvStatusSkipped'), 'I': t('attendance.csvStatusInactive'), '': '' };
         return [
             s.name,
             ...appState.courseDates.map(d => statusMap[appState.attendanceMap[`${s.id}_${d.id}`] || ''] || '')

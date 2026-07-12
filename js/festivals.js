@@ -13,50 +13,100 @@ import { appState } from './state.js';
 
 // ---------------------------------------------------------------
 // ÜLKE → PARA BİRİMİ EŞLEŞTİRME TABLOSU
+// Anahtarlar dile bağımsız sıra indeksine (0-based) göre çalışır.
+// Her iki dildeki ülke listesi t('countries.list') ile gelir;
+// sıra indeksi her iki dilde de aynıdır — para birimi buradan bulunur.
 // ---------------------------------------------------------------
-export const COUNTRY_CURRENCY = {
-    'Türkiye': '₺ TRY', 'Amerika Birleşik Devletleri': '$ USD',
-    'Almanya': '€ EUR', 'Fransa': '€ EUR', 'İtalya': '€ EUR',
-    'İspanya': '€ EUR', 'Hollanda': '€ EUR', 'Belçika': '€ EUR',
-    'Avusturya': '€ EUR', 'Portekiz': '€ EUR', 'Yunanistan': '€ EUR',
-    'Finlandiya': '€ EUR', 'İrlanda': '€ EUR', 'Lüksemburg': '€ EUR',
-    'Malta': '€ EUR', 'Kıbrıs': '€ EUR', 'Slovenya': '€ EUR',
-    'Slovakya': '€ EUR', 'Estonya': '€ EUR', 'Letonya': '€ EUR',
-    'Litvanya': '€ EUR', 'Hırvatistan': '€ EUR',
-    'Birleşik Krallık': '£ GBP', 'Rusya': '₽ RUB',
-    'Japonya': '¥ JPY', 'Çin': '¥ CNY', 'Güney Kore': '₩ KRW',
-    'Hindistan': '₹ INR', 'Brezilya': 'R$ BRL', 'Kanada': 'C$ CAD',
-    'Avustralya': 'A$ AUD', 'İsviçre': 'Fr CHF', 'İsveç': 'kr SEK',
-    'Norveç': 'kr NOK', 'Danimarka': 'kr DKK', 'Polonya': 'zł PLN',
-    'Çekya': 'Kč CZK', 'Macaristan': 'Ft HUF', 'Romanya': 'lei RON',
-    'Bulgaristan': 'лв BGN', 'Sırbistan': 'дин RSD', 'Ukrayna': '₴ UAH',
-    'Arjantin': '$ ARS', 'Meksika': '$ MXN', 'Kolombiya': '$ COP',
-    'Şili': '$ CLP', 'Peru': 'S/ PEN', 'Uruguay': '$ UYU',
-    'Güney Afrika': 'R ZAR', 'Mısır': '£ EGP', 'Fas': 'د.م. MAD',
-    'Nijerya': '₦ NGN', 'Kenya': 'KSh KES',
-    'Suudi Arabistan': 'ر.س SAR', 'Birleşik Arap Emirlikleri': 'د.إ AED',
-    'İsrail': '₪ ILS', 'Tayland': '฿ THB', 'Singapur': 'S$ SGD',
-    'Malezya': 'RM MYR', 'Endonezya': 'Rp IDR', 'Filipinler': '₱ PHP',
-    'Vietnam': '₫ VND', 'Pakistan': '₨ PKR', 'Bangladeş': '৳ BDT',
-    'Yeni Zelanda': 'NZ$ NZD', 'Hong Kong': 'HK$ HKD',
-    'Tayvan': 'NT$ TWD',
-};
-
-// Ülke listesi — dropdown için alfabetik sırada
-const COUNTRIES = [
-    'Almanya','Amerika Birleşik Devletleri','Arjantin','Avustralya','Avusturya',
-    'Bangladeş','Belçika','Birleşik Arap Emirlikleri','Birleşik Krallık',
-    'Brezilya','Bulgaristan','Çekya','Çin','Danimarka','Endonezya',
-    'Estonya','Filipinler','Finlandiya','Fransa','Güney Afrika','Güney Kore',
-    'Hindistan','Hollanda','Hong Kong','Hırvatistan','İndonezya','İrlanda',
-    'İspanya','İsrail','İsveç','İsviçre','İtalya','Japonya','Kanada',
-    'Kenya','Kolombiya','Kıbrıs','Letonya','Litvanya','Lüksemburg',
-    'Malezya','Malta','Macaristan','Fas','Meksika','Mısır','Nijerya',
-    'Norveç','Pakistan','Peru','Polonya','Portekiz','Romanya','Rusya',
-    'Singapur','Sırbistan','Slovakya','Slovenya','Suudi Arabistan',
-    'Şili','Tayvan','Tayland','Türkiye','Ukrayna','Uruguay',
-    'Vietnam','Yeni Zelanda','Yunanistan',
+const CURRENCY_BY_INDEX = [
+    '€ EUR',  // 0  Almanya / Germany
+    '$ USD',  // 1  Amerika Birleşik Devletleri / United States
+    '$ ARS',  // 2  Arjantin / Argentina
+    'A$ AUD', // 3  Avustralya / Australia
+    '€ EUR',  // 4  Avusturya / Austria
+    '৳ BDT',  // 5  Bangladeş / Bangladesh
+    '€ EUR',  // 6  Belçika / Belgium
+    'د.إ AED',// 7  Birleşik Arap Emirlikleri / United Arab Emirates
+    '£ GBP',  // 8  Birleşik Krallık / United Kingdom
+    'R$ BRL', // 9  Brezilya / Brazil
+    'лв BGN', // 10 Bulgaristan / Bulgaria
+    'Kč CZK', // 11 Çekya / Czech Republic
+    '¥ CNY',  // 12 Çin / China
+    'kr DKK', // 13 Danimarka / Denmark
+    'Rp IDR', // 14 Endonezya / Indonesia
+    '€ EUR',  // 15 Estonya / Estonia
+    '₱ PHP',  // 16 Filipinler / Philippines
+    '€ EUR',  // 17 Finlandiya / Finland
+    '€ EUR',  // 18 Fransa / France
+    'R ZAR',  // 19 Güney Afrika / South Africa
+    '₩ KRW',  // 20 Güney Kore / South Korea
+    '₹ INR',  // 21 Hindistan / India
+    '€ EUR',  // 22 Hollanda / Netherlands
+    'HK$ HKD',// 23 Hong Kong
+    '€ EUR',  // 24 Hırvatistan / Croatia
+    'Rp IDR', // 25 İndonezya / Indonesia (duplicate entry kept for list parity)
+    '€ EUR',  // 26 İrlanda / Ireland
+    '€ EUR',  // 27 İspanya / Spain
+    '₪ ILS',  // 28 İsrail / Israel
+    'kr SEK', // 29 İsveç / Sweden
+    'Fr CHF', // 30 İsviçre / Switzerland
+    '€ EUR',  // 31 İtalya / Italy
+    '¥ JPY',  // 32 Japonya / Japan
+    'C$ CAD', // 33 Kanada / Canada
+    'KSh KES',// 34 Kenya
+    '$ COP',  // 35 Kolombiya / Colombia
+    '€ EUR',  // 36 Kıbrıs / Cyprus
+    '€ EUR',  // 37 Letonya / Latvia
+    '€ EUR',  // 38 Litvanya / Lithuania
+    '€ EUR',  // 39 Lüksemburg / Luxembourg
+    'RM MYR', // 40 Malezya / Malaysia
+    '€ EUR',  // 41 Malta
+    'Ft HUF', // 42 Macaristan / Hungary
+    'د.م. MAD',// 43 Fas / Morocco
+    '$ MXN',  // 44 Meksika / Mexico
+    '£ EGP',  // 45 Mısır / Egypt
+    '₦ NGN',  // 46 Nijerya / Nigeria
+    'kr NOK', // 47 Norveç / Norway
+    '₨ PKR',  // 48 Pakistan
+    'S/ PEN', // 49 Peru
+    'zł PLN', // 50 Polonya / Poland
+    '€ EUR',  // 51 Portekiz / Portugal
+    'lei RON',// 52 Romanya / Romania
+    '₽ RUB',  // 53 Rusya / Russia
+    'S$ SGD', // 54 Singapur / Singapore
+    'дин RSD',// 55 Sırbistan / Serbia
+    '€ EUR',  // 56 Slovakya / Slovakia
+    '€ EUR',  // 57 Slovenya / Slovenia
+    'ر.س SAR',// 58 Suudi Arabistan / Saudi Arabia
+    '$ CLP',  // 59 Şili / Chile
+    'NT$ TWD',// 60 Tayvan / Taiwan
+    '฿ THB',  // 61 Tayland / Thailand
+    '₺ TRY',  // 62 Türkiye / Turkey
+    '₴ UAH',  // 63 Ukrayna / Ukraine
+    '$ UYU',  // 64 Uruguay
+    '₫ VND',  // 65 Vietnam
+    'NZ$ NZD',// 66 Yeni Zelanda / New Zealand
+    '€ EUR',  // 67 Yunanistan / Greece
 ];
+
+// Seçilen ülke ismine karşılık gelen para birimini döndürür.
+// Ülke ismi hangi dilde olursa olsun, listedeki sıra indeksi aynıdır.
+export function getCurrencyForCountry(countryName) {
+    const list = t('countries.list');
+    const idx  = list.indexOf(countryName);
+    if (idx >= 0 && idx < CURRENCY_BY_INDEX.length) return CURRENCY_BY_INDEX[idx];
+    return '₺ TRY';
+}
+
+// Geriye dönük uyumluluk için COUNTRY_CURRENCY export'u
+// (festival_classes.js bu adla import ediyor — o dosyayı da güncelleyeceğiz)
+export const COUNTRY_CURRENCY = new Proxy({}, {
+    get(_, countryName) { return getCurrencyForCountry(countryName); }
+});
+
+// Ülke listesi — her zaman aktif dilden alınır
+function getCountries() {
+    return t('countries.list');
+}
 
 // ---------------------------------------------------------------
 // Lokasyon string'ini şehir ve ülkeye ayır: "Paris, Fransa"
@@ -84,7 +134,7 @@ function buildLocation(city, country) {
 // Ülke dropdown HTML'i üret
 // ---------------------------------------------------------------
 function countrySelectHtml(selectedCountry) {
-    const opts = COUNTRIES.map(c =>
+    const opts = getCountries().map(c =>
         `<option value="${escapeHtml(c)}" ${c === selectedCountry ? 'selected' : ''}>${escapeHtml(c)}</option>`
     ).join('');
     return `<select id="festCountry"

@@ -90,7 +90,7 @@ export function openStudentActionModal(studentId, currentName) {
         archiveBtn.innerHTML = isArchived
             ? '<i data-lucide="archive-restore" size="22"></i>'
             : '<i data-lucide="archive" size="22"></i>';
-        archiveBtn.title = isArchived ? 'Arşivden çıkar' : 'Arşivle';
+        archiveBtn.title = isArchived ? t('actions.archiveTooltipUnarchive') : t('actions.archiveTooltipArchive');
         if (window.lucide) window.lucide.createIcons();
         archiveBtn.onclick = async (e) => {
             e.stopPropagation();

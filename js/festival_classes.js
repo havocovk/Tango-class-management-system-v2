@@ -14,7 +14,7 @@ import { appState } from './state.js';
 // VIDEO PLATFORM TESPİTİ
 // ---------------------------------------------------------------
 function detectVideoPlatform(url) {
-    if (!url) return { name: 'Other', color: '#94a3b8', canEmbed: false };
+    if (!url) return { name: t('countries.videoPlatformOther'), color: '#94a3b8', canEmbed: false };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be'))
         return { name: 'YouTube', color: '#FF0000', canEmbed: true };
@@ -28,7 +28,7 @@ function detectVideoPlatform(url) {
         return { name: 'Facebook', color: '#1877F2', canEmbed: false };
     if (lower.includes('tiktok.com'))
         return { name: 'TikTok', color: '#010101', canEmbed: false };
-    return { name: 'Other', color: '#94a3b8', canEmbed: false };
+    return { name: t('countries.videoPlatformOther'), color: '#94a3b8', canEmbed: false };
 }
 
 // YouTube / Vimeo URL'sini embed URL'sine çevir

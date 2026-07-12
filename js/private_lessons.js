@@ -61,7 +61,7 @@ function ensureModal(id) {
 }
 
 function detectVideoPlatform(url) {
-    if (!url) return { name: 'Other', color: '#94a3b8' };
+    if (!url) return { name: t('countries.videoPlatformOther'), color: '#94a3b8' };
     const lower = url.toLowerCase();
     if (lower.includes('youtube.com') || lower.includes('youtu.be'))
         return { name: 'YouTube', color: '#FF0000' };
@@ -75,7 +75,7 @@ function detectVideoPlatform(url) {
         return { name: 'Facebook', color: '#1877F2' };
     if (lower.includes('tiktok.com'))
         return { name: 'TikTok', color: '#010101' };
-    return { name: 'Other', color: '#94a3b8' };
+    return { name: t('countries.videoPlatformOther'), color: '#94a3b8' };
 }
 
 // ---------------------------------------------------------------
