@@ -149,7 +149,7 @@ const CURRENCY_BY_INDEX = [
     '₦ NGN',  // 128  Nijerya / Nigeria
     'kr NOK',  // 129  Norveç / Norway
     'Fr XAF',  // 130  Orta Afrika Cumhuriyeti / Central African Republic
-    'so'm UZS',  // 131  Özbekistan / Uzbekistan
+    "so'm UZS",  // 131  Özbekistan / Uzbekistan
     '₨ PKR',  // 132  Pakistan / Pakistan
     '$ USD',  // 133  Palau / Palau
     'B/. PAB',  // 134  Panama / Panama
