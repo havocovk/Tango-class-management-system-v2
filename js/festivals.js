@@ -18,74 +18,194 @@ import { appState } from './state.js';
 // sıra indeksi her iki dilde de aynıdır — para birimi buradan bulunur.
 // ---------------------------------------------------------------
 const CURRENCY_BY_INDEX = [
-    '€ EUR',  // 0  Almanya / Germany
-    '$ USD',  // 1  Amerika Birleşik Devletleri / United States
-    '$ ARS',  // 2  Arjantin / Argentina
-    'A$ AUD', // 3  Avustralya / Australia
-    '€ EUR',  // 4  Avusturya / Austria
-    '৳ BDT',  // 5  Bangladeş / Bangladesh
-    '€ EUR',  // 6  Belçika / Belgium
-    'د.إ AED',// 7  Birleşik Arap Emirlikleri / United Arab Emirates
-    '£ GBP',  // 8  Birleşik Krallık / United Kingdom
-    'R$ BRL', // 9  Brezilya / Brazil
-    'лв BGN', // 10 Bulgaristan / Bulgaria
-    'Kč CZK', // 11 Çekya / Czech Republic
-    '¥ CNY',  // 12 Çin / China
-    'kr DKK', // 13 Danimarka / Denmark
-    'Rp IDR', // 14 Endonezya / Indonesia
-    '€ EUR',  // 15 Estonya / Estonia
-    '₱ PHP',  // 16 Filipinler / Philippines
-    '€ EUR',  // 17 Finlandiya / Finland
-    '€ EUR',  // 18 Fransa / France
-    'R ZAR',  // 19 Güney Afrika / South Africa
-    '₩ KRW',  // 20 Güney Kore / South Korea
-    '₹ INR',  // 21 Hindistan / India
-    '€ EUR',  // 22 Hollanda / Netherlands
-    'HK$ HKD',// 23 Hong Kong
-    '€ EUR',  // 24 Hırvatistan / Croatia
-    'Rp IDR', // 25 İndonezya / Indonesia (duplicate entry kept for list parity)
-    '€ EUR',  // 26 İrlanda / Ireland
-    '€ EUR',  // 27 İspanya / Spain
-    '₪ ILS',  // 28 İsrail / Israel
-    'kr SEK', // 29 İsveç / Sweden
-    'Fr CHF', // 30 İsviçre / Switzerland
-    '€ EUR',  // 31 İtalya / Italy
-    '¥ JPY',  // 32 Japonya / Japan
-    'C$ CAD', // 33 Kanada / Canada
-    'KSh KES',// 34 Kenya
-    '$ COP',  // 35 Kolombiya / Colombia
-    '€ EUR',  // 36 Kıbrıs / Cyprus
-    '€ EUR',  // 37 Letonya / Latvia
-    '€ EUR',  // 38 Litvanya / Lithuania
-    '€ EUR',  // 39 Lüksemburg / Luxembourg
-    'RM MYR', // 40 Malezya / Malaysia
-    '€ EUR',  // 41 Malta
-    'Ft HUF', // 42 Macaristan / Hungary
-    'د.م. MAD',// 43 Fas / Morocco
-    '$ MXN',  // 44 Meksika / Mexico
-    '£ EGP',  // 45 Mısır / Egypt
-    '₦ NGN',  // 46 Nijerya / Nigeria
-    'kr NOK', // 47 Norveç / Norway
-    '₨ PKR',  // 48 Pakistan
-    'S/ PEN', // 49 Peru
-    'zł PLN', // 50 Polonya / Poland
-    '€ EUR',  // 51 Portekiz / Portugal
-    'lei RON',// 52 Romanya / Romania
-    '₽ RUB',  // 53 Rusya / Russia
-    'S$ SGD', // 54 Singapur / Singapore
-    'дин RSD',// 55 Sırbistan / Serbia
-    '€ EUR',  // 56 Slovakya / Slovakia
-    '€ EUR',  // 57 Slovenya / Slovenia
-    'ر.س SAR',// 58 Suudi Arabistan / Saudi Arabia
-    '$ CLP',  // 59 Şili / Chile
-    'NT$ TWD',// 60 Tayvan / Taiwan
-    '฿ THB',  // 61 Tayland / Thailand
-    '₺ TRY',  // 62 Türkiye / Turkey
-    '₴ UAH',  // 63 Ukrayna / Ukraine
-    '$ UYU',  // 64 Uruguay
-    '₫ VND',  // 65 Vietnam
-    'NZ$ NZD',// 66 Yeni Zelanda / New Zealand
-    '€ EUR',  // 67 Yunanistan / Greece
+    'Af AFN',  //   0  Afganistan / Afghanistan
+    '€ EUR',  //   1  Almanya / Germany
+    '$ USD',  //   2  Amerika Birleşik Devletleri / United States
+    '€ EUR',  //   3  Andorra / Andorra
+    'Kz AOA',  //   4  Angola / Angola
+    '$ XCD',  //   5  Antigua ve Barbuda / Antigua and Barbuda
+    '$ ARS',  //   6  Arjantin / Argentina
+    'L ALL',  //   7  Arnavutluk / Albania
+    'A$ AUD',  //   8  Avustralya / Australia
+    '€ EUR',  //   9  Avusturya / Austria
+    '₼ AZN',  //  10  Azerbaycan / Azerbaijan
+    '$ BSD',  //  11  Bahamalar / Bahamas
+    'BD BHD',  //  12  Bahreyn / Bahrain
+    '৳ BDT',  //  13  Bangladeş / Bangladesh
+    '$ BBD',  //  14  Barbados / Barbados
+    '€ EUR',  //  15  Belçika / Belgium
+    '$ BZD',  //  16  Belize / Belize
+    'Fr XOF',  //  17  Benin / Benin
+    'Br BYN',  //  18  Beyaz Rusya / Belarus
+    'Nu BTN',  //  19  Bhutan / Bhutan
+    'د.إ AED',  //  20  Birleşik Arap Emirlikleri / United Arab Emirates
+    '£ GBP',  //  21  Birleşik Krallık / United Kingdom
+    'Bs BOB',  //  22  Bolivya / Bolivia
+    'KM BAM',  //  23  Bosna Hersek / Bosnia and Herzegovina
+    'P BWP',  //  24  Botsvana / Botswana
+    'R$ BRL',  //  25  Brezilya / Brazil
+    'B$ BND',  //  26  Brunei / Brunei
+    'лв BGN',  //  27  Bulgaristan / Bulgaria
+    'Fr XOF',  //  28  Burkina Faso / Burkina Faso
+    'Fr BIF',  //  29  Burundi / Burundi
+    'Fr DJF',  //  30  Cibuti / Djibouti
+    'د.ج DZD',  //  31  Cezayir / Algeria
+    'Fr XAF',  //  32  Çad / Chad
+    'Kč CZK',  //  33  Çekya / Czech Republic
+    '¥ CNY',  //  34  Çin / China
+    'kr DKK',  //  35  Danimarka / Denmark
+    'Fr CDF',  //  36  Demokratik Kongo Cumhuriyeti / Democratic Republic of the Congo
+    'RD$ DOP',  //  37  Dominik Cumhuriyeti / Dominican Republic
+    '$ XCD',  //  38  Dominika / Dominica
+    '$ USD',  //  39  Ekvador / Ecuador
+    'Fr XAF',  //  40  Ekvator Ginesi / Equatorial Guinea
+    '$ USD',  //  41  El Salvador / El Salvador
+    'Rp IDR',  //  42  Endonezya / Indonesia
+    'Nfk ERN',  //  43  Eritre / Eritrea
+    '֏ AMD',  //  44  Ermenistan / Armenia
+    '€ EUR',  //  45  Estonya / Estonia
+    'Br ETB',  //  46  Etiyopya / Ethiopia
+    'د.م. MAD',  //  47  Fas / Morocco
+    '$ FJD',  //  48  Fiji / Fiji
+    '₱ PHP',  //  49  Filipinler / Philippines
+    '€ EUR',  //  50  Finlandiya / Finland
+    '€ EUR',  //  51  Fransa / France
+    'Fr XAF',  //  52  Gabon / Gabon
+    'D GMD',  //  53  Gambiya / Gambia
+    'GH₵ GHS',  //  54  Gana / Ghana
+    '$ XCD',  //  55  Grenada / Grenada
+    'Q GTQ',  //  56  Guatemala / Guatemala
+    'R ZAR',  //  57  Güney Afrika / South Africa
+    '₩ KRW',  //  58  Güney Kore / South Korea
+    '£ SSP',  //  59  Güney Sudan / South Sudan
+    '₾ GEL',  //  60  Gürcistan / Georgia
+    'Fr GNF',  //  61  Gine / Guinea
+    'Fr XOF',  //  62  Gine-Bissau / Guinea-Bissau
+    '$ GYD',  //  63  Guyana / Guyana
+    'G HTG',  //  64  Haiti / Haiti
+    '₹ INR',  //  65  Hindistan / India
+    '€ EUR',  //  66  Hollanda / Netherlands
+    'L HNL',  //  67  Honduras / Honduras
+    'HK$ HKD',  //  68  Hong Kong / Hong Kong
+    '€ EUR',  //  69  Hırvatistan / Croatia
+    'ع.د IQD',  //  70  Irak / Iraq
+    '﷼ IRR',  //  71  İran / Iran
+    '€ EUR',  //  72  İrlanda / Ireland
+    '€ EUR',  //  73  İspanya / Spain
+    '₪ ILS',  //  74  İsrail / Israel
+    'kr SEK',  //  75  İsveç / Sweden
+    'Fr CHF',  //  76  İsviçre / Switzerland
+    '€ EUR',  //  77  İtalya / Italy
+    'kr ISK',  //  78  İzlanda / Iceland
+    '$ JMD',  //  79  Jamaika / Jamaica
+    '¥ JPY',  //  80  Japonya / Japan
+    '₭ KHR',  //  81  Kamboçya / Cambodia
+    'Fr XAF',  //  82  Kamerun / Cameroon
+    'C$ CAD',  //  83  Kanada / Canada
+    '€ EUR',  //  84  Karadağ / Montenegro
+    'ر.ق QAR',  //  85  Katar / Qatar
+    '₸ KZT',  //  86  Kazakistan / Kazakhstan
+    'KSh KES',  //  87  Kenya / Kenya
+    '€ EUR',  //  88  Kıbrıs / Cyprus
+    'с KGS',  //  89  Kırgızistan / Kyrgyzstan
+    'A$ AUD',  //  90  Kiribati / Kiribati
+    '$ COP',  //  91  Kolombiya / Colombia
+    'Fr KMF',  //  92  Komorlar / Comoros
+    'Fr XAF',  //  93  Kongo / Congo
+    '€ EUR',  //  94  Kosova / Kosovo
+    '₡ CRC',  //  95  Kosta Rika / Costa Rica
+    '₱ CUP',  //  96  Küba / Cuba
+    'KD KWD',  //  97  Kuveyt / Kuwait
+    '₭ LAK',  //  98  Laos / Laos
+    'L LSL',  //  99  Lesoto / Lesotho
+    '€ EUR',  // 100  Letonya / Latvia
+    '$ LRD',  // 101  Liberya / Liberia
+    'LD LYD',  // 102  Libya / Libya
+    'Fr CHF',  // 103  Liechtenstein / Liechtenstein
+    '€ EUR',  // 104  Litvanya / Lithuania
+    '€ EUR',  // 105  Lüksemburg / Luxembourg
+    'Ft HUF',  // 106  Macaristan / Hungary
+    'Ar MGA',  // 107  Madagaskar / Madagascar
+    'MK MWK',  // 108  Malavi / Malawi
+    'Rf MVR',  // 109  Maldivler / Maldives
+    'RM MYR',  // 110  Malezya / Malaysia
+    'Fr XOF',  // 111  Mali / Mali
+    '€ EUR',  // 112  Malta / Malta
+    '$ USD',  // 113  Marshall Adaları / Marshall Islands
+    'UM MRU',  // 114  Moritanya / Mauritania
+    '₨ MUR',  // 115  Moritius / Mauritius
+    'MT MZN',  // 116  Mozambik / Mozambique
+    '$ MXN',  // 117  Meksika / Mexico
+    '$ USD',  // 118  Mikronezya / Micronesia
+    '₮ MNT',  // 119  Moğolistan / Mongolia
+    'L MDL',  // 120  Moldova / Moldova
+    '€ EUR',  // 121  Monako / Monaco
+    'K MMK',  // 122  Myanmar / Myanmar
+    '$ NAD',  // 123  Namibya / Namibia
+    'A$ AUD',  // 124  Nauru / Nauru
+    'रू NPR',  // 125  Nepal / Nepal
+    'C$ NIO',  // 126  Nikaragua / Nicaragua
+    'Fr XOF',  // 127  Nijer / Niger
+    '₦ NGN',  // 128  Nijerya / Nigeria
+    'kr NOK',  // 129  Norveç / Norway
+    'Fr XAF',  // 130  Orta Afrika Cumhuriyeti / Central African Republic
+    'so'm UZS',  // 131  Özbekistan / Uzbekistan
+    '₨ PKR',  // 132  Pakistan / Pakistan
+    '$ USD',  // 133  Palau / Palau
+    'B/. PAB',  // 134  Panama / Panama
+    'K PGK',  // 135  Papua Yeni Gine / Papua New Guinea
+    '₲ PYG',  // 136  Paraguay / Paraguay
+    'S/ PEN',  // 137  Peru / Peru
+    'zł PLN',  // 138  Polonya / Poland
+    '€ EUR',  // 139  Portekiz / Portugal
+    'lei RON',  // 140  Romanya / Romania
+    'Fr RWF',  // 141  Ruanda / Rwanda
+    '₽ RUB',  // 142  Rusya / Russia
+    '$ XCD',  // 143  Saint Kitts ve Nevis / Saint Kitts and Nevis
+    '$ XCD',  // 144  Saint Lucia / Saint Lucia
+    '$ XCD',  // 145  Saint Vincent ve Grenadinler / Saint Vincent and the Grenadines
+    'T WST',  // 146  Samoa / Samoa
+    '€ EUR',  // 147  San Marino / San Marino
+    'Db STN',  // 148  Sao Tome ve Principe / Sao Tome and Principe
+    'Fr XOF',  // 149  Senegal / Senegal
+    '₨ SCR',  // 150  Seyşeller / Seychelles
+    'Le SLL',  // 151  Sierra Leone / Sierra Leone
+    'S$ SGD',  // 152  Singapur / Singapore
+    '€ EUR',  // 153  Slovakya / Slovakia
+    '€ EUR',  // 154  Slovenya / Slovenia
+    '$ SBD',  // 155  Solomon Adaları / Solomon Islands
+    'Sh SOS',  // 156  Somali / Somalia
+    '₨ LKR',  // 157  Sri Lanka / Sri Lanka
+    '£ SDG',  // 158  Sudan / Sudan
+    '$ SRD',  // 159  Surinam / Suriname
+    '£ SYP',  // 160  Suriye / Syria
+    'ر.س SAR',  // 161  Suudi Arabistan / Saudi Arabia
+    'дин RSD',  // 162  Sırbistan / Serbia
+    'L SZL',  // 163  Svaziland / Eswatini
+    '$ CLP',  // 164  Şili / Chile
+    'SM TJS',  // 165  Tacikistan / Tajikistan
+    'Sh TZS',  // 166  Tanzanya / Tanzania
+    'NT$ TWD',  // 167  Tayvan / Taiwan
+    '฿ THB',  // 168  Tayland / Thailand
+    'Fr XOF',  // 169  Togo / Togo
+    'T$ TOP',  // 170  Tonga / Tonga
+    '$ TTD',  // 171  Trinidad ve Tobago / Trinidad and Tobago
+    'DT TND',  // 172  Tunus / Tunisia
+    '₺ TRY',  // 173  Türkiye / Turkey
+    'T TMT',  // 174  Türkmenistan / Turkmenistan
+    'A$ AUD',  // 175  Tuvalu / Tuvalu
+    'Sh UGX',  // 176  Uganda / Uganda
+    '₴ UAH',  // 177  Ukrayna / Ukraine
+    '$ UYU',  // 178  Uruguay / Uruguay
+    'Vt VUV',  // 179  Vanuatu / Vanuatu
+    '€ EUR',  // 180  Vatikan / Vatican City
+    'Bs VES',  // 181  Venezuela / Venezuela
+    '₫ VND',  // 182  Vietnam / Vietnam
+    'ر.ي YER',  // 183  Yemen / Yemen
+    'NZ$ NZD',  // 184  Yeni Zelanda / New Zealand
+    '€ EUR',  // 185  Yunanistan / Greece
+    'K ZMW',  // 186  Zambiya / Zambia
+    'ZW$ ZWL',  // 187  Zimbabwe / Zimbabwe
 ];
 
 // Seçilen ülke ismine karşılık gelen para birimini döndürür.
