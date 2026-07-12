@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, openPromptModal, openConfirmModal, showToast } from './utils.js';
+import { refreshIcons, openPromptModal, openConfirmModal, showToast, escapeHtml } from './utils.js';
 import { appState } from './state.js';
 import { t } from './i18n.js';
 import { loadWorkshopData, renderWorkshopAttendance } from './workshop_attendance.js';
