@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
-import { refreshIcons, openPromptModal, showToast } from './utils.js';
+import { refreshIcons, openPromptModal, showToast, escapeHtml } from './utils.js';
 import { appState } from './state.js';
 import { loadAttendanceData, renderAttendanceView } from './attendance.js';
 import { savePendingChange, clearPendingChange, refreshPendingBadge } from './offlineStore.js';
@@ -235,6 +235,85 @@ export async function deleteWeek(courseDateId) {
     } catch (err) {
         showToast(t('actions.weekDeleteFail'), 'error');
     }
+}
+
+// ---------------------------------------------------------------
+// Mevcut öğrenci aktar — başka sınıftan öğrenciyi bu sınıfa kopyala
+// Sınıf birleşmelerinde kullanılır: öğrenciyi yeniden kayıt etmeden
+// seçim listesinden seçerek bu sınıfa ekler.
+// ---------------------------------------------------------------
+export async function importStudentFromClasses() {
+    const { data: allStudents, error } = await supabase
+        .from('students')
+        .select('id, name, phone, class_id, classes(name)')
+        .eq('is_archived', false)
+        .order('name');
+
+    if (error) { showToast(t('actions.importLoadFail'), 'error'); return; }
+    if (!allStudents || allStudents.length === 0) { showToast(t('actions.importEmpty'), 'warning'); return; }
+
+    // Bu sınıfta zaten kayıtlı öğrenci isimlerini al (duplicate önleme)
+    const existingNames = appState.students.map(s => s.name.trim().toLowerCase());
+
+    // Başka sınıflara ait öğrencileri filtrele (bu sınıftakileri listede gösterme)
+    const otherStudents = allStudents.filter(s => s.class_id !== appState.currentClassId);
+
+    if (otherStudents.length === 0) { showToast(t('actions.importEmpty'), 'warning'); return; }
+
+    const modal    = document.getElementById('dynamicModal');
+    const titleEl  = document.getElementById('dynamicModalTitle');
+    const inputEl  = document.getElementById('dynamicInput');
+    const confirmB = document.getElementById('dynamicModalConfirm');
+    const cancelB  = document.getElementById('dynamicModalCancel');
+    if (!modal) { showToast('Modal not found.', 'error'); return; }
+
+    titleEl.textContent = t('actions.importTitle');
+
+    // Input yerine select listesi göster
+    inputEl.style.display = 'none';
+    let selectEl = document.getElementById('attImportSelect');
+    if (!selectEl) {
+        selectEl = document.createElement('select');
+        selectEl.id = 'attImportSelect';
+        selectEl.style.cssText = 'width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
+        inputEl.parentNode.insertBefore(selectEl, inputEl);
+    }
+    selectEl.style.display = 'block';
+    selectEl.innerHTML = otherStudents.map(s => {
+        const className = s.classes ? s.classes.name : '';
+        const alreadyIn = existingNames.includes(s.name.trim().toLowerCase());
+        return `<option value="${s.id}" data-name="${escapeHtml(s.name)}" data-phone="${escapeHtml(s.phone || '')}" ${alreadyIn ? 'disabled' : ''}>${escapeHtml(s.name)}${className ? ' (' + escapeHtml(className) + ')' : ''}${alreadyIn ? ' ✓' : ''}</option>`;
+    }).join('');
+
+    modal.style.display = 'flex';
+
+    confirmB.onclick = async () => {
+        const selected = selectEl.options[selectEl.selectedIndex];
+        if (!selected || selected.disabled) { showToast(t('actions.importInvalid'), 'warning'); return; }
+        const name  = selected.dataset.name;
+        const phone = selected.dataset.phone || null;
+
+        modal.style.display    = 'none';
+        selectEl.style.display = 'none';
+        inputEl.style.display  = 'block';
+
+        const { error: insErr } = await supabase.from('students').insert({
+            class_id:    appState.currentClassId,
+            name,
+            phone:       phone || null,
+            is_archived: false
+        });
+        if (insErr) { showToast(t('actions.importFail').replace('{msg}', insErr.message), 'error'); return; }
+        showToast(t('actions.importSuccess').replace('{name}', name), 'success');
+        await loadAttendanceData();
+        renderAttendanceView();
+    };
+
+    cancelB.onclick = () => {
+        modal.style.display    = 'none';
+        selectEl.style.display = 'none';
+        inputEl.style.display  = 'block';
+    };
 }
 
 // ---------------------------------------------------------------

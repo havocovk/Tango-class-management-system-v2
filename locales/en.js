@@ -186,7 +186,15 @@ export const en = {
         studentArchived: 'Student archived ✓',
         studentUnarchived: 'Student unarchived ✓',
         archiveTooltipUnarchive: 'Unarchive',
-        archiveTooltipArchive: 'Archive'
+        archiveTooltipArchive: 'Archive',
+        importStudent:      'Existing Student',
+        importTitle:        'Select Student',
+        importEmpty:        'No students found in the system.',
+        importLoadFail:     'Could not load students.',
+        importInvalid:      'Please select a valid student.',
+        importSuccess:      '{name} added to the class ✓',
+        importFail:         'Could not add student: {msg}',
+        importAlreadyIn:    'This student is already in this class.'
     },
 
     // --- Attendance modals (attendanceModals.js) ---

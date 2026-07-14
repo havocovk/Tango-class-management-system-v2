@@ -200,6 +200,7 @@ function buildTableHTML() {
             </div>
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
+                <button id="importStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('actions.importStudent'))}</button>
                 <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
             </div>
@@ -306,9 +307,10 @@ function attachEventListeners() {
             });
         }
 
-        document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
-        document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();
-        document.getElementById('addWeekBtn').onclick       = () => actions.addWeek();
+        document.getElementById('backToClassesBtn').onclick    = () => goBackToClasses();
+        document.getElementById('addStudentBtn').onclick       = () => actions.addStudent();
+        document.getElementById('importStudentBtn').onclick    = () => actions.importStudentFromClasses();
+        document.getElementById('addWeekBtn').onclick          = () => actions.addWeek();
         document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
             classId:   appState.currentClassId,
             className: appState.currentClassName
