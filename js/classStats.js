@@ -109,9 +109,14 @@ export async function showWeeklyStats() {
                 let firstPart = displayName;
                 let secondPart = '';
                 const spaceIndex = displayName.indexOf(' ');
-                if (spaceIndex !== -1 && displayName.length > 8) {
-                    firstPart  = displayName.substring(0, spaceIndex);
+                if (spaceIndex !== -1) {
+                    // Boşluktan böl: ilk kelime + geri kalan
+                    firstPart = displayName.substring(0, spaceIndex);
                     secondPart = displayName.substring(spaceIndex + 1);
+                    // İlk kelime hücreye sığmayacak kadar uzunsa (6 karakter üstü) kısalt
+                    if (firstPart.length > 6) {
+                        firstPart = firstPart.substring(0, 6) + '.';
+                    }
                 } else if (displayName.length > 8) {
                     firstPart  = displayName.substring(0, 6);
                     secondPart = displayName.substring(6);
