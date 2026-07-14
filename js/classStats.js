@@ -80,64 +80,37 @@ export async function showWeeklyStats() {
         }
     }
 
-    // HTML oluştur
+    // HTML oluştur — dikey liste yapısı (tablo yerine)
+    // Her gün için: sol = gün etiketi, sağ = yatay kaydırılabilir sınıf listesi
+    let scheduleRows = '';
+    for (let i = 0; i < 7; i++) {
+        const classList = cells[i];
+        // Dersi olmayan günleri gösterme
+        if (classList.length === 0) continue;
+
+        const itemsHtml = classList.map(cls => {
+            return `<span class="class-item-link" data-class-id="${cls.id}">${escapeHtml(cls.name)}</span>`;
+        }).join('');
+
+        scheduleRows += `
+            <div class="schedule-row">
+                <div class="schedule-day-label">${escapeHtml(days[i])}</div>
+                <div class="schedule-classes-scroll">
+                    <div class="schedule-classes-inner">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     let html = `
         <div class="view">
             <div class="back-link" id="statsBackBtn">${escapeHtml(t('nav.backGeneric'))}</div>
             <div class="main-title">${escapeHtml(t('stats.header'))}</div>
-            <table class="stats-table">
-                <thead>
-                    <tr>${days.map(d => `<th>${d}</th>`).join('')}</tr>
-                </thead>
-                <tbody>
-                    <tr>
-    `;
-
-    for (let i = 0; i < 7; i++) {
-        let cellContent = '';
-        const classList = cells[i];
-        if (classList.length === 0) {
-            cellContent = '<div style="min-height: 50px;">&nbsp;</div>';
-        } else {
-            let fontSizeClass = '';
-            if (classList.length === 1) fontSizeClass = 'dynamic-font-size-1';
-            else if (classList.length === 2) fontSizeClass = 'dynamic-font-size-2';
-            else if (classList.length >= 3) fontSizeClass = 'dynamic-font-size-3';
-
-            const itemsHtml = classList.map(cls => {
-                let displayName = escapeHtml(cls.name);
-                let firstPart = displayName;
-                let secondPart = '';
-                const spaceIndex = displayName.indexOf(' ');
-                if (spaceIndex !== -1) {
-                    // Boşluktan böl: ilk kelime + geri kalan
-                    firstPart = displayName.substring(0, spaceIndex);
-                    secondPart = displayName.substring(spaceIndex + 1);
-                    // İlk kelime hücreye sığmayacak kadar uzunsa (6 karakter üstü) kısalt
-                    if (firstPart.length > 6) {
-                        firstPart = firstPart.substring(0, 6) + '.';
-                    }
-                } else if (displayName.length > 8) {
-                    firstPart  = displayName.substring(0, 6);
-                    secondPart = displayName.substring(6);
-                }
-
-                const innerHtml = secondPart
-                    ? `<div class="class-multi-line"><span>${firstPart}</span><span>${secondPart}</span></div>`
-                    : `<div>${firstPart}</div>`;
-
-                return `<span class="class-item-link ${fontSizeClass}" data-class-id="${cls.id}">${innerHtml}</span>`;
-            }).join('');
-
-            cellContent = `<div style="display:flex; flex-direction:column; gap:4px;">${itemsHtml}</div>`;
-        }
-        html += `<td>${cellContent}</td>`;
-    }
-
-    html += `
-                    </tr>
-                </tbody>
-            </table>
+            <div class="schedule-list">
+                ${scheduleRows}
+            </div>
             <div id="chartTitle" style="text-align:center; padding:12px 15px 4px; color:var(--accent); font-weight:700;">${escapeHtml(t('stats.chartHint'))}</div>
             <div id="chartSection">
                 <div id="chartContainer" class="chart-container" style="justify-content: center; align-items: center;">
