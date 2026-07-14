@@ -1,102 +1,98 @@
 /* ================================================================
    chart.css
-   İçerik: Haftalık istatistikler tablosu (.stats-table),
-           sınıf linkleri (.class-item-link, .class-multi-line),
-           dinamik font boyutları, bar grafik sistemi
+   İçerik: Haftalık program dikey liste (.schedule-list, .schedule-row),
+           sınıf linkleri (.class-item-link),
+           bar grafik sistemi
            (#chartSection, .chart-container, .chart-bars-zone,
-           .bar-col, .bar-count, .bar, .chart-xaxis,
-           .chart-dates-zone, .bar-date)
+            .bar-col, .bar-count, .bar, .chart-xaxis,
+            .chart-dates-zone, .bar-date)
    ================================================================ */
 
 /* ---------------------------------------------------------------
-   HAFTALİK İSTATİSTİKLER TABLOSU
-   Not: .stats-table ilk tanımı aşağıda, eski kısmi tanım
-   (satır 198-232) bu dosyada tek ve tam tanım olarak birleştirildi.
+   HAFTALİK PROGRAM — DİKEY LİSTE YAPISI
+   Her gün bir satır: sol = gün adı, sağ = yatay kaydırılabilir sınıf listesi
+   Dersi olmayan günler JS tarafından hiç oluşturulmaz.
 --------------------------------------------------------------- */
 
-/* === Haftalık İstatistikler Tablosu === */
-.stats-table {
-    width: 100%;
-    table-layout: fixed; /* Tüm hücreler eşit genişlikte */
-    border-collapse: collapse;
+/* Tüm günleri saran dış kutu */
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     margin-top: 15px;
+}
+
+/* Tek gün satırı: sol = etiket, sağ = kaydırılabilir sınıf listesi */
+.schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: var(--card-bg);
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.stats-table th,
-.stats-table td {
-    width: 14.285%; /* 100% / 7 */
     border: 1px solid var(--border);
-    padding: 8px 4px;
-    text-align: center;
-    vertical-align: top;
-    background: #000000;
-    height: 80px; /* Minimum yükseklik, içerik artarsa otomatik büyür */
+    border-radius: 12px;
+    padding: 8px 10px;
+    min-height: 52px;
 }
 
-.stats-table th {
-    background: #1a1f1a;
-    color: var(--primary);
+/* Sol: gün adı etiketi (Pzt, Sal, Çar...) */
+.schedule-day-label {
+    flex-shrink: 0;
+    width: 36px;
+    font-size: 12px;
     font-weight: 700;
-    font-size: clamp(9px, 3vw, 13px);
-    padding: 10px 4px;
+    color: var(--primary);
+    text-align: center;
 }
 
-/* Boş hücrelerin de aynı yükseklikte kalması için */
-.stats-table td:empty::before {
-    content: "\00a0"; /* &nbsp; */
-    visibility: hidden;
+/* Sağ: yatay kaydırılabilir sınıf listesi sarmalayıcı */
+.schedule-classes-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Scrollbar gizle (mobilde parmakla kaydırılabilir) */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.schedule-classes-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* İç sarmalayıcı: sınıf kutularını yan yana dizer */
+.schedule-classes-inner {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+    /* Minimum genişlik: içerik ne kadar olursa olsun tek satırda kal */
+    min-width: max-content;
 }
 
 /* ---------------------------------------------------------------
-   SINIF LİNKLERİ (stats tablosunun içindeki tıklanabilir öğeler)
+   SINIF LİNKLERİ (schedule satırı içindeki tıklanabilir kutular)
 --------------------------------------------------------------- */
 
-/* Sınıf öğeleri için genel stiller */
 .class-item-link {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(45, 212, 191, 0.1);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     color: var(--accent);
     border: 1px solid rgba(251, 191, 36, 0.3);
-    margin: 4px auto;
-    padding: 4px 2px;
-    text-align: center;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
     text-decoration: none;
     transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-    word-break: normal;
-    overflow-wrap: normal;
-    white-space: normal;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
-.class-item-link:hover {
-    background: rgba(45, 212, 191, 0.2);
-    transform: scale(0.98);
-}
-
-/* İki satırlı gösterim için yardımcı (isteğe bağlı, flex yönü) */
-.class-multi-line {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.2;
-}
-
-/* Dinamik font boyutları — adaptive (clamp ile ekran genişliğine göre ölçeklenir) */
-.dynamic-font-size-1 {
-    font-size: clamp(9px, 3vw, 13px);
-}
-.dynamic-font-size-2 {
-    font-size: clamp(8px, 2.6vw, 11px);
-}
-.dynamic-font-size-3 {
-    font-size: clamp(7px, 2.2vw, 9px);
+.class-item-link:active {
+    background: rgba(45, 212, 191, 0.25);
+    transform: scale(0.97);
 }
 
 /* ---------------------------------------------------------------
