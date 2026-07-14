@@ -29,9 +29,10 @@
     gap: 8px;
     background: var(--card-bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 8px 10px;
-    min-height: 32px;
+    border-radius: 10px;
+    padding: 5px 10px;
+    height: 36px;
+    overflow: hidden;
 }
 
 /* Sol: gün adı etiketi (Pzt, Sal, Çar...) */
