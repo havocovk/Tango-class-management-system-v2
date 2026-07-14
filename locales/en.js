@@ -153,6 +153,8 @@ export const en = {
         csvSuffixPay:   'payments',
         searchPlaceholder: 'Search student...',
         archivedStudentsTooltip: 'Archived students',
+        showArchive: 'Show Archive',
+        hideArchive: 'Hide Archive',
         statusPresent: 'Present',
         statusAbsent: 'Absent',
         statusSkipped: 'S — Joined later',
