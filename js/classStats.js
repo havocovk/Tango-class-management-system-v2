@@ -80,6 +80,11 @@ export async function showWeeklyStats() {
         }
     }
 
+    // Her günün sınıf listesini isme göre sırala (erken saat → geç saat)
+    cells.forEach(dayList => {
+        dayList.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    });
+
     // HTML oluştur — dikey liste yapısı (tablo yerine)
     // Her gün için: sol = gün etiketi, sağ = yatay kaydırılabilir sınıf listesi
     // Dersi olmayan günler de gösterilir (boş satır olarak)
@@ -140,6 +145,16 @@ export async function showWeeklyStats() {
             const classId = parseInt(el.dataset.classId);
             await drawChartForClass(classId);
         });
+    });
+
+    // PC'de mouse wheel ile yatay kaydırma
+    document.querySelectorAll('.schedule-classes-scroll').forEach(el => {
+        el.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                el.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
     });
 
     refreshIcons();
