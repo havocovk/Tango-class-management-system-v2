@@ -82,15 +82,16 @@ export async function showWeeklyStats() {
 
     // HTML oluştur — dikey liste yapısı (tablo yerine)
     // Her gün için: sol = gün etiketi, sağ = yatay kaydırılabilir sınıf listesi
+    // Dersi olmayan günler de gösterilir (boş satır olarak)
     let scheduleRows = '';
     for (let i = 0; i < 7; i++) {
         const classList = cells[i];
-        // Dersi olmayan günleri gösterme
-        if (classList.length === 0) continue;
 
-        const itemsHtml = classList.map(cls => {
-            return `<span class="class-item-link" data-class-id="${cls.id}">${escapeHtml(cls.name)}</span>`;
-        }).join('');
+        const itemsHtml = classList.length > 0
+            ? classList.map(cls => {
+                return `<span class="class-item-link" data-class-id="${cls.id}">${escapeHtml(cls.name)}</span>`;
+            }).join('')
+            : '';
 
         scheduleRows += `
             <div class="schedule-row">
