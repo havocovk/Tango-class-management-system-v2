@@ -154,17 +154,17 @@ function renderPrivateLessonsView() {
                         ${loc}${dateStr}${timeStr ? ' · ' + timeStr : ''}${earned ? ' · ' + earned : ''}
                     </div>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center;">
+                <div style="display:flex;gap:15px;align-items:center;">
                     <div class="pl-btn-edit" data-pl-id="${l.id}"
-                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--primary);position:relative;z-index:2;">
+                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--primary);position:relative;z-index:2;">
                         <i data-lucide="pencil" size="20" style="pointer-events:none;"></i>
                     </div>
                     <div class="pl-btn-archive" data-pl-id="${l.id}" data-pl-archived="${l.is_archived ? '1' : '0'}"
-                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--accent);position:relative;z-index:2;">
+                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);position:relative;z-index:2;">
                         <i data-lucide="${l.is_archived ? 'archive-restore' : 'archive'}" size="20" style="pointer-events:none;"></i>
                     </div>
                     <div class="pl-btn-delete" data-pl-id="${l.id}"
-                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:var(--danger);position:relative;z-index:2;">
+                        style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--danger);position:relative;z-index:2;">
                         <i data-lucide="trash-2" size="20" style="pointer-events:none;"></i>
                     </div>
                 </div>
