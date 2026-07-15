@@ -141,10 +141,13 @@ export function renderWorkshopAttendance() {
             ${infoHtml}
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="wsAddStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.addStudent')}</button>
-                <button id="wsImportStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.importStudent')}</button>
+                <button id="wsImportStudentBtn" class="btn-success"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.importStudent')}</button>
                 <button id="wsAddWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.addWeek')}</button>
                 <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.payments')}</button>
                 <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? t('workshopAtt.hideArchive') : t('workshopAtt.showArchive')}</button>
+            </div>
+            <div style="margin:8px 0 6px;">
+                <input id="wsStudentSearchInput" type="text" placeholder="${t('workshopAtt.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
             </div>
             <div class="table-wrapper">
                 <table>
@@ -175,6 +178,20 @@ export function renderWorkshopAttendance() {
             appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
             renderWorkshopAttendance();
         };
+
+        // Öğrenci arama / filtreleme
+        const wsSearchInput = document.getElementById('wsStudentSearchInput');
+        if (wsSearchInput) {
+            wsSearchInput.addEventListener('keyup', () => {
+                const query = wsSearchInput.value.trim().toLowerCase();
+                document.querySelectorAll('#wsStudentRows tr').forEach(row => {
+                    const nameCell = row.querySelector('td:nth-child(2)');
+                    if (!nameCell) return;
+                    const name = nameCell.textContent.trim().toLowerCase();
+                    row.style.display = name.includes(query) ? '' : 'none';
+                });
+            });
+        }
 
         attachCellListeners(actions, modals);
         refreshIcons();

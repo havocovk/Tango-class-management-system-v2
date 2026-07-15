@@ -195,7 +195,13 @@ export const en = {
         studentArchived: 'Student archived ✓',
         studentUnarchived: 'Student unarchived ✓',
         archiveTooltipUnarchive: 'Unarchive',
-        archiveTooltipArchive: 'Archive'
+        archiveTooltipArchive: 'Archive',
+        importTitle: 'Select Student',
+        importLoadFail: 'Could not load students.',
+        importEmpty: 'No students found in other classes.',
+        importInvalid: 'Please select a valid student.',
+        importSuccess: '{name} added to the class ✓',
+        importFail: 'Could not add student: {msg}'
     },
 
     // --- Attendance modals (attendanceModals.js) ---
@@ -347,6 +353,7 @@ export const en = {
         title:              'Workshop Attendance',
         addStudent:         'Add Student',
         importStudent:      'Import Student',
+        searchPlaceholder:  'Search student...',
         addWeek:            'Add Week',
         payments:           'Payments',
         showArchive:        'Show Archive',
