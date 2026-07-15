@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------
 
 import { navigateTo } from './router.js';
+import { supabase } from './supabaseClient.js';
 import { refreshIcons, escapeHtml } from './utils.js';
 import { t } from './i18n.js';
 import { exportBackup, importBackup } from './backup.js';
@@ -113,6 +114,28 @@ function renderMainMenu() {
                 </button>
             </div>
 
+            <!-- Çıkış butonu -->
+            <div style="margin-top:10px;">
+                <button id="menuBtnLogout" style="
+                    width:100%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    gap:7px;
+                    padding:10px 8px;
+                    background:transparent;
+                    border:1.5px solid var(--danger);
+                    border-radius:10px;
+                    color:var(--danger);
+                    font-size:13px;
+                    font-weight:600;
+                    cursor:pointer;
+                ">
+                    <i data-lucide="log-out" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
+                    ${escapeHtml(t('nav.logout'))}
+                </button>
+            </div>
+
         </div>
     `;
 
@@ -140,6 +163,7 @@ function renderMainMenu() {
 
     document.getElementById('menuBtnBackup').onclick = () => exportBackup();
     document.getElementById('menuBtnRestore').onclick = () => importBackup();
+    document.getElementById('menuBtnLogout').onclick = () => supabase.auth.signOut();
 
     refreshIcons();
 }

@@ -29,7 +29,6 @@ onLangChange(() => { reloadCurrentView(); });
 
 const loginScreen   = document.getElementById('loginScreen');
 const appContainer  = document.getElementById('appContainer');
-const logoutBtn     = document.getElementById('logoutBtn');
 const loginBtn      = document.getElementById('loginBtn');
 const emailInput    = document.getElementById('loginEmail');
 const passwordInput = document.getElementById('loginPassword');
@@ -143,7 +142,6 @@ function showLogin() {
     appStarted = false;
     loginScreen.style.display = 'flex';
     appContainer.style.display = 'none';
-    logoutBtn.style.display = 'none';
     document.body.style.paddingBottom = '0';
     loginError.innerText = '';
     passwordInput.value = '';
@@ -154,8 +152,6 @@ async function startApp() {
     appStarted = true;
     loginScreen.style.display = 'none';
     appContainer.style.display = 'block';
-    logoutBtn.style.display = 'block';
-    document.body.style.paddingBottom = '54px';
 
     // Android geri tuşu için history stack'ini iki katmanlı başlat:
     //   Katman 1 (en alt): null  → buraya gelinince Android uygulamayı kapatır
@@ -208,14 +204,13 @@ async function handleLogin() {
     }
 }
 
-async function handleLogout() {
+export async function handleLogout() {
     await supabase.auth.signOut();
 }
 
 loginBtn.onclick = handleLogin;
 emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
-logoutBtn.onclick = handleLogout;
 
 // ---------------------------------------------------------------
 // ANDROID GERİ TUŞU DESTEĞİ
