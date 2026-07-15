@@ -275,14 +275,9 @@ export function openWorkshopPartnerModal(dateId, current, onSave) {
     const input        = document.getElementById('partnerInput');
     const saveBtn      = document.getElementById('partnerSaveBtn');
     const cancelBtn    = document.getElementById('partnerCancelBtn');
-    const editLabel    = document.getElementById('partnerEditBtnLabel');
-    const deleteLabel  = document.getElementById('partnerDeleteBtnLabel');
     if (!modal) return;
 
-    titleEl.textContent = t('workshopAtt.partnerTitle');
-    if (editLabel)    editLabel.textContent   = t('modals.partnerEditBtn');
-    if (deleteLabel)  deleteLabel.textContent = t('modals.partnerDeleteBtn');
-    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+    if (titleEl) titleEl.textContent = t('workshopAtt.partnerTitle');
 
     editBtn.onclick      = null;
     deleteBtn.onclick    = null;
@@ -348,14 +343,9 @@ export function openWorkshopNoteModal(dateId, current, onSave) {
     const textarea     = document.getElementById('noteTextarea');
     const saveBtn      = document.getElementById('noteSaveBtn');
     const cancelBtn    = document.getElementById('noteCancelBtn');
-    const editLabel    = document.getElementById('noteEditBtnLabel');
-    const deleteLabel  = document.getElementById('noteDeleteBtnLabel');
     if (!modal) return;
 
-    titleEl.textContent = t('workshopAtt.noteTitle');
-    if (editLabel)    editLabel.textContent   = t('modals.noteEditBtn');
-    if (deleteLabel)  deleteLabel.textContent = t('modals.noteDeleteBtn');
-    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+    if (titleEl) titleEl.textContent = t('workshopAtt.noteTitle');
 
     editBtn.onclick      = null;
     deleteBtn.onclick    = null;
