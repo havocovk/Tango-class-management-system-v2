@@ -147,7 +147,7 @@ export function renderWorkshopAttendance() {
                 <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? t('workshopAtt.hideArchive') : t('workshopAtt.showArchive')}</button>
             </div>
             <div style="margin:8px 0 6px;">
-                <input id="wsStudentSearchInput" type="text" placeholder="${t('workshopAtt.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <input id="wsStudentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
             </div>
             <div class="table-wrapper">
                 <table>

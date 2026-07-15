@@ -267,7 +267,7 @@ export async function importStudentFromClasses() {
     const cancelB  = document.getElementById('dynamicModalCancel');
     if (!modal) { showToast('Modal not found.', 'error'); return; }
 
-    titleEl.textContent = t('actions.importTitle');
+    titleEl.textContent = t('workshopAtt.importTitle');
 
     // Input yerine select listesi göster
     inputEl.style.display = 'none';
