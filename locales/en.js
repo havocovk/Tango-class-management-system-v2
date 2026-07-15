@@ -149,6 +149,8 @@ export const en = {
         partnerEditBtn: 'Edit',
         partnerDeleteBtn: 'Delete',
         partnerDeleted: 'Partner deleted ✓',
+        partnerDeleteConfirm: 'Are you sure you want to delete the partner name?',
+        noteDeleteConfirm: 'Are you sure you want to delete the lesson note?',
         noteModalTitle: 'Lesson Note',
         noteModalPlaceholder: 'Write lesson notes here...',
         noteEditBtn: 'Edit',

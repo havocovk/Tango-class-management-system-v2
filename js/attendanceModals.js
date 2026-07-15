@@ -478,10 +478,16 @@ export function openPartnerModal(courseDateId, current, onSave) {
 
         editBtn.onclick = () => showInput(current);
 
-        deleteBtn.onclick = async () => {
-            closeModal();
-            await updateTeacherPartner(courseDateId, '');
-            if (onSave) onSave('');
+        deleteBtn.onclick = () => {
+            openConfirmModal(
+                t('modals.partnerDeleteConfirm'),
+                async () => {
+                    closeModal();
+                    await updateTeacherPartner(courseDateId, '');
+                    if (onSave) onSave('');
+                },
+                () => { showView(nameDisplay.textContent); }
+            );
         };
 
         viewCloseBtn.onclick = closeModal;
@@ -492,12 +498,22 @@ export function openPartnerModal(courseDateId, current, onSave) {
 
     saveBtn.onclick = async () => {
         const val = input.value.trim();
-        closeModal();
         await updateTeacherPartner(courseDateId, val);
         if (onSave) onSave(val);
+        if (val) {
+            showView(val);
+        } else {
+            closeModal();
+        }
     };
 
-    cancelBtn.onclick = closeModal;
+    cancelBtn.onclick = () => {
+        if (current) {
+            showView(current);
+        } else {
+            closeModal();
+        }
+    };
 }
 
 // ---------------------------------------------------------------
@@ -569,10 +585,16 @@ export function openNoteModal(courseDateId, current, onSave) {
 
         editBtn.onclick = () => showInput(current);
 
-        deleteBtn.onclick = async () => {
-            closeModal();
-            await updateNote(courseDateId, '');
-            if (onSave) onSave('');
+        deleteBtn.onclick = () => {
+            openConfirmModal(
+                t('modals.noteDeleteConfirm'),
+                async () => {
+                    closeModal();
+                    await updateNote(courseDateId, '');
+                    if (onSave) onSave('');
+                },
+                () => { showView(textDisplay.textContent); }
+            );
         };
 
         viewCloseBtn.onclick = closeModal;
@@ -582,12 +604,22 @@ export function openNoteModal(courseDateId, current, onSave) {
 
     saveBtn.onclick = async () => {
         const val = textarea.value.trim();
-        closeModal();
         await updateNote(courseDateId, val);
         if (onSave) onSave(val);
+        if (val) {
+            showView(val);
+        } else {
+            closeModal();
+        }
     };
 
-    cancelBtn.onclick = closeModal;
+    cancelBtn.onclick = () => {
+        if (current) {
+            showView(current);
+        } else {
+            closeModal();
+        }
+    };
 }
 
 // ---------------------------------------------------------------

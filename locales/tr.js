@@ -149,6 +149,8 @@ export const tr = {
         partnerEditBtn: 'Düzenle',
         partnerDeleteBtn: 'Sil',
         partnerDeleted: 'Partner silindi ✓',
+        partnerDeleteConfirm: 'Partner adını silmek istediğinize emin misiniz?',
+        noteDeleteConfirm: 'Ders notunu silmek istediğinize emin misiniz?',
         noteModalTitle: 'Ders Notu',
         noteModalPlaceholder: 'Ders notunu buraya yazın...',
         noteEditBtn: 'Düzenle',
