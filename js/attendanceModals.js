@@ -166,31 +166,18 @@ export async function openStudentProfileModal(student) {
     refreshIcons();
 
     // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
-    // Bugünün tarihi: gelecek tarihli haftaları saymamak için
-    const todayStr = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const totalDates = appState.courseDates.length;
 
-    // 1. Sınıfın toplam dersi: iptal edilmiş haftalar VE gelecek tarihli haftalar HARİÇ
-    const totalDates = appState.courseDates.filter(d => !d.is_cancelled && d.date <= todayStr).length;
-
-    // 2. Öğrencinin her haftaki durumunu incele
-    let presentCount = 0;  // '+' statüsü: geldi
-    let absentCount  = 0;  // '-' statüsü: gelmedi
-    let activeCount  = 0;  // öğrencinin aktif olduğu ders sayısı
-                           // ('I' ve 'S' olmayan, iptal olmayan, geçmiş haftalar)
+    let presentCount = 0; // '+' statüsü
+    let absentCount  = 0; // '-' statüsü
 
     appState.courseDates.forEach(d => {
-        if (d.is_cancelled) return;      // iptal haftaları say dışı
-        if (d.date > todayStr) return;   // gelecek tarihli haftaları say dışı
         const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
-        // 'I' (inaktif) ve 'S' (sonradan katıldı / mazeretli) haftaları
-        // öğrencinin aktif sayısına dahil etme
-        if (status === 'I' || status === 'S') return;
-        activeCount++;
         if (status === '+') presentCount++;
         else if (status === '-') absentCount++;
     });
 
-    // 3. Katılım oranı: aktif haftalarda geldi / (geldi + gelmedi)
+    // Katılım oranı: sadece işaretlenmiş hücreler üzerinden hesapla
     const markedCount    = presentCount + absentCount;
     const attendanceRate = markedCount > 0
         ? Math.round((presentCount / markedCount) * 100)
@@ -203,6 +190,7 @@ export async function openStudentProfileModal(student) {
     // Son ödemenin başlangıç tarihi: start_date_id → courseDates içinde bul
     let lastPaymentDateStr = null;
     if (studentPayments.length > 0) {
+        // En yüksek start_date_id'ye sahip ödemeyi bul (sırayla eklendiği varsayılır)
         const lastPayment = studentPayments.reduce((latest, p) => {
             const latestDate = appState.courseDates.find(d => d.id === latest.start_date_id);
             const curDate    = appState.courseDates.find(d => d.id === p.start_date_id);
@@ -216,7 +204,6 @@ export async function openStudentProfileModal(student) {
 
     // ---- DOM güncelleme ----
     document.getElementById('profileTotalDates').textContent     = totalDates;
-    document.getElementById('profileActiveLessons').textContent  = activeCount;
     document.getElementById('profileAttendanceRate').textContent = `%${attendanceRate}`;
     document.getElementById('profileAbsenceCount').textContent   = absentCount;
     document.getElementById('profileTotalPaid').textContent      = `${totalPaid.toLocaleString('tr-TR')}₺`;
@@ -439,16 +426,93 @@ export async function handleVideo(courseDateId) {
 }
 
 // ---------------------------------------------------------------
-// Partner/Teacher adı güncelleme
-// renderAttendanceView'daki .partner-edit click'ten çağırılır
-// Sadece DOM + supabase — veri yenileme gerektirmiyor (surgical update)
+// Partner dual-state modal
+// Boşsa → input göster. Doluysa → adı + düzenle/sil göster.
+// ---------------------------------------------------------------
+export function openPartnerModal(courseDateId, current, onSave) {
+    const modal        = document.getElementById('partnerModal');
+    const titleEl      = document.getElementById('partnerModalTitle');
+    const viewMode     = document.getElementById('partnerViewMode');
+    const inputMode    = document.getElementById('partnerInputMode');
+    const nameDisplay  = document.getElementById('partnerNameDisplay');
+    const editBtn      = document.getElementById('partnerEditBtn');
+    const deleteBtn    = document.getElementById('partnerDeleteBtn');
+    const viewCloseBtn = document.getElementById('partnerViewCloseBtn');
+    const input        = document.getElementById('partnerInput');
+    const saveBtn      = document.getElementById('partnerSaveBtn');
+    const cancelBtn    = document.getElementById('partnerCancelBtn');
+    const editLabel    = document.getElementById('partnerEditBtnLabel');
+    const deleteLabel  = document.getElementById('partnerDeleteBtnLabel');
+    if (!modal) return;
+
+    titleEl.textContent = t('attendance.partnerModalTitle');
+    if (editLabel)   editLabel.textContent   = t('modals.partnerEditBtn');
+    if (deleteLabel) deleteLabel.textContent = t('modals.partnerDeleteBtn');
+    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+
+    // Tüm handler'ları temizle
+    editBtn.onclick       = null;
+    deleteBtn.onclick     = null;
+    viewCloseBtn.onclick  = null;
+    saveBtn.onclick       = null;
+    cancelBtn.onclick     = null;
+
+    const showInput = (value) => {
+        input.placeholder = t('attendance.partnerModalPlaceholder');
+        input.value       = value || '';
+        viewMode.style.display  = 'none';
+        inputMode.style.display = 'block';
+        modal.style.display     = 'flex';
+        refreshIcons();
+        setTimeout(() => input.focus(), 50);
+    };
+
+    const showView = (name) => {
+        nameDisplay.textContent = name;
+        viewMode.style.display  = 'block';
+        inputMode.style.display = 'none';
+        modal.style.display     = 'flex';
+        refreshIcons();
+    };
+
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    if (current) {
+        // Dolu → görüntüleme modu
+        showView(current);
+
+        editBtn.onclick = () => showInput(current);
+
+        deleteBtn.onclick = async () => {
+            closeModal();
+            await updateTeacherPartner(courseDateId, '');
+            if (onSave) onSave('');
+        };
+
+        viewCloseBtn.onclick = closeModal;
+    } else {
+        // Boş → direkt input modu
+        showInput('');
+    }
+
+    saveBtn.onclick = async () => {
+        const val = input.value.trim();
+        closeModal();
+        await updateTeacherPartner(courseDateId, val);
+        if (onSave) onSave(val);
+    };
+
+    cancelBtn.onclick = closeModal;
+}
+
+// ---------------------------------------------------------------
+// Partner/Teacher adı güncelleme (DB + appState + DOM surgical)
 // ---------------------------------------------------------------
 export async function updateTeacherPartner(courseDateId, newPartner) {
-    const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner }).eq('id', courseDateId);
+    const { error } = await supabase.from('course_dates').update({ teacher_partner: newPartner || null }).eq('id', courseDateId);
     if (!error) {
         appState.partnerMap[courseDateId] = newPartner;
         showToast(newPartner ? t('modals.partnerUpdated') : t('modals.partnerDeleted'), 'success');
-        // Sadece ilgili ikonu güncelle — tüm tabloyu yeniden çizme!
         const span = document.querySelector(`.partner-edit[data-date-id="${courseDateId}"]`);
         if (span) {
             span.dataset.partner = newPartner;
@@ -458,6 +522,82 @@ export async function updateTeacherPartner(courseDateId, newPartner) {
     } else {
         showToast(t('modals.partnerUpdateFail'), 'error');
     }
+}
+
+// ---------------------------------------------------------------
+// Ders notu dual-state modal
+// Boşsa → textarea göster. Doluysa → notu + düzenle/sil göster.
+// ---------------------------------------------------------------
+export function openNoteModal(courseDateId, current, onSave) {
+    const modal        = document.getElementById('noteModal');
+    const titleEl      = document.getElementById('noteModalTitle');
+    const viewMode     = document.getElementById('noteViewMode');
+    const inputMode    = document.getElementById('noteInputMode');
+    const textDisplay  = document.getElementById('noteTextDisplay');
+    const editBtn      = document.getElementById('noteEditBtn');
+    const deleteBtn    = document.getElementById('noteDeleteBtn');
+    const viewCloseBtn = document.getElementById('noteViewCloseBtn');
+    const textarea     = document.getElementById('noteTextarea');
+    const saveBtn      = document.getElementById('noteSaveBtn');
+    const cancelBtn    = document.getElementById('noteCancelBtn');
+    const editLabel    = document.getElementById('noteEditBtnLabel');
+    const deleteLabel  = document.getElementById('noteDeleteBtnLabel');
+    if (!modal) return;
+
+    titleEl.textContent = t('attendance.noteModalTitle');
+    if (editLabel)   editLabel.textContent   = t('modals.noteEditBtn');
+    if (deleteLabel) deleteLabel.textContent = t('modals.noteDeleteBtn');
+    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+
+    editBtn.onclick      = null;
+    deleteBtn.onclick    = null;
+    viewCloseBtn.onclick = null;
+    saveBtn.onclick      = null;
+    cancelBtn.onclick    = null;
+
+    const showInput = (value) => {
+        textarea.placeholder = t('attendance.noteModalPlaceholder');
+        textarea.value       = value || '';
+        viewMode.style.display  = 'none';
+        inputMode.style.display = 'block';
+        modal.style.display     = 'flex';
+        setTimeout(() => textarea.focus(), 50);
+    };
+
+    const showView = (text) => {
+        textDisplay.textContent = text;
+        viewMode.style.display  = 'block';
+        inputMode.style.display = 'none';
+        modal.style.display     = 'flex';
+        refreshIcons();
+    };
+
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    if (current) {
+        showView(current);
+
+        editBtn.onclick = () => showInput(current);
+
+        deleteBtn.onclick = async () => {
+            closeModal();
+            await updateNote(courseDateId, '');
+            if (onSave) onSave('');
+        };
+
+        viewCloseBtn.onclick = closeModal;
+    } else {
+        showInput('');
+    }
+
+    saveBtn.onclick = async () => {
+        const val = textarea.value.trim();
+        closeModal();
+        await updateNote(courseDateId, val);
+        if (onSave) onSave(val);
+    };
+
+    cancelBtn.onclick = closeModal;
 }
 
 // ---------------------------------------------------------------

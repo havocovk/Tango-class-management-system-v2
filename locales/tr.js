@@ -145,16 +145,19 @@ export const tr = {
         thActive: 'Bu hafta için işlem menüsü (sil / iptal)',
         pastDateConfirm: 'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?',
         partnerModalTitle: 'Partner Adı',
-        partnerModalPlaceholder: 'İsim girin (boş bırakıp Tamam derseniz silinir)',
+        partnerModalPlaceholder: 'Partner adını girin',
+        partnerEditBtn: 'Düzenle',
+        partnerDeleteBtn: 'Sil',
+        partnerDeleted: 'Partner silindi ✓',
         noteModalTitle: 'Ders Notu',
-        noteModalPlaceholder: 'Örn: Cruzada, Ocho Cortado (boş bırakıp Tamam → notu siler)',
+        noteModalPlaceholder: 'Ders notunu buraya yazın...',
+        noteEditBtn: 'Düzenle',
+        noteDeleteBtn: 'Sil',
         csvDownload:    'CSV İndir',
         csvSuffixAtt:   'yoklama',
         csvSuffixPay:   'odemeler',
         searchPlaceholder: 'Öğrenci ara...',
         archivedStudentsTooltip: 'Arşivlenmiş öğrenciler',
-        showArchive: 'Arşivi Göster',
-        hideArchive: 'Arşivi Gizle',
         statusPresent: 'Geldi',
         statusAbsent: 'Gelmedi',
         statusSkipped: 'S — Sonradan katıldı',
@@ -188,15 +191,7 @@ export const tr = {
         studentArchived: 'Öğrenci arşivlendi ✓',
         studentUnarchived: 'Öğrenci arşivden çıkarıldı ✓',
         archiveTooltipUnarchive: 'Arşivden çıkar',
-        archiveTooltipArchive:   'Arşivle',
-        importStudent:           'Mevcut Öğrenci',
-        importTitle:             'Öğrenci Seç',
-        importEmpty:             'Sistemde kayıtlı öğrenci bulunamadı.',
-        importLoadFail:          'Öğrenciler yüklenemedi.',
-        importInvalid:           'Geçerli bir öğrenci seçin.',
-        importSuccess:           '{name} sınıfa eklendi ✓',
-        importFail:              'Öğrenci eklenemedi: {msg}',
-        importAlreadyIn:         'Bu öğrenci zaten bu sınıfta.'
+        archiveTooltipArchive: 'Arşivle'
     },
 
     // --- Yoklama modalları (attendanceModals.js) ---
@@ -227,13 +222,12 @@ export const tr = {
 
     // --- Öğrenci profil modalı ---
     profile: {
-        totalDates:      'Sınıfın Toplam Dersi',
-        activeLesson:    'Öğrencinin Aktif Dersi',
-        attendanceRate:  'Katılım Oranı',
-        absence:         'Devamsızlık',
-        totalPaid:       'Toplam Ödeme',
-        lastPayment:     'Son Ödeme:',
-        whatsapp:        "💬 WhatsApp'ta Yaz"
+        totalDates: 'Toplam Ders',
+        attendanceRate: 'Katılım Oranı',
+        absence: 'Devamsızlık',
+        totalPaid: 'Toplam Ödeme',
+        lastPayment: 'Son Ödeme:',
+        whatsapp: "💬 WhatsApp'ta Yaz"
     },
 
     // --- Hafta aksiyon menüsü ---

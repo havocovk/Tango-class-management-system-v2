@@ -313,8 +313,10 @@ function attachCellListeners(actions, modals) {
             e.stopPropagation();
             const dateId  = parseInt(el.dataset.wsdateId);
             const current = el.dataset.partner || '';
-            openPromptModalWithValue(t('workshopAtt.partnerTitle'), current, t('workshopAtt.partnerPlaceholder'), async (val) => {
-                await modals.updateWorkshopPartner(dateId, val);
+            modals.openWorkshopPartnerModal(dateId, current, (newVal) => {
+                el.dataset.partner = newVal;
+                el.title           = newVal;
+                el.style.color     = newVal ? 'var(--primary)' : 'var(--text-dim)';
             });
         });
     });
@@ -325,8 +327,10 @@ function attachCellListeners(actions, modals) {
             e.stopPropagation();
             const dateId  = parseInt(el.dataset.wsdateId);
             const current = appState.wsNotesMap[dateId] || '';
-            openPromptModalWithValue(t('workshopAtt.noteTitle'), current, t('workshopAtt.notePlaceholder'), async (val) => {
-                await modals.updateWorkshopNote(dateId, val);
+            modals.openWorkshopNoteModal(dateId, current, (newVal) => {
+                appState.wsNotesMap[dateId] = newVal;
+                const span = el.querySelector('span');
+                if (span) span.style.color = newVal ? 'var(--primary)' : 'var(--text-dim)';
             });
         });
     });

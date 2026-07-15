@@ -144,17 +144,20 @@ export const en = {
         thCancelled: 'CANCELLED — click for the action menu',
         thActive: 'Action menu for this week (delete / cancel)',
         pastDateConfirm: 'This is a past-dated attendance entry. Are you sure you want to change it?',
-        partnerModalTitle: 'Partner / Teacher Name',
-        partnerModalPlaceholder: 'Enter a name (leave empty and press OK to remove)',
+        partnerModalTitle: 'Partner Name',
+        partnerModalPlaceholder: 'Enter partner name',
+        partnerEditBtn: 'Edit',
+        partnerDeleteBtn: 'Delete',
+        partnerDeleted: 'Partner deleted ✓',
         noteModalTitle: 'Lesson Note',
-        noteModalPlaceholder: 'e.g. Cruzada, Ocho Cortado (leave empty + OK to delete)',
+        noteModalPlaceholder: 'Write lesson notes here...',
+        noteEditBtn: 'Edit',
+        noteDeleteBtn: 'Delete',
         csvDownload:    'CSV Download',
         csvSuffixAtt:   'attendance',
         csvSuffixPay:   'payments',
         searchPlaceholder: 'Search student...',
         archivedStudentsTooltip: 'Archived students',
-        showArchive: 'Show Archive',
-        hideArchive: 'Hide Archive',
         statusPresent: 'Present',
         statusAbsent: 'Absent',
         statusSkipped: 'S — Joined later',
@@ -188,15 +191,7 @@ export const en = {
         studentArchived: 'Student archived ✓',
         studentUnarchived: 'Student unarchived ✓',
         archiveTooltipUnarchive: 'Unarchive',
-        archiveTooltipArchive:   'Archive',
-        importStudent:           'Existing Student',
-        importTitle:             'Select Student',
-        importEmpty:             'No students found in the system.',
-        importLoadFail:          'Could not load students.',
-        importInvalid:           'Please select a valid student.',
-        importSuccess:           '{name} added to the class ✓',
-        importFail:              'Could not add student: {msg}',
-        importAlreadyIn:         'This student is already in this class.'
+        archiveTooltipArchive: 'Archive'
     },
 
     // --- Attendance modals (attendanceModals.js) ---
@@ -227,13 +222,12 @@ export const en = {
 
     // --- Student profile modal ---
     profile: {
-        totalDates:      'Class Total Lessons',
-        activeLesson:    'Student Active Lessons',
-        attendanceRate:  'Attendance Rate',
-        absence:         'Absences',
-        totalPaid:       'Total Paid',
-        lastPayment:     'Last Payment:',
-        whatsapp:        '💬 Message on WhatsApp'
+        totalDates: 'Total Lessons',
+        attendanceRate: 'Attendance Rate',
+        absence: 'Absences',
+        totalPaid: 'Total Paid',
+        lastPayment: 'Last Payment:',
+        whatsapp: '💬 Message on WhatsApp'
     },
 
     // --- Week action menu ---

@@ -200,14 +200,13 @@ function buildTableHTML() {
             </div>
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
-                <button id="importStudentBtn" class="btn-secondary"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('actions.importStudent'))}</button>
                 <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
-                <button id="toggleArchivedStudentsBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(appState.showArchivedStudents ? t('attendance.hideArchive') : t('attendance.showArchive'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
                 <input id="studentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="${t('attendance.archivedStudentsTooltip')}"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -307,10 +306,9 @@ function attachEventListeners() {
             });
         }
 
-        document.getElementById('backToClassesBtn').onclick    = () => goBackToClasses();
-        document.getElementById('addStudentBtn').onclick       = () => actions.addStudent();
-        document.getElementById('importStudentBtn').onclick    = () => actions.importStudentFromClasses();
-        document.getElementById('addWeekBtn').onclick          = () => actions.addWeek();
+        document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
+        document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();
+        document.getElementById('addWeekBtn').onclick       = () => actions.addWeek();
         document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
             classId:   appState.currentClassId,
             className: appState.currentClassName
@@ -347,33 +345,31 @@ function attachEventListeners() {
         });
 
         document.querySelectorAll('.partner-edit').forEach(span => {
-            span.addEventListener('click', async () => {
+            span.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const dateId  = parseInt(span.dataset.dateId);
                 const current = span.dataset.partner || '';
-                openPromptModalWithValue(
-                    t('attendance.partnerModalTitle'),
-                    current,
-                    t('attendance.partnerModalPlaceholder'),
-                    async (newPartner) => {
-                        await modals.updateTeacherPartner(dateId, newPartner);
-                    }
-                );
+                modals.openPartnerModal(dateId, current, (newVal) => {
+                    span.dataset.partner = newVal;
+                    span.title           = newVal;
+                    span.style.color     = newVal ? 'var(--primary)' : 'var(--text-dim)';
+                });
             });
         });
 
         // ADIM 8.2 — Ders notu hücresine tıklayınca not ekle/düzenle
         document.querySelectorAll('.note-cell').forEach(cell => {
-            cell.addEventListener('click', async () => {
+            cell.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const dateId  = parseInt(cell.dataset.dateId);
                 const current = appState.notesMap[dateId] || '';
-                openPromptModalWithValue(
-                    t('attendance.noteModalTitle'),
-                    current,
-                    t('attendance.noteModalPlaceholder'),
-                    async (newNote) => {
-                        await modals.updateNote(dateId, newNote);
-                    }
-                );
+                modals.openNoteModal(dateId, current, (newVal) => {
+                    appState.notesMap[dateId] = newVal;
+                    const iconColor = newVal ? 'var(--primary)' : 'var(--dim-forest)';
+                    const glowStyle = newVal ? 'filter:drop-shadow(0 0 4px var(--primary));' : '';
+                    cell.innerHTML = `<span style="color:${iconColor};${glowStyle}display:inline-flex;"><i data-lucide="book-open" size="18"></i></span>`;
+                    refreshIcons();
+                });
             });
         });
 

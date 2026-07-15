@@ -89,6 +89,54 @@
     </div>
 </div>
 
+<!-- Partner dual-state modal -->
+<div id="partnerModal" class="modal">
+    <div class="modal-content">
+        <h3 id="partnerModalTitle" style="margin-bottom:12px;"></h3>
+        <!-- Görüntüleme modu: partner var -->
+        <div id="partnerViewMode" style="display:none;">
+            <div id="partnerNameDisplay" style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:14px;word-break:break-word;"></div>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button id="partnerEditBtn" class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="pencil" size="15"></i><span id="partnerEditBtnLabel"></span></button>
+                <button id="partnerDeleteBtn" style="flex:1;background:var(--danger);border:none;color:white;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="trash-2" size="15"></i><span id="partnerDeleteBtnLabel"></span></button>
+            </div>
+            <button id="partnerViewCloseBtn" class="btn-secondary" style="width:100%;margin-top:10px;" data-i18n="common.close"></button>
+        </div>
+        <!-- Giriş modu: partner boş veya düzenleme -->
+        <div id="partnerInputMode" style="display:none;">
+            <input type="text" id="partnerInput" placeholder="" autocomplete="off" style="width:100%;box-sizing:border-box;">
+            <div style="display:flex;gap:10px;margin-top:15px;">
+                <button class="btn-success" id="partnerSaveBtn" data-i18n="common.ok"></button>
+                <button class="btn-secondary" id="partnerCancelBtn" data-i18n="common.cancel"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ders notu dual-state modal -->
+<div id="noteModal" class="modal">
+    <div class="modal-content">
+        <h3 id="noteModalTitle" style="margin-bottom:12px;"></h3>
+        <!-- Görüntüleme modu: not var -->
+        <div id="noteViewMode" style="display:none;">
+            <div id="noteTextDisplay" style="font-size:14px;color:var(--text-main);margin-bottom:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:#1e293b;border-radius:10px;padding:12px;"></div>
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button id="noteEditBtn" class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="pencil" size="15"></i><span id="noteEditBtnLabel"></span></button>
+                <button id="noteDeleteBtn" style="flex:1;background:var(--danger);border:none;color:white;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="trash-2" size="15"></i><span id="noteDeleteBtnLabel"></span></button>
+            </div>
+            <button id="noteViewCloseBtn" class="btn-secondary" style="width:100%;margin-top:10px;" data-i18n="common.close"></button>
+        </div>
+        <!-- Giriş modu: not boş veya düzenleme -->
+        <div id="noteInputMode" style="display:none;">
+            <textarea id="noteTextarea" placeholder="" autocomplete="off" style="width:100%;box-sizing:border-box;min-height:150px;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;line-height:1.6;resize:vertical;font-family:inherit;"></textarea>
+            <div style="display:flex;gap:10px;margin-top:15px;">
+                <button class="btn-success" id="noteSaveBtn" data-i18n="common.ok"></button>
+                <button class="btn-secondary" id="noteCancelBtn" data-i18n="common.cancel"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- İki girişli modal -->
 <div id="doubleInputModal" class="modal">
     <div class="modal-content">
@@ -190,12 +238,8 @@
         <div id="profileContent" style="display:none;">
             <div class="profile-stats-grid">
                 <div class="profile-stat-card" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.totalDates">Sınıfın Toplam Dersi</div>
+                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.totalDates">Toplam Ders</div>
                     <div class="profile-stat-value" id="profileTotalDates" style="font-size:20px; font-weight:800;">—</div>
-                </div>
-                <div class="profile-stat-card" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
-                    <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.activeLesson">Öğrencinin Aktif Dersi</div>
-                    <div class="profile-stat-value" id="profileActiveLessons" style="font-size:20px; font-weight:800;">—</div>
                 </div>
                 <div class="profile-stat-card profile-stat-present" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
                     <div class="profile-stat-label" style="font-size:11px; color:var(--text-dim); margin-bottom:4px;" data-i18n="profile.attendanceRate">Katılım Oranı</div>

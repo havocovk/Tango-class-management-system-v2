@@ -261,31 +261,178 @@ export function handleWorkshopVideo(dateId) {
 }
 
 // ---------------------------------------------------------------
+// Partner dual-state modal (çalıştay versiyonu)
+// ---------------------------------------------------------------
+export function openWorkshopPartnerModal(dateId, current, onSave) {
+    const modal        = document.getElementById('partnerModal');
+    const titleEl      = document.getElementById('partnerModalTitle');
+    const viewMode     = document.getElementById('partnerViewMode');
+    const inputMode    = document.getElementById('partnerInputMode');
+    const nameDisplay  = document.getElementById('partnerNameDisplay');
+    const editBtn      = document.getElementById('partnerEditBtn');
+    const deleteBtn    = document.getElementById('partnerDeleteBtn');
+    const viewCloseBtn = document.getElementById('partnerViewCloseBtn');
+    const input        = document.getElementById('partnerInput');
+    const saveBtn      = document.getElementById('partnerSaveBtn');
+    const cancelBtn    = document.getElementById('partnerCancelBtn');
+    const editLabel    = document.getElementById('partnerEditBtnLabel');
+    const deleteLabel  = document.getElementById('partnerDeleteBtnLabel');
+    if (!modal) return;
+
+    titleEl.textContent = t('workshopAtt.partnerTitle');
+    if (editLabel)    editLabel.textContent   = t('modals.partnerEditBtn');
+    if (deleteLabel)  deleteLabel.textContent = t('modals.partnerDeleteBtn');
+    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+
+    editBtn.onclick      = null;
+    deleteBtn.onclick    = null;
+    viewCloseBtn.onclick = null;
+    saveBtn.onclick      = null;
+    cancelBtn.onclick    = null;
+
+    const showInput = (value) => {
+        input.placeholder = t('workshopAtt.partnerPlaceholder');
+        input.value       = value || '';
+        viewMode.style.display  = 'none';
+        inputMode.style.display = 'block';
+        modal.style.display     = 'flex';
+        refreshIcons();
+        setTimeout(() => input.focus(), 50);
+    };
+
+    const showView = (name) => {
+        nameDisplay.textContent = name;
+        viewMode.style.display  = 'block';
+        inputMode.style.display = 'none';
+        modal.style.display     = 'flex';
+        refreshIcons();
+    };
+
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    if (current) {
+        showView(current);
+        editBtn.onclick = () => showInput(current);
+        deleteBtn.onclick = async () => {
+            closeModal();
+            await updateWorkshopPartner(dateId, '');
+            if (onSave) onSave('');
+        };
+        viewCloseBtn.onclick = closeModal;
+    } else {
+        showInput('');
+    }
+
+    saveBtn.onclick = async () => {
+        const val = input.value.trim();
+        closeModal();
+        await updateWorkshopPartner(dateId, val);
+        if (onSave) onSave(val);
+    };
+
+    cancelBtn.onclick = closeModal;
+}
+
+// ---------------------------------------------------------------
+// Ders notu dual-state modal (çalıştay versiyonu)
+// ---------------------------------------------------------------
+export function openWorkshopNoteModal(dateId, current, onSave) {
+    const modal        = document.getElementById('noteModal');
+    const titleEl      = document.getElementById('noteModalTitle');
+    const viewMode     = document.getElementById('noteViewMode');
+    const inputMode    = document.getElementById('noteInputMode');
+    const textDisplay  = document.getElementById('noteTextDisplay');
+    const editBtn      = document.getElementById('noteEditBtn');
+    const deleteBtn    = document.getElementById('noteDeleteBtn');
+    const viewCloseBtn = document.getElementById('noteViewCloseBtn');
+    const textarea     = document.getElementById('noteTextarea');
+    const saveBtn      = document.getElementById('noteSaveBtn');
+    const cancelBtn    = document.getElementById('noteCancelBtn');
+    const editLabel    = document.getElementById('noteEditBtnLabel');
+    const deleteLabel  = document.getElementById('noteDeleteBtnLabel');
+    if (!modal) return;
+
+    titleEl.textContent = t('workshopAtt.noteTitle');
+    if (editLabel)    editLabel.textContent   = t('modals.noteEditBtn');
+    if (deleteLabel)  deleteLabel.textContent = t('modals.noteDeleteBtn');
+    if (viewCloseBtn) viewCloseBtn.textContent = t('common.close') || 'Kapat';
+
+    editBtn.onclick      = null;
+    deleteBtn.onclick    = null;
+    viewCloseBtn.onclick = null;
+    saveBtn.onclick      = null;
+    cancelBtn.onclick    = null;
+
+    const showInput = (value) => {
+        textarea.placeholder = t('workshopAtt.notePlaceholder');
+        textarea.value       = value || '';
+        viewMode.style.display  = 'none';
+        inputMode.style.display = 'block';
+        modal.style.display     = 'flex';
+        setTimeout(() => textarea.focus(), 50);
+    };
+
+    const showView = (text) => {
+        textDisplay.textContent = text;
+        viewMode.style.display  = 'block';
+        inputMode.style.display = 'none';
+        modal.style.display     = 'flex';
+        refreshIcons();
+    };
+
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    if (current) {
+        showView(current);
+        editBtn.onclick = () => showInput(current);
+        deleteBtn.onclick = async () => {
+            closeModal();
+            await updateWorkshopNote(dateId, '');
+            if (onSave) onSave('');
+        };
+        viewCloseBtn.onclick = closeModal;
+    } else {
+        showInput('');
+    }
+
+    saveBtn.onclick = async () => {
+        const val = textarea.value.trim();
+        closeModal();
+        await updateWorkshopNote(dateId, val);
+        if (onSave) onSave(val);
+    };
+
+    cancelBtn.onclick = closeModal;
+}
+
+// ---------------------------------------------------------------
 // Partner adı güncelle
-// .ws-partner-edit tıklamasından attachCellListeners çağırır
 // ---------------------------------------------------------------
 export async function updateWorkshopPartner(dateId, partner) {
     const { error } = await supabase.from('workshop_dates')
         .update({ teacher_partner: partner || null }).eq('id', dateId);
     if (error) { showToast(t('workshopAtt.partnerSaveFail'), 'error'); return; }
     appState.wsPartnerMap[dateId] = partner || '';
-    showToast(t('workshopAtt.partnerSaved'), 'success');
-    await loadWorkshopData();
-    renderWorkshopAttendance();
+    showToast(partner ? t('workshopAtt.partnerSaved') : t('modals.partnerDeleted'), 'success');
+    const el = document.querySelector(`.ws-partner-edit[data-wsdate-id="${dateId}"]`);
+    if (el) {
+        el.dataset.partner = partner;
+        el.title           = partner;
+        el.style.color     = partner ? 'var(--primary)' : 'var(--text-dim)';
+    }
 }
 
 // ---------------------------------------------------------------
-// Ders notu güncelle
-// .ws-note-cell tıklamasından attachCellListeners çağırır
+// Ders notu güncelle (surgical update)
 // ---------------------------------------------------------------
 export async function updateWorkshopNote(dateId, note) {
     const { error } = await supabase.from('workshop_dates')
         .update({ note: note || null }).eq('id', dateId);
     if (error) { showToast(t('workshopAtt.noteSaveFail'), 'error'); return; }
     appState.wsNotesMap[dateId] = note || '';
-    showToast(t('workshopAtt.noteSaved'), 'success');
-    await loadWorkshopData();
-    renderWorkshopAttendance();
+    showToast(note ? t('workshopAtt.noteSaved') : t('modals.noteDeleteBtn'), 'success');
+    const el = document.querySelector(`.ws-note-cell[data-wsdate-id="${dateId}"] span`);
+    if (el) { el.style.color = note ? 'var(--primary)' : 'var(--text-dim)'; }
 }
 
 // ---------------------------------------------------------------
