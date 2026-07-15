@@ -429,7 +429,8 @@ export const tr = {
         csvStatusSkipped:   'Mazeretli',
         csvStatusInactive:  'İnaktif',
         studentArchivedFull:  'Öğrenci arşivlendi ✓',
-        studentUnarchivedFull: 'Öğrenci arşivden çıkarıldı ✓'
+        studentUnarchivedFull: 'Öğrenci arşivden çıkarıldı ✓',
+        pastDateConfirm:      'Bu geçmiş tarihli bir yoklama. Değişiklik yapmak istediğinize emin misiniz?'
     },
 
     // --- Çalıştay Ödemeleri (workshop_payments.js) ---

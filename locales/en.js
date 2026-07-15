@@ -429,7 +429,8 @@ export const en = {
         csvStatusSkipped:   'Excused',
         csvStatusInactive:  'Inactive',
         studentArchivedFull:  'Student archived ✓',
-        studentUnarchivedFull: 'Student unarchived ✓'
+        studentUnarchivedFull: 'Student unarchived ✓',
+        pastDateConfirm:      'This is a past-dated attendance entry. Are you sure you want to change it?'
     },
 
     // --- Workshop Payments (workshop_payments.js) ---

@@ -37,7 +37,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { showWorkshopPayments } from './workshop_payments.js';
-import { refreshIcons, formatDate, openPromptModalWithValue, showToast, escapeHtml } from './utils.js';
+import { refreshIcons, formatDate, openPromptModalWithValue, showToast, escapeHtml, isPastDate, openConfirmModal } from './utils.js';
 import { navigateTo } from './router.js';
 import { t } from './i18n.js';
 import { appState } from './state.js';
@@ -303,6 +303,15 @@ function attachCellListeners(actions, modals) {
             const dateId    = parseInt(cell.dataset.wsdateId);
             const dateObj   = appState.wsDates.find(d => d.id === dateId);
             if (!dateObj || dateObj.is_cancelled) return;
+            if (isPastDate(dateObj.lesson_date)) {
+                openConfirmModal(
+                    t('workshopAtt.pastDateConfirm'),
+                    async () => { await actions.toggleWorkshopAttendance(studentId, dateId, cell); },
+                    null,
+                    t('common.yes')
+                );
+                return;
+            }
             await actions.toggleWorkshopAttendance(studentId, dateId, cell);
         });
     });
