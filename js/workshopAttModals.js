@@ -369,6 +369,18 @@ export function openWorkshopNoteModal(dateId, current, onSave) {
     saveBtn.onclick      = null;
     cancelBtn.onclick    = null;
 
+    // partnerModal butonlarında kalıntı handler olabilir — temizle.
+    const _pEdit  = document.getElementById('partnerEditBtn');
+    const _pDel   = document.getElementById('partnerDeleteBtn');
+    const _pClose = document.getElementById('partnerViewCloseBtn');
+    const _pSave  = document.getElementById('partnerSaveBtn');
+    const _pCanc  = document.getElementById('partnerCancelBtn');
+    if (_pEdit)  _pEdit.onclick  = null;
+    if (_pDel)   _pDel.onclick   = null;
+    if (_pClose) _pClose.onclick = null;
+    if (_pSave)  _pSave.onclick  = null;
+    if (_pCanc)  _pCanc.onclick  = null;
+
     const showInput = (value) => {
         textarea.placeholder = t('workshopAtt.notePlaceholder');
         textarea.value       = value || '';

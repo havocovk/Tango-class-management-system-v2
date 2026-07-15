@@ -582,6 +582,18 @@ function openPrivatePartnerModal(lesson) {
     saveBtn.onclick      = null;
     cancelBtn.onclick    = null;
 
+    // noteModal butonlarında kalıntı handler olabilir — temizle.
+    const _nEdit  = document.getElementById('noteEditBtn');
+    const _nDel   = document.getElementById('noteDeleteBtn');
+    const _nClose = document.getElementById('noteViewCloseBtn');
+    const _nSave  = document.getElementById('noteSaveBtn');
+    const _nCanc  = document.getElementById('noteCancelBtn');
+    if (_nEdit)  _nEdit.onclick  = null;
+    if (_nDel)   _nDel.onclick   = null;
+    if (_nClose) _nClose.onclick = null;
+    if (_nSave)  _nSave.onclick  = null;
+    if (_nCanc)  _nCanc.onclick  = null;
+
     const currentName = lesson.partner_name || '';
 
     const showView = (name) => {
