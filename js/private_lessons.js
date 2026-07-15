@@ -261,10 +261,10 @@ function renderDetailView(lesson) {
                 ${hasPartner
                     ? `<span style="color:var(--text-main);font-size:15px;font-weight:600;">${escapeHtml(lesson.partner_name)}</span>
                        <span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;">
-                           <i data-lucide="pencil" style="width:16px;height:16px;display:block;"></i>
+                           <i data-lucide="pencil" style="width:17px;height:17px;display:block;"></i>
                        </span>`
                     : `<span id="plPartnerEditBtn" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;justify-content:center;">
-                           <i data-lucide="circle-plus" style="width:16px;height:16px;display:block;"></i>
+                           <i data-lucide="circle-plus" style="width:17px;height:17px;display:block;"></i>
                        </span>`
                 }
             </div>
