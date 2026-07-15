@@ -265,6 +265,41 @@ async function renderScreenFromState(state) {
             await m.showWeeklyStats();
             break;
         }
+        case 'workshops': {
+            const m = await import('./workshops.js');
+            await m.loadWorkshops();
+            break;
+        }
+        case 'workshopDetail': {
+            const m = await import('./workshop_attendance.js');
+            await m.showWorkshopAttendance(params.workshopId, params.workshopName);
+            break;
+        }
+        case 'workshopPayments': {
+            const m = await import('./workshop_payments.js');
+            await m.showWorkshopPayments(params.workshopId, params.workshopName);
+            break;
+        }
+        case 'festivals': {
+            const m = await import('./festivals.js');
+            await m.loadFestivals();
+            break;
+        }
+        case 'festivalDetail': {
+            const m = await import('./festival_classes.js');
+            await m.showFestivalDetail(params.festivalId, params.festivalName);
+            break;
+        }
+        case 'privateLessons': {
+            const m = await import('./private_lessons.js');
+            await m.loadPrivateLessons();
+            break;
+        }
+        case 'privateLessonDetail': {
+            const m = await import('./private_lessons.js');
+            await m.showPrivateLessonDetail(params.lessonId);
+            break;
+        }
     }
 }
 
