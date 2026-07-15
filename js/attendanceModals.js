@@ -583,21 +583,15 @@ export function openNoteModal(courseDateId, current, onSave) {
         setTimeout(() => textarea.focus(), 50);
     };
 
+    const closeModal = () => { modal.style.display = 'none'; };
+
     const showView = (text) => {
         textDisplay.textContent = text;
         viewMode.style.display  = 'block';
         inputMode.style.display = 'none';
         modal.style.display     = 'flex';
-        refreshIcons();
-    };
-
-    const closeModal = () => { modal.style.display = 'none'; };
-
-    if (current) {
-        showView(current);
-
-        editBtn.onclick = () => showInput(current);
-
+        // Handler'ları her görüntüleme moduna geçişte güncel değerle yeniden bağla
+        editBtn.onclick = () => showInput(text);
         deleteBtn.onclick = () => {
             openConfirmModal(
                 t('attendance.noteDeleteConfirm'),
@@ -609,8 +603,12 @@ export function openNoteModal(courseDateId, current, onSave) {
                 () => { showView(textDisplay.textContent); }
             );
         };
-
         viewCloseBtn.onclick = closeModal;
+        refreshIcons();
+    };
+
+    if (current) {
+        showView(current);
     } else {
         showInput('');
     }

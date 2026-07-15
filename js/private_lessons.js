@@ -595,12 +595,32 @@ function openPrivatePartnerModal(lesson) {
     if (_nCanc)  _nCanc.onclick  = null;
 
     const currentName = lesson.partner_name || '';
+    let activeName = currentName;
 
     const showView = (name) => {
+        activeName = name;
         nameDisplay.textContent = name;
         viewMode.style.display  = 'block';
         inputMode.style.display = 'none';
         modal.style.display     = 'flex';
+        // Handler'ları görüntüleme moduna her geçişte yeniden bağla
+        editBtn.onclick   = () => showInput(activeName);
+        deleteBtn.onclick = () => {
+            openConfirmModal(
+                t('privateLessons.partnerDeleteConfirm'),
+                async () => {
+                    await updateLessonField(lesson.id, { partner_name: null }, t('privateLessons.partnerDeleted'));
+                    lesson.partner_name = null;
+                    closeModal();
+                    renderDetailView(lesson);
+                },
+                () => { showView(activeName); }
+            );
+        };
+        viewCloseBtn.onclick = () => {
+            closeModal();
+            renderDetailView(lesson);
+        };
         refreshIcons();
     };
 
@@ -620,25 +640,6 @@ function openPrivatePartnerModal(lesson) {
     // Görüntüleme modunu aç
     showView(currentName);
 
-    // Kalem → input modu (ön doldurulu)
-    editBtn.onclick = () => showInput(currentName);
-
-    // Çöp kutusu → onay → sil
-    deleteBtn.onclick = () => {
-        openConfirmModal(
-            t('privateLessons.partnerDeleteConfirm'),
-            async () => {
-                await updateLessonField(lesson.id, { partner_name: null }, t('privateLessons.partnerDeleted'));
-                lesson.partner_name = null;
-                closeModal();
-                renderDetailView(lesson);
-            },
-            () => { showView(nameDisplay.textContent); }
-        );
-    };
-
-    viewCloseBtn.onclick = closeModal;
-
     // Kaydet → güncelle → görüntüleme moduna geri dön
     saveBtn.onclick = async () => {
         const val = input.value.trim() || null;
@@ -653,7 +654,7 @@ function openPrivatePartnerModal(lesson) {
     };
 
     // İptal → görüntüleme moduna geri dön
-    cancelBtn.onclick = () => showView(currentName);
+    cancelBtn.onclick = () => showView(activeName);
 }
 
 async function updateLessonField(lessonId, fields, successMsg) {
