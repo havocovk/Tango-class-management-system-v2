@@ -595,6 +595,8 @@ export const en = {
         toastSaveFail:      'Save failed: {msg}',
         confirmDelete:      'Are you sure you want to delete this private lesson?',
         partnerTitle:       'Lesson Partner',
+        partnerDeleteConfirm: 'Are you sure you want to delete the lesson partner?',
+        partnerDeleted:     'Partner deleted \u2713',
         videoAddTitle:      'Add Video Link',
         videoUrlInvalid:    'Please enter a valid URL.',
         videoSaved:         'Video saved \u2713',

@@ -595,6 +595,8 @@ export const tr = {
         toastSaveFail:      'Kayıt başarısız: {msg}',
         confirmDelete:      'Bu özel dersi silmek istediğinizden emin misiniz?',
         partnerTitle:       'Ders Partneri',
+        partnerDeleteConfirm: 'Ders partnerini silmek istediğinizden emin misiniz?',
+        partnerDeleted:     'Partner silindi \u2713',
         videoAddTitle:      'Video Linki Ekle',
         videoUrlInvalid:    'Geçerli bir URL giriniz.',
         videoSaved:         'Video kaydedildi \u2713',

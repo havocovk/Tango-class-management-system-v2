@@ -302,16 +302,20 @@ function renderDetailView(lesson) {
 
     // Partner ekle / düzenle
     document.getElementById('plPartnerEditBtn').onclick = () => {
-        openPromptModal(
-            t('privateLessons.partnerTitle'),
-            lesson.partner_name || '',
-            async (val) => {
-                const partner_name = val.trim() || null;
-                await updateLessonField(lesson.id, { partner_name }, t('privateLessons.toastSaved'));
-                lesson.partner_name = partner_name;
-                renderDetailView(lesson);
-            }
-        );
+        if (lesson.partner_name) {
+            openPrivatePartnerModal(lesson);
+        } else {
+            openPromptModal(
+                t('privateLessons.partnerTitle'),
+                '',
+                async (val) => {
+                    const partner_name = val.trim() || null;
+                    await updateLessonField(lesson.id, { partner_name }, t('privateLessons.toastSaved'));
+                    lesson.partner_name = partner_name;
+                    renderDetailView(lesson);
+                }
+            );
+        }
     };
 
     // Video ikonu
@@ -553,6 +557,93 @@ async function updateLesson(lessonId, modal) {
 // ---------------------------------------------------------------
 // Tek alan güncelle
 // ---------------------------------------------------------------
+// ---------------------------------------------------------------
+// ÖZEL DERS — PARTNER GÖRÜNTÜLE / DÜZENLE / SİL MODALI
+// Grup derslerindeki partnerModal (index.html) yapısını yeniden kullanır.
+// ---------------------------------------------------------------
+function openPrivatePartnerModal(lesson) {
+    const modal        = document.getElementById('partnerModal');
+    const viewMode     = document.getElementById('partnerViewMode');
+    const inputMode    = document.getElementById('partnerInputMode');
+    const nameDisplay  = document.getElementById('partnerNameDisplay');
+    const editBtn      = document.getElementById('partnerEditBtn');
+    const deleteBtn    = document.getElementById('partnerDeleteBtn');
+    const viewCloseBtn = document.getElementById('partnerViewCloseBtn');
+    const input        = document.getElementById('partnerInput');
+    const saveBtn      = document.getElementById('partnerSaveBtn');
+    const cancelBtn    = document.getElementById('partnerCancelBtn');
+    const titleEl      = document.getElementById('partnerModalTitle');
+    if (!modal) return;
+
+    // Handler'ları temizle
+    editBtn.onclick      = null;
+    deleteBtn.onclick    = null;
+    viewCloseBtn.onclick = null;
+    saveBtn.onclick      = null;
+    cancelBtn.onclick    = null;
+
+    const currentName = lesson.partner_name || '';
+
+    const showView = (name) => {
+        nameDisplay.textContent = name;
+        viewMode.style.display  = 'block';
+        inputMode.style.display = 'none';
+        modal.style.display     = 'flex';
+        refreshIcons();
+    };
+
+    const showInput = (value) => {
+        if (titleEl) titleEl.textContent = t('privateLessons.partnerTitle');
+        input.value       = value || '';
+        input.placeholder = '';
+        viewMode.style.display  = 'none';
+        inputMode.style.display = 'block';
+        modal.style.display     = 'flex';
+        refreshIcons();
+        setTimeout(() => input.focus(), 50);
+    };
+
+    const closeModal = () => { modal.style.display = 'none'; };
+
+    // Görüntüleme modunu aç
+    showView(currentName);
+
+    // Kalem → input modu (ön doldurulu)
+    editBtn.onclick = () => showInput(currentName);
+
+    // Çöp kutusu → onay → sil
+    deleteBtn.onclick = () => {
+        openConfirmModal(
+            t('privateLessons.partnerDeleteConfirm'),
+            async () => {
+                await updateLessonField(lesson.id, { partner_name: null }, t('privateLessons.partnerDeleted'));
+                lesson.partner_name = null;
+                closeModal();
+                renderDetailView(lesson);
+            },
+            () => { showView(nameDisplay.textContent); }
+        );
+    };
+
+    viewCloseBtn.onclick = closeModal;
+
+    // Kaydet → güncelle → görüntüleme moduna geri dön
+    saveBtn.onclick = async () => {
+        const val = input.value.trim() || null;
+        await updateLessonField(lesson.id, { partner_name: val }, t('privateLessons.toastSaved'));
+        lesson.partner_name = val;
+        if (val) {
+            showView(val);
+        } else {
+            closeModal();
+            renderDetailView(lesson);
+        }
+    };
+
+    // İptal → görüntüleme moduna geri dön
+    cancelBtn.onclick = () => showView(currentName);
+}
+
 async function updateLessonField(lessonId, fields, successMsg) {
     const { error } = await supabase.from('private_lessons')
         .update(fields).eq('id', lessonId);
