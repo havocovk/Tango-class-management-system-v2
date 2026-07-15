@@ -143,6 +143,8 @@ export function renderWorkshopAttendance() {
                 <button id="wsAddStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.addStudent')}</button>
                 <button id="wsImportStudentBtn" class="btn-success"><i data-lucide="users" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.importStudent')}</button>
                 <button id="wsAddWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.addWeek')}</button>
+            </div>
+            <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.payments')}</button>
                 <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? t('workshopAtt.hideArchive') : t('workshopAtt.showArchive')}</button>
             </div>
