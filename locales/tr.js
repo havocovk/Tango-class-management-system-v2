@@ -153,6 +153,8 @@ export const tr = {
         csvSuffixPay:   'odemeler',
         searchPlaceholder: 'Öğrenci ara...',
         archivedStudentsTooltip: 'Arşivlenmiş öğrenciler',
+        showArchive: 'Arşivi Göster',
+        hideArchive: 'Arşivi Gizle',
         statusPresent: 'Geldi',
         statusAbsent: 'Gelmedi',
         statusSkipped: 'S — Sonradan katıldı',
