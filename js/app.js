@@ -230,8 +230,10 @@ async function renderScreenFromState(state) {
         case 'mainMenu': {
             const mainMenuView = document.getElementById('mainMenuView');
             const dynamicView  = document.getElementById('dynamicView');
+            const langSwitcher = document.getElementById('langSwitcher');
             if (mainMenuView) mainMenuView.style.display = 'block';
             if (dynamicView)  dynamicView.style.display  = 'none';
+            if (langSwitcher) langSwitcher.style.display = 'block';
             const m = await import('./main_menu.js');
             await m.loadMainMenu();
             break;
