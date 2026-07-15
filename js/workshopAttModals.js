@@ -310,7 +310,7 @@ export function openWorkshopPartnerModal(dateId, current, onSave) {
         editBtn.onclick = () => showInput(current);
         deleteBtn.onclick = () => {
             openConfirmModal(
-                t('modals.partnerDeleteConfirm'),
+                t('attendance.partnerDeleteConfirm'),
                 async () => {
                     closeModal();
                     await updateWorkshopPartner(dateId, '');
@@ -393,7 +393,7 @@ export function openWorkshopNoteModal(dateId, current, onSave) {
         editBtn.onclick = () => showInput(current);
         deleteBtn.onclick = () => {
             openConfirmModal(
-                t('modals.noteDeleteConfirm'),
+                t('attendance.noteDeleteConfirm'),
                 async () => {
                     closeModal();
                     await updateWorkshopNote(dateId, '');

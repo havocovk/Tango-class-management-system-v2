@@ -480,7 +480,7 @@ export function openPartnerModal(courseDateId, current, onSave) {
 
         deleteBtn.onclick = () => {
             openConfirmModal(
-                t('modals.partnerDeleteConfirm'),
+                t('attendance.partnerDeleteConfirm'),
                 async () => {
                     closeModal();
                     await updateTeacherPartner(courseDateId, '');
@@ -587,7 +587,7 @@ export function openNoteModal(courseDateId, current, onSave) {
 
         deleteBtn.onclick = () => {
             openConfirmModal(
-                t('modals.noteDeleteConfirm'),
+                t('attendance.noteDeleteConfirm'),
                 async () => {
                     closeModal();
                     await updateNote(courseDateId, '');
