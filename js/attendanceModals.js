@@ -166,18 +166,28 @@ export async function openStudentProfileModal(student) {
     refreshIcons();
 
     // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
-    const totalDates = appState.courseDates.length;
 
-    let presentCount = 0; // '+' statüsü
-    let absentCount  = 0; // '-' statüsü
+    // 1. Sınıfın toplam dersi: iptal edilmiş haftalar HARİÇ
+    const totalDates = appState.courseDates.filter(d => !d.is_cancelled).length;
+
+    // 2. Öğrencinin her haftaki durumunu incele
+    let presentCount = 0;  // '+' statüsü: geldi
+    let absentCount  = 0;  // '-' statüsü: gelmedi
+    let activeCount  = 0;  // öğrencinin aktif olduğu ders sayısı
+                           // ('I' ve 'S' olmayan, iptal olmayan haftalar)
 
     appState.courseDates.forEach(d => {
+        if (d.is_cancelled) return; // iptal haftaları tamamen say dışı
         const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
+        // 'I' (inaktif) ve 'S' (sonradan katıldı / mazeretli) haftaları
+        // öğrencinin aktif sayısına dahil etme
+        if (status === 'I' || status === 'S') return;
+        activeCount++;
         if (status === '+') presentCount++;
         else if (status === '-') absentCount++;
     });
 
-    // Katılım oranı: sadece işaretlenmiş hücreler üzerinden hesapla
+    // 3. Katılım oranı: aktif haftalarda geldi / (geldi + gelmedi)
     const markedCount    = presentCount + absentCount;
     const attendanceRate = markedCount > 0
         ? Math.round((presentCount / markedCount) * 100)
@@ -190,7 +200,6 @@ export async function openStudentProfileModal(student) {
     // Son ödemenin başlangıç tarihi: start_date_id → courseDates içinde bul
     let lastPaymentDateStr = null;
     if (studentPayments.length > 0) {
-        // En yüksek start_date_id'ye sahip ödemeyi bul (sırayla eklendiği varsayılır)
         const lastPayment = studentPayments.reduce((latest, p) => {
             const latestDate = appState.courseDates.find(d => d.id === latest.start_date_id);
             const curDate    = appState.courseDates.find(d => d.id === p.start_date_id);
@@ -204,6 +213,7 @@ export async function openStudentProfileModal(student) {
 
     // ---- DOM güncelleme ----
     document.getElementById('profileTotalDates').textContent     = totalDates;
+    document.getElementById('profileActiveLessons').textContent  = activeCount;
     document.getElementById('profileAttendanceRate').textContent = `%${attendanceRate}`;
     document.getElementById('profileAbsenceCount').textContent   = absentCount;
     document.getElementById('profileTotalPaid').textContent      = `${totalPaid.toLocaleString('tr-TR')}₺`;

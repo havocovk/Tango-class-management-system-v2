@@ -153,8 +153,6 @@ export const tr = {
         csvSuffixPay:   'odemeler',
         searchPlaceholder: 'Öğrenci ara...',
         archivedStudentsTooltip: 'Arşivlenmiş öğrenciler',
-        showArchive: 'Arşivi Göster',
-        hideArchive: 'Arşivi Gizle',
         statusPresent: 'Geldi',
         statusAbsent: 'Gelmedi',
         statusSkipped: 'S — Sonradan katıldı',
@@ -188,15 +186,7 @@ export const tr = {
         studentArchived: 'Öğrenci arşivlendi ✓',
         studentUnarchived: 'Öğrenci arşivden çıkarıldı ✓',
         archiveTooltipUnarchive: 'Arşivden çıkar',
-        archiveTooltipArchive: 'Arşivle',
-        importStudent:      'Mevcut Öğrenci',
-        importTitle:        'Öğrenci Seç',
-        importEmpty:        'Sistemde kayıtlı öğrenci bulunamadı.',
-        importLoadFail:     'Öğrenciler yüklenemedi.',
-        importInvalid:      'Geçerli bir öğrenci seçin.',
-        importSuccess:      '{name} sınıfa eklendi ✓',
-        importFail:         'Öğrenci eklenemedi: {msg}',
-        importAlreadyIn:    'Bu öğrenci zaten bu sınıfta.'
+        archiveTooltipArchive: 'Arşivle'
     },
 
     // --- Yoklama modalları (attendanceModals.js) ---
@@ -227,12 +217,13 @@ export const tr = {
 
     // --- Öğrenci profil modalı ---
     profile: {
-        totalDates: 'Toplam Ders',
-        attendanceRate: 'Katılım Oranı',
-        absence: 'Devamsızlık',
-        totalPaid: 'Toplam Ödeme',
-        lastPayment: 'Son Ödeme:',
-        whatsapp: "💬 WhatsApp'ta Yaz"
+        totalDates:      'Sınıfın Toplam Dersi',
+        activeLesson:    'Öğrencinin Aktif Dersi',
+        attendanceRate:  'Katılım Oranı',
+        absence:         'Devamsızlık',
+        totalPaid:       'Toplam Ödeme',
+        lastPayment:     'Son Ödeme:',
+        whatsapp:        "💬 WhatsApp'ta Yaz"
     },
 
     // --- Hafta aksiyon menüsü ---

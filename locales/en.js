@@ -153,8 +153,6 @@ export const en = {
         csvSuffixPay:   'payments',
         searchPlaceholder: 'Search student...',
         archivedStudentsTooltip: 'Archived students',
-        showArchive: 'Show Archive',
-        hideArchive: 'Hide Archive',
         statusPresent: 'Present',
         statusAbsent: 'Absent',
         statusSkipped: 'S — Joined later',
@@ -188,15 +186,7 @@ export const en = {
         studentArchived: 'Student archived ✓',
         studentUnarchived: 'Student unarchived ✓',
         archiveTooltipUnarchive: 'Unarchive',
-        archiveTooltipArchive: 'Archive',
-        importStudent:      'Existing Student',
-        importTitle:        'Select Student',
-        importEmpty:        'No students found in the system.',
-        importLoadFail:     'Could not load students.',
-        importInvalid:      'Please select a valid student.',
-        importSuccess:      '{name} added to the class ✓',
-        importFail:         'Could not add student: {msg}',
-        importAlreadyIn:    'This student is already in this class.'
+        archiveTooltipArchive: 'Archive'
     },
 
     // --- Attendance modals (attendanceModals.js) ---
@@ -227,12 +217,13 @@ export const en = {
 
     // --- Student profile modal ---
     profile: {
-        totalDates: 'Total Lessons',
-        attendanceRate: 'Attendance Rate',
-        absence: 'Absences',
-        totalPaid: 'Total Paid',
-        lastPayment: 'Last Payment:',
-        whatsapp: '💬 Message on WhatsApp'
+        totalDates:      'Class Total Lessons',
+        activeLesson:    'Student Active Lessons',
+        attendanceRate:  'Attendance Rate',
+        absence:         'Absences',
+        totalPaid:       'Total Paid',
+        lastPayment:     'Last Payment:',
+        whatsapp:        '💬 Message on WhatsApp'
     },
 
     // --- Week action menu ---
