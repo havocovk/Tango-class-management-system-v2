@@ -166,18 +166,21 @@ export async function openStudentProfileModal(student) {
     refreshIcons();
 
     // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
+    // Bugünün tarihi: gelecek tarihli haftaları saymamak için
+    const todayStr = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
-    // 1. Sınıfın toplam dersi: iptal edilmiş haftalar HARİÇ
-    const totalDates = appState.courseDates.filter(d => !d.is_cancelled).length;
+    // 1. Sınıfın toplam dersi: iptal edilmiş haftalar VE gelecek tarihli haftalar HARİÇ
+    const totalDates = appState.courseDates.filter(d => !d.is_cancelled && d.date <= todayStr).length;
 
     // 2. Öğrencinin her haftaki durumunu incele
     let presentCount = 0;  // '+' statüsü: geldi
     let absentCount  = 0;  // '-' statüsü: gelmedi
     let activeCount  = 0;  // öğrencinin aktif olduğu ders sayısı
-                           // ('I' ve 'S' olmayan, iptal olmayan haftalar)
+                           // ('I' ve 'S' olmayan, iptal olmayan, geçmiş haftalar)
 
     appState.courseDates.forEach(d => {
-        if (d.is_cancelled) return; // iptal haftaları tamamen say dışı
+        if (d.is_cancelled) return;      // iptal haftaları say dışı
+        if (d.date > todayStr) return;   // gelecek tarihli haftaları say dışı
         const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
         // 'I' (inaktif) ve 'S' (sonradan katıldı / mazeretli) haftaları
         // öğrencinin aktif sayısına dahil etme

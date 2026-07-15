@@ -186,7 +186,15 @@ export const tr = {
         studentArchived: 'Öğrenci arşivlendi ✓',
         studentUnarchived: 'Öğrenci arşivden çıkarıldı ✓',
         archiveTooltipUnarchive: 'Arşivden çıkar',
-        archiveTooltipArchive: 'Arşivle'
+        archiveTooltipArchive:   'Arşivle',
+        importStudent:           'Mevcut Öğrenci',
+        importTitle:             'Öğrenci Seç',
+        importEmpty:             'Sistemde kayıtlı öğrenci bulunamadı.',
+        importLoadFail:          'Öğrenciler yüklenemedi.',
+        importInvalid:           'Geçerli bir öğrenci seçin.',
+        importSuccess:           '{name} sınıfa eklendi ✓',
+        importFail:              'Öğrenci eklenemedi: {msg}',
+        importAlreadyIn:         'Bu öğrenci zaten bu sınıfta.'
     },
 
     // --- Yoklama modalları (attendanceModals.js) ---
