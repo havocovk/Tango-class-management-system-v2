@@ -195,7 +195,13 @@ export const tr = {
         studentArchived: 'Öğrenci arşivlendi ✓',
         studentUnarchived: 'Öğrenci arşivden çıkarıldı ✓',
         archiveTooltipUnarchive: 'Arşivden çıkar',
-        archiveTooltipArchive: 'Arşivle'
+        archiveTooltipArchive: 'Arşivle',
+        importTitle: 'Öğrenci Seç',
+        importLoadFail: 'Öğrenciler yüklenemedi.',
+        importEmpty: 'Başka sınıfta kayıtlı öğrenci yok.',
+        importInvalid: 'Geçerli bir öğrenci seçin.',
+        importSuccess: '{name} sınıfa eklendi ✓',
+        importFail: 'Öğrenci eklenemedi: {msg}'
     },
 
     // --- Yoklama modalları (attendanceModals.js) ---
@@ -347,6 +353,7 @@ export const tr = {
         title:              'Çalıştay Yoklama',
         addStudent:         'Öğrenci Ekle',
         importStudent:      'Mevcut Öğrenci',
+        searchPlaceholder:  'Öğrenci ara...',
         addWeek:            'Hafta Ekle',
         payments:           'Ödemeler',
         showArchive:        'Arşivi Göster',
