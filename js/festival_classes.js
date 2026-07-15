@@ -90,7 +90,7 @@ function currencySelectHtml(festivalLocation, savedCurrency) {
     ).join('');
 
     return `<select id="fcCurrencySelect"
-        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;min-width:110px;">
+        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;flex-shrink:0;width:auto;max-width:120px;">
         ${opts}
     </select>`;
 }
