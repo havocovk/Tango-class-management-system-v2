@@ -90,7 +90,7 @@ function currencySelectHtml(festivalLocation, savedCurrency) {
     ).join('');
 
     return `<select id="fcCurrencySelect"
-        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;flex-shrink:0;width:95px;">
+        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;width:42%;box-sizing:border-box;">
         ${opts}
     </select>`;
 }
@@ -342,10 +342,10 @@ function openFestClassDetail(cls) {
                     <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600;">
                         <i data-lucide="banknote" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.earnedLabel')}
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;overflow:hidden;">
+                    <div style="display:flex;gap:8px;align-items:center;">
                         <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
                             placeholder="${t('festClasses.earnedPlaceholder')}" min="0"
-                            style="flex:1;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
+                            style="width:55%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                         ${currencySelectHtml(appState.currentFestival ? appState.currentFestival.location : '', cls.currency || '')}
                     </div>
                 </div>
