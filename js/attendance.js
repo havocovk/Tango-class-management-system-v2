@@ -198,10 +198,14 @@ function buildTableHTML() {
                 <div class="back-link" id="backToClassesBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToClasses'))}</div>
                 <button id="csvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
             </div>
-            <div class="nav-buttons" style="margin-bottom:10px;">
+            <div class="nav-buttons" style="margin-bottom:6px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
+                <button id="addExistingStudentBtn"><i data-lucide="user-check" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addExistingStudent'))}</button>
                 <button id="addWeekBtn"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addWeek'))}</button>
+            </div>
+            <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
+                <button id="showArchiveBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.showArchive'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
@@ -308,7 +312,15 @@ function attachEventListeners() {
 
         document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
         document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();
+        document.getElementById('addExistingStudentBtn').onclick = () => actions.importStudentFromClasses();
         document.getElementById('addWeekBtn').onclick       = () => actions.addWeek();
+        const showArchiveBtn = document.getElementById('showArchiveBtn');
+        if (showArchiveBtn) {
+            showArchiveBtn.addEventListener('click', () => {
+                appState.showArchivedStudents = !appState.showArchivedStudents;
+                renderAttendanceView();
+            });
+        }
         document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
             classId:   appState.currentClassId,
             className: appState.currentClassName

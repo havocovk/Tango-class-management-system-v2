@@ -134,8 +134,10 @@ export const tr = {
     // --- Yoklama ekranı ---
     attendance: {
         addStudent: 'Öğrenci Ekle',
+        addExistingStudent: 'Mevcut Öğrenci',
         addWeek: 'Hafta Ekle',
         payments: 'Ödemeler',
+        showArchive: 'Arşivi Göster',
         colStudent: 'Öğrenci',
         rowClassRecaps: 'Ders Videoları',
         rowPartner: 'Partner',

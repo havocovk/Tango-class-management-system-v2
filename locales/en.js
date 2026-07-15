@@ -134,8 +134,10 @@ export const en = {
     // --- Attendance screen ---
     attendance: {
         addStudent: 'Add Student',
+        addExistingStudent: 'Existing Student',
         addWeek: 'Add Week',
         payments: 'Payments',
+        showArchive: 'Show Archive',
         colStudent: 'Student',
         rowClassRecaps: 'Class Recaps',
         rowPartner: 'Partner',
