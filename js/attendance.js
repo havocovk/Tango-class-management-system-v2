@@ -208,6 +208,10 @@ function buildTableHTML() {
                 <button id="showArchiveBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.showArchive'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
+            <div style="display:flex; gap:8px; margin:8px 0 6px; align-items:center;">
+                <input id="studentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <button id="toggleArchivedStudentsBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;padding:9px 12px;font-size:12px;" title="${t('attendance.archivedStudentsTooltip')}"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;"></i></button>
+            </div>
             <div class="table-wrapper">
                 <table>
                     <thead><tr id="headerRow"><th>#</th><th>${escapeHtml(t('attendance.colStudent'))}</th>${appState.courseDates.map((d) => {
@@ -282,15 +286,34 @@ function attachEventListeners() {
         const actions = await import('./attendanceActions.js');
         const modals  = await import('./attendanceModals.js');
 
+        // ADIM 4.3 — Öğrenci arama / filtreleme
+        const searchInput = document.getElementById('studentSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                document.querySelectorAll('#studentRows tr').forEach(row => {
+                    // İkinci hücre (td:nth-child(2)) öğrenci adını içeriyor
+                    const nameCell = row.querySelector('td:nth-child(2)');
+                    if (!nameCell) return;
+                    const name = nameCell.textContent.trim().toLowerCase();
+                    row.style.display = name.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // ADIM 5.1 — Arşivlenmiş öğrencileri göster/gizle
+        const toggleArchStudentsBtn = document.getElementById('toggleArchivedStudentsBtn');
+        if (toggleArchStudentsBtn) {
+            toggleArchStudentsBtn.addEventListener('click', () => {
+                appState.showArchivedStudents = !appState.showArchivedStudents;
+                renderAttendanceView();
+            });
+        }
+
         document.getElementById('backToClassesBtn').onclick = () => goBackToClasses();
         document.getElementById('addStudentBtn').onclick    = () => actions.addStudent();
         document.getElementById('addExistingStudentBtn').onclick = () => actions.importStudentFromClasses();
         document.getElementById('addWeekBtn').onclick       = () => actions.addWeek();
-        document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
-            classId:   appState.currentClassId,
-            className: appState.currentClassName
-        });
-        document.getElementById('csvBtn').onclick = () => downloadAttendanceCsv();
         const showArchiveBtn = document.getElementById('showArchiveBtn');
         if (showArchiveBtn) {
             showArchiveBtn.addEventListener('click', () => {
@@ -298,6 +321,11 @@ function attachEventListeners() {
                 renderAttendanceView();
             });
         }
+        document.getElementById('paymentsBtn').onclick      = () => navigateTo('payments', {
+            classId:   appState.currentClassId,
+            className: appState.currentClassName
+        });
+        document.getElementById('csvBtn').onclick = () => downloadAttendanceCsv();
 
         document.querySelectorAll('.att-cell').forEach(cell => {
             cell.addEventListener('click', async (e) => {
