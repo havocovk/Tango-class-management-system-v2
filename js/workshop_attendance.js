@@ -191,11 +191,11 @@ export function renderWorkshopAttendance() {
                     showToast(t('classes.alertNoDate'), 'warning');
                     return;
                 }
-                // En son hafta tarihini bul (lesson_date alani, alfabetik sort)
-                const latestDateStr = appState.wsDates
+                // ILK hafta tarihini bul (calistaylar COUNT'lu tekrar icin baslangic onemli)
+                const firstDateStr = appState.wsDates
                     .map(d => d.lesson_date)
                     .sort()
-                    .pop();
+                    .shift();
                 // Ders saatini al
                 const lessonTime = (ws && ws.lesson_time)
                     ? ws.lesson_time.substring(0, 5)
@@ -205,10 +205,10 @@ export function renderWorkshopAttendance() {
                 const rrule = totalWeeks
                     ? `FREQ=WEEKLY;COUNT=${totalWeeks}`
                     : 'FREQ=WEEKLY';
-                // En son tarihin gun adini hesapla
+                // Ilk tarihin gun adini hesapla
                 // JS getDay(): 0=Pazar,1=Pzt,2=Sal,3=Car,4=Per,5=Cum,6=Cmt
                 // stats.days:  [0]=Pzt,[1]=Sal,[2]=Car,[3]=Per,[4]=Cum,[5]=Cmt,[6]=Paz
-                const [yr, mo, dy] = latestDateStr.split('-').map(Number);
+                const [yr, mo, dy] = firstDateStr.split('-').map(Number);
                 const dayIndex = new Date(yr, mo - 1, dy).getDay();
                 const dayNames = t('stats.days');
                 const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
@@ -220,7 +220,7 @@ export function renderWorkshopAttendance() {
                 // Google Calendar'i ac
                 openGoogleCalendarEvent(
                     title,
-                    latestDateStr,
+                    firstDateStr,
                     lessonTime,
                     rrule,
                     t('calendar.workshopDesc')
