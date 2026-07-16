@@ -662,5 +662,15 @@ export const en = {
         chartNoDatesBody: 'No lesson dates have been added for this class yet.',
         chartTitle: '{name} - Attendance Counts (lesson weeks)',
         days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    },
+
+    // --- Google Calendar Integration ---
+    calendar: {
+        addToCalendar:      'Add to Calendar',
+        groupClassDesc:     'Tango Group Class',
+        workshopDesc:       'Tango Workshop',
+        festivalClassDesc:  'Tango Festival Class',
+        privateLessonDesc:  'Tango Private Lesson'
     }
+
 };

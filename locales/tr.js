@@ -662,5 +662,15 @@ export const tr = {
         chartNoDatesBody: 'Bu sınıf için henüz ders tarihi eklenmemiş.',
         chartTitle: '{name} - Katılım Sayıları (ders haftaları)',
         days: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
+    },
+
+    // --- Google Calendar Entegrasyonu ---
+    calendar: {
+        addToCalendar:      'Takvime Ekle',
+        groupClassDesc:     'Tango Grup Dersi',
+        workshopDesc:       'Tango Çalıştay',
+        festivalClassDesc:  'Tango Festival Dersi',
+        privateLessonDesc:  'Tango Özel Dersi'
     }
+
 };
