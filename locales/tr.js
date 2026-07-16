@@ -670,7 +670,8 @@ export const tr = {
         groupClassDesc:     'Tango Grup Dersi',
         workshopDesc:       'Tango Çalıştay',
         festivalClassDesc:  'Tango Festival Dersi',
-        privateLessonDesc:  'Tango Özel Dersi'
+        privateLessonDesc:  'Tango Özel Dersi',
+        calendarWarning:    'Bu sınıf için daha önceki bir tarih aralığında takvim etkinliği oluşturduyssanız, o etkinliği Google Calendar’dan manuel olarak silmeyi unutmayınız.'
     }
 
 };

@@ -323,23 +323,35 @@ function attachEventListeners() {
         const calBtn = document.getElementById('calendarBtn');
         if (calBtn) {
             calBtn.addEventListener('click', () => {
-                const firstDate = appState.courseDates[0];
+                if (!appState.courseDates || appState.courseDates.length === 0) {
+                    showToast(t('classes.alertNoDate'), 'warning');
+                    return;
+                }
+                // En son ders tarihini bul (alfabetik sort ile en buyuk tarih)
+                const latestDateStr = appState.courseDates
+                    .map(d => d.date)
+                    .sort()
+                    .pop();
+                // Ders saatini al
                 const lessonTime = (appState.currentClass && appState.currentClass.lesson_time)
                     ? appState.currentClass.lesson_time.substring(0, 5)
                     : '19:00';
-                if (!firstDate) { showToast(t('classes.alertNoDate'), 'warning'); return; }
-                // Haftanin gun adini hesapla (0=Paz,...,1=Pzt)
-                const [yr, mo, dy] = firstDate.date.split('-').map(Number);
+                // En son tarihin gun adini hesapla
+                // JS getDay(): 0=Pazar, 1=Pzt, 2=Sal, 3=Car, 4=Per, 5=Cum, 6=Cmt
+                // stats.days:  [0]=Pzt,[1]=Sal,[2]=Car,[3]=Per,[4]=Cum,[5]=Cmt,[6]=Paz
+                const [yr, mo, dy] = latestDateStr.split('-').map(Number);
                 const dayIndex = new Date(yr, mo - 1, dy).getDay();
-                const dayNames = t('stats.days'); // ['Pzt','Sal',...,'Paz']
-                // JS: 0=Pazar,1=Pazartesi...6=Cumartesi
-                // stats.days: [0]=Pzt,[1]=Sal,...,[5]=Cmt,[6]=Paz
+                const dayNames = t('stats.days');
                 const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
                 const dayName = Array.isArray(dayNames) ? (dayNames[mappedIndex] || '') : '';
+                // Event basligini olustur: "SinifAdi - GunAdi"
                 const title = `${escapeHtml(appState.currentClassName)} - ${dayName}`;
+                // Uyari mesajini 5 saniye goster
+                showToast(t('calendar.calendarWarning'), 'warning');
+                // Google Calendar'i ac
                 openGoogleCalendarEvent(
                     title,
-                    firstDate.date,
+                    latestDateStr,
                     lessonTime,
                     'FREQ=WEEKLY',
                     t('calendar.groupClassDesc')

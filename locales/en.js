@@ -670,7 +670,8 @@ export const en = {
         groupClassDesc:     'Tango Group Class',
         workshopDesc:       'Tango Workshop',
         festivalClassDesc:  'Tango Festival Class',
-        privateLessonDesc:  'Tango Private Lesson'
+        privateLessonDesc:  'Tango Private Lesson',
+        calendarWarning:    'If you have previously created a calendar event for this class, please remember to manually delete it from Google Calendar before saving this new one.'
     }
 
 };
