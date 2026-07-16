@@ -5,7 +5,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { COUNTRY_CURRENCY } from './festivals.js';
-import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate } from './utils.js';
+import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate, openGoogleCalendarEvent } from './utils.js';
 import { navigateTo } from './router.js';
 import { t } from './i18n.js';
 import { appState } from './state.js';
@@ -186,6 +186,9 @@ function renderFestivalDetailView() {
                 <button class="btn-success" id="addFestClassBtn">
                     <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('festClasses.addLesson')}
                 </button>
+                <button id="fcCalendarBtn" class="btn-secondary" style="border-color:var(--accent);color:var(--accent);">
+                    <i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('calendar.addToCalendar'))}
+                </button>
             </div>
             <div id="festClassesList">${classesHtml}</div>
         </div>
@@ -193,6 +196,34 @@ function renderFestivalDetailView() {
 
     document.getElementById('backToFestivalsBtn').onclick = () => navigateTo('festivals');
     document.getElementById('addFestClassBtn').onclick    = () => openFestClassModal();
+
+    // Google Calendar entegrasyonu
+    const fcCalBtn = document.getElementById('fcCalendarBtn');
+    if (fcCalBtn) {
+        fcCalBtn.addEventListener('click', () => {
+            const fest = appState.currentFestival;
+            if (!fest || !fest.start_date) {
+                showToast(t('classes.alertNoDate'), 'warning');
+                return;
+            }
+            // Baslangic tarihini al (YYYY-MM-DD)
+            const startDateISO = fest.start_date.split('T')[0];
+            // Varsayilan saat
+            const lessonTime = '19:00';
+            // Event basligi: festival adi
+            const title = escapeHtml(appState.currentFestivalName || '');
+            // Uyari mesajini goster
+            showToast(t('calendar.calendarWarning'), 'warning');
+            // Google Calendar - tek seferlik etkinlik (rrule = null)
+            openGoogleCalendarEvent(
+                title,
+                startDateISO,
+                lessonTime,
+                null,
+                t('calendar.festivalClassDesc')
+            );
+        });
+    }
 
     document.querySelectorAll('[data-fc-goto]').forEach(el => {
         el.addEventListener('click', (e) => {
