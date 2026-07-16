@@ -37,7 +37,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { showWorkshopPayments } from './workshop_payments.js';
-import { refreshIcons, formatDate, openPromptModalWithValue, showToast, escapeHtml, isPastDate, openConfirmModal } from './utils.js';
+import { refreshIcons, formatDate, openPromptModalWithValue, showToast, escapeHtml, isPastDate, openConfirmModal, openGoogleCalendarEvent } from './utils.js';
 import { navigateTo } from './router.js';
 import { t } from './i18n.js';
 import { appState } from './state.js';
@@ -147,6 +147,7 @@ export function renderWorkshopAttendance() {
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="wsPaymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('workshopAtt.payments')}</button>
                 <button id="wsToggleArchivedBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${appState.showArchivedWsStudents ? t('workshopAtt.hideArchive') : t('workshopAtt.showArchive')}</button>
+                <button id="wsCalendarBtn" class="btn-secondary" style="border-color:var(--accent);color:var(--accent);"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
             </div>
             <div style="margin:8px 0 6px;">
                 <input id="wsStudentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
@@ -180,6 +181,52 @@ export function renderWorkshopAttendance() {
             appState.showArchivedWsStudents = !appState.showArchivedWsStudents;
             renderWorkshopAttendance();
         };
+
+        // Google Calendar entegrasyonu
+        const wsCalBtn = document.getElementById('wsCalendarBtn');
+        if (wsCalBtn) {
+            wsCalBtn.addEventListener('click', () => {
+                const ws = appState.currentWorkshop;
+                if (!appState.wsDates || appState.wsDates.length === 0) {
+                    showToast(t('classes.alertNoDate'), 'warning');
+                    return;
+                }
+                // En son hafta tarihini bul (lesson_date alani, alfabetik sort)
+                const latestDateStr = appState.wsDates
+                    .map(d => d.lesson_date)
+                    .sort()
+                    .pop();
+                // Ders saatini al
+                const lessonTime = (ws && ws.lesson_time)
+                    ? ws.lesson_time.substring(0, 5)
+                    : '19:00';
+                // Toplam hafta sayisini al (tekrar kurali icin)
+                const totalWeeks = (ws && ws.total_weeks) ? ws.total_weeks : null;
+                const rrule = totalWeeks
+                    ? `FREQ=WEEKLY;COUNT=${totalWeeks}`
+                    : 'FREQ=WEEKLY';
+                // En son tarihin gun adini hesapla
+                // JS getDay(): 0=Pazar,1=Pzt,2=Sal,3=Car,4=Per,5=Cum,6=Cmt
+                // stats.days:  [0]=Pzt,[1]=Sal,[2]=Car,[3]=Per,[4]=Cum,[5]=Cmt,[6]=Paz
+                const [yr, mo, dy] = latestDateStr.split('-').map(Number);
+                const dayIndex = new Date(yr, mo - 1, dy).getDay();
+                const dayNames = t('stats.days');
+                const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+                const dayName = Array.isArray(dayNames) ? (dayNames[mappedIndex] || '') : '';
+                // Event basligini olustur: "CalisatayAdi - GunAdi"
+                const title = `${escapeHtml(appState.currentWorkshopName || '')} - ${dayName}`;
+                // Uyari mesajini goster
+                showToast(t('calendar.calendarWarning'), 'warning');
+                // Google Calendar'i ac
+                openGoogleCalendarEvent(
+                    title,
+                    latestDateStr,
+                    lessonTime,
+                    rrule,
+                    t('calendar.workshopDesc')
+                );
+            });
+        }
 
         // Öğrenci arama / filtreleme
         const wsSearchInput = document.getElementById('wsStudentSearchInput');
