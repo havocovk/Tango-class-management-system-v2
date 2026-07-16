@@ -247,3 +247,63 @@ export function escapeHtml(str) {
         return m;
     });
 }
+// ---------------------------------------------------------------
+// GOOGLE CALENDAR ENTEGRASYONU
+// Etkinliği doğrudan Google Calendar'da açar.
+// Kullanıcı "Takvime Ekle" butonuna basınca Google Calendar
+// web sayfası önceden doldurulmuş şekilde açılır.
+//
+// PARAMETRELER:
+//   title        — Etkinlik başlığı (örn: "Grup Dersi - Pazartesi")
+//   startDateISO — Başlangıç tarihi "YYYY-MM-DD" formatında
+//   startTimeHM  — Başlangıç saati "HH:MM" formatında (Türkiye saati)
+//   rrule        — Tekrar kuralı (örn: "FREQ=WEEKLY" veya
+//                  "FREQ=WEEKLY;COUNT=5") — tekrar yoksa null
+//   description  — Etkinlik açıklaması — yoksa null
+//
+// SAAT DİLİMİ:
+//   Sistem Türkiye saatini (UTC+3) saklar.
+//   Google Calendar URL'i UTC ister (YYYYMMDDTHHmmssZ).
+//   Bu fonksiyon Türkiye saatini UTC'ye çevirir (3 saat çıkarır).
+// ---------------------------------------------------------------
+export function openGoogleCalendarEvent(title, startDateISO, startTimeHM, rrule, description) {
+    if (!startDateISO || !startTimeHM) return;
+
+    // "YYYY-MM-DD" + "HH:MM" → Date nesnesi (Türkiye saati olarak yorumla)
+    const [year, month, day]   = startDateISO.split('-').map(Number);
+    const [hour, minute]       = startTimeHM.split(':').map(Number);
+
+    // Türkiye saati UTC+3 → UTC'ye çevir: 3 saat çıkar
+    const startUTC = new Date(Date.UTC(year, month - 1, day, hour - 3, minute, 0));
+
+    // Etkinlik süresi: 1 saat
+    const endUTC = new Date(startUTC.getTime() + 60 * 60 * 1000);
+
+    // Google Calendar URL formatı: YYYYMMDDTHHmmssZ
+    function toGCalFormat(d) {
+        const yy  = d.getUTCFullYear();
+        const mo  = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const dd  = String(d.getUTCDate()).padStart(2, '0');
+        const hh  = String(d.getUTCHours()).padStart(2, '0');
+        const mi  = String(d.getUTCMinutes()).padStart(2, '0');
+        const ss  = String(d.getUTCSeconds()).padStart(2, '0');
+        return `${yy}${mo}${dd}T${hh}${mi}${ss}Z`;
+    }
+
+    const startStr = toGCalFormat(startUTC);
+    const endStr   = toGCalFormat(endUTC);
+
+    // Temel parametreler
+    const params = new URLSearchParams();
+    params.set('action', 'TEMPLATE');
+    params.set('text',   title || '');
+    params.set('dates',  `${startStr}/${endStr}`);
+    if (description) params.set('details', description);
+
+    // Tekrar kuralı varsa ekle
+    // Google Calendar "recur" parametresi RRULE: önekiyle bekler
+    if (rrule) params.set('recur', `RRULE:${rrule}`);
+
+    const url = `https://www.google.com/calendar/render?${params.toString()}`;
+    window.open(url, '_blank');
+}
