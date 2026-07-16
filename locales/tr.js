@@ -232,12 +232,13 @@ export const tr = {
 
     // --- Öğrenci profil modalı ---
     profile: {
-        totalDates: 'Toplam Ders',
+        totalDates:    'Sınıfın Toplam Dersi',
+        activeLesson:  'Öğrencinin Aktif Dersi',
         attendanceRate: 'Katılım Oranı',
-        absence: 'Devamsızlık',
-        totalPaid: 'Toplam Ödeme',
-        lastPayment: 'Son Ödeme:',
-        whatsapp: "💬 WhatsApp'ta Yaz"
+        absence:       'Devamsızlık',
+        totalPaid:     'Toplam Ödeme',
+        lastPayment:   'Son Ödeme:',
+        whatsapp:      "💬 WhatsApp'ta Yaz"
     },
 
     // --- Hafta aksiyon menüsü ---

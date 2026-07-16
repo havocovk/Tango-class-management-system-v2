@@ -166,18 +166,28 @@ export async function openStudentProfileModal(student) {
     refreshIcons();
 
     // ---- Hesaplamalar (appState verisinden, DB'ye gitmeden) ----
-    const totalDates = appState.courseDates.length;
+    // Bugünün tarihi: gelecek tarihli haftaları saymamak için
+    const todayStr = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
-    let presentCount = 0; // '+' statüsü
-    let absentCount  = 0; // '-' statüsü
+    // 1. Sınıfın toplam dersi: iptal + gelecek tarihli haftalar HARİÇ
+    const totalDates = appState.courseDates.filter(d => !d.is_cancelled && d.date <= todayStr).length;
+
+    // 2. Öğrencinin aktif olduğu ders sayısı ve devamsızlık
+    let presentCount = 0; // '+' statüsü: geldi
+    let absentCount  = 0; // '-' statüsü: gelmedi
+    let activeCount  = 0; // 'I' ve 'S' olmayan, iptal olmayan, geçmiş haftalar
 
     appState.courseDates.forEach(d => {
+        if (d.is_cancelled) return;       // iptal haftaları say dışı
+        if (d.date > todayStr) return;    // gelecek tarihli haftaları say dışı
         const status = appState.attendanceMap[`${student.id}_${d.id}`] || '';
+        if (status === 'I' || status === 'S') return; // inaktif ve mazeretli say dışı
+        activeCount++;
         if (status === '+') presentCount++;
         else if (status === '-') absentCount++;
     });
 
-    // Katılım oranı: sadece işaretlenmiş hücreler üzerinden hesapla
+    // 3. Katılım oranı: aktif haftalar üzerinden (geldi / (geldi + gelmedi))
     const markedCount    = presentCount + absentCount;
     const attendanceRate = markedCount > 0
         ? Math.round((presentCount / markedCount) * 100)
@@ -204,6 +214,7 @@ export async function openStudentProfileModal(student) {
 
     // ---- DOM güncelleme ----
     document.getElementById('profileTotalDates').textContent     = totalDates;
+    document.getElementById('profileActiveLesson').textContent   = activeCount;
     document.getElementById('profileAttendanceRate').textContent = `%${attendanceRate}`;
     document.getElementById('profileAbsenceCount').textContent   = absentCount;
     document.getElementById('profileTotalPaid').textContent      = `${totalPaid.toLocaleString('tr-TR')}₺`;

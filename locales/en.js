@@ -232,12 +232,13 @@ export const en = {
 
     // --- Student profile modal ---
     profile: {
-        totalDates: 'Total Lessons',
+        totalDates:    'Class Total Lessons',
+        activeLesson:  'Student Active Lessons',
         attendanceRate: 'Attendance Rate',
-        absence: 'Absences',
-        totalPaid: 'Total Paid',
-        lastPayment: 'Last Payment:',
-        whatsapp: '💬 Message on WhatsApp'
+        absence:       'Absences',
+        totalPaid:     'Total Paid',
+        lastPayment:   'Last Payment:',
+        whatsapp:      '💬 Message on WhatsApp'
     },
 
     // --- Week action menu ---
