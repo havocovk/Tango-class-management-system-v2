@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------
 
 import { supabase } from './supabaseClient.js';
-import { formatDate, isPastDate, refreshIcons, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml } from './utils.js';
+import { formatDate, isPastDate, refreshIcons, openPromptModalWithValue, openConfirmModal, showToast, escapeHtml, openGoogleCalendarEvent } from './utils.js';
 import { navigateTo } from './router.js';
 import { appState } from './state.js';
 import { cacheGet, cacheSet, getPendingChanges } from './offlineStore.js';
@@ -206,6 +206,7 @@ function buildTableHTML() {
             <div class="nav-buttons" style="margin-bottom:10px;">
                 <button id="paymentsBtn" class="btn-info"><i data-lucide="credit-card" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.payments'))}</button>
                 <button id="showArchiveBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.showArchive'))}</button>
+                <button id="calendarBtn" class="btn-secondary" style="border-color:var(--accent);color:var(--accent);"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
             </div>
             <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="margin:8px 0 6px;">
@@ -317,6 +318,34 @@ function attachEventListeners() {
             className: appState.currentClassName
         });
         document.getElementById('csvBtn').onclick = () => downloadAttendanceCsv();
+
+        // Google Calendar entegrasyonu
+        const calBtn = document.getElementById('calendarBtn');
+        if (calBtn) {
+            calBtn.addEventListener('click', () => {
+                const firstDate = appState.courseDates[0];
+                const lessonTime = (appState.currentClass && appState.currentClass.lesson_time)
+                    ? appState.currentClass.lesson_time.substring(0, 5)
+                    : '19:00';
+                if (!firstDate) { showToast(t('classes.alertNoDate'), 'warning'); return; }
+                // Haftanin gun adini hesapla (0=Paz,...,1=Pzt)
+                const [yr, mo, dy] = firstDate.date.split('-').map(Number);
+                const dayIndex = new Date(yr, mo - 1, dy).getDay();
+                const dayNames = t('stats.days'); // ['Pzt','Sal',...,'Paz']
+                // JS: 0=Pazar,1=Pazartesi...6=Cumartesi
+                // stats.days: [0]=Pzt,[1]=Sal,...,[5]=Cmt,[6]=Paz
+                const mappedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+                const dayName = Array.isArray(dayNames) ? (dayNames[mappedIndex] || '') : '';
+                const title = `${escapeHtml(appState.currentClassName)} - ${dayName}`;
+                openGoogleCalendarEvent(
+                    title,
+                    firstDate.date,
+                    lessonTime,
+                    'FREQ=WEEKLY',
+                    t('calendar.groupClassDesc')
+                );
+            });
+        }
 
         document.querySelectorAll('.att-cell').forEach(cell => {
             cell.addEventListener('click', async (e) => {
