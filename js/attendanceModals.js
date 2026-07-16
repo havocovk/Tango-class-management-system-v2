@@ -462,22 +462,16 @@ export function openPartnerModal(courseDateId, current, onSave) {
         setTimeout(() => input.focus(), 50);
     };
 
+    const closeModal = () => { modal.style.display = 'none'; };
+
     const showView = (name) => {
         nameDisplay.textContent = name;
         viewMode.style.display  = 'block';
         inputMode.style.display = 'none';
         modal.style.display     = 'flex';
         refreshIcons();
-    };
-
-    const closeModal = () => { modal.style.display = 'none'; };
-
-    if (current) {
-        // Dolu → görüntüleme modu
-        showView(current);
-
-        editBtn.onclick = () => showInput(current);
-
+        // refreshIcons() DOM'u yeniden oluşturur — handler'ları her seferinde yeniden bağla
+        editBtn.onclick = () => showInput(name);
         deleteBtn.onclick = () => {
             openConfirmModal(
                 t('attendance.partnerDeleteConfirm'),
@@ -489,8 +483,12 @@ export function openPartnerModal(courseDateId, current, onSave) {
                 () => { showView(nameDisplay.textContent); }
             );
         };
-
         viewCloseBtn.onclick = closeModal;
+    };
+
+    if (current) {
+        // Dolu → görüntüleme modu
+        showView(current);
     } else {
         // Boş → direkt input modu
         showInput('');
