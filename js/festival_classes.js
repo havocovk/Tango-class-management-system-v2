@@ -186,9 +186,6 @@ function renderFestivalDetailView() {
                 <button class="btn-success" id="addFestClassBtn">
                     <i data-lucide="plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${t('festClasses.addLesson')}
                 </button>
-                <button id="fcCalendarBtn" class="btn-secondary" style="border-color:var(--accent);color:var(--accent);">
-                    <i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('calendar.addToCalendar'))}
-                </button>
             </div>
             <div id="festClassesList">${classesHtml}</div>
         </div>
@@ -197,33 +194,6 @@ function renderFestivalDetailView() {
     document.getElementById('backToFestivalsBtn').onclick = () => navigateTo('festivals');
     document.getElementById('addFestClassBtn').onclick    = () => openFestClassModal();
 
-    // Google Calendar entegrasyonu
-    const fcCalBtn = document.getElementById('fcCalendarBtn');
-    if (fcCalBtn) {
-        fcCalBtn.addEventListener('click', () => {
-            const fest = appState.currentFestival;
-            if (!fest || !fest.start_date) {
-                showToast(t('classes.alertNoDate'), 'warning');
-                return;
-            }
-            // Baslangic tarihini al (YYYY-MM-DD)
-            const startDateISO = fest.start_date.split('T')[0];
-            // Varsayilan saat
-            const lessonTime = '19:00';
-            // Event basligi: festival adi
-            const title = escapeHtml(appState.currentFestivalName || '');
-            // Uyari mesajini goster
-            showToast(t('calendar.calendarWarning'), 'warning');
-            // Google Calendar - tek seferlik etkinlik (rrule = null)
-            openGoogleCalendarEvent(
-                title,
-                startDateISO,
-                lessonTime,
-                null,
-                t('calendar.festivalClassDesc')
-            );
-        });
-    }
 
     document.querySelectorAll('[data-fc-goto]').forEach(el => {
         el.addEventListener('click', (e) => {
@@ -352,7 +322,10 @@ function openFestClassDetail(cls) {
 
     container.innerHTML = `
         <div class="view">
-            <div class="back-link" id="backToFestDetailBtn">${t('festClasses.backToFestDetail')}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <div class="back-link" id="backToFestDetailBtn" style="margin-bottom:0;">${t('festClasses.backToFestDetail')}</div>
+                <button id="fcDetailCalendarBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-color:var(--accent);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
+            </div>
             <div class="main-title">${escapeHtml(cls.name)}</div>
             ${dt ? `<div style="text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:20px;">${dt}</div>` : ''}
 
@@ -426,6 +399,35 @@ function openFestClassDetail(cls) {
             festivalName: appState.currentFestivalName
         });
     };
+
+    // Google Calendar entegrasyonu - ders detay sayfasi
+    const fcDetailCalBtn = document.getElementById('fcDetailCalendarBtn');
+    if (fcDetailCalBtn) {
+        fcDetailCalBtn.addEventListener('click', () => {
+            if (!cls.lesson_date) {
+                showToast(t('classes.alertNoDate'), 'warning');
+                return;
+            }
+            // Ders tarihini al
+            const startDateISO = cls.lesson_date;
+            // Ders saatini al
+            const lessonTime = cls.lesson_time
+                ? cls.lesson_time.substring(0, 5)
+                : '19:00';
+            // Event basligi: "Festival Adi - Ders Adi"
+            const title = `${escapeHtml(appState.currentFestivalName || '')} - ${escapeHtml(cls.name || '')}`;
+            // Uyari mesajini goster
+            showToast(t('calendar.calendarWarning'), 'warning');
+            // Google Calendar - tek seferlik etkinlik (rrule = null)
+            openGoogleCalendarEvent(
+                title,
+                startDateISO,
+                lessonTime,
+                null,
+                t('calendar.festivalClassDesc')
+            );
+        });
+    }
 
     // Video ikonu tıklama
     document.getElementById('fcVideoIcon').onclick = () => {
