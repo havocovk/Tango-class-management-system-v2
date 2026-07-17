@@ -128,20 +128,19 @@ export async function addWorkshopWeek() {
 }
 
 // ---------------------------------------------------------------
-// Hafta sil — sırayla: yoklamalar → videolar → ders tarihi
+// Hafta sil — workshop_dates kaydını sil; workshop_attendance ve
+// workshop_videos tabloları ON DELETE CASCADE ile veritabanı
+// tarafında otomatik silinir.
 // ---------------------------------------------------------------
 export async function deleteWorkshopWeek(dateId) {
-    try {
-        await supabase.from('workshop_attendance').delete().eq('workshop_date_id', dateId);
-        await supabase.from('workshop_videos').delete().eq('workshop_date_id', dateId);
-        const { error } = await supabase.from('workshop_dates').delete().eq('id', dateId);
-        if (error) throw error;
-        showToast(t('workshopAtt.weekDeleted'), 'success');
-        await loadWorkshopData();
-        renderWorkshopAttendance();
-    } catch (err) {
-        showToast(t('workshopAtt.weekDeleteFail').replace('{msg}', err.message), 'error');
+    const { error } = await supabase.from('workshop_dates').delete().eq('id', dateId);
+    if (error) {
+        showToast(t('workshopAtt.weekDeleteFail').replace('{msg}', error.message), 'error');
+        return;
     }
+    showToast(t('workshopAtt.weekDeleted'), 'success');
+    await loadWorkshopData();
+    renderWorkshopAttendance();
 }
 
 // ---------------------------------------------------------------

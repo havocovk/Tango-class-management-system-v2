@@ -218,23 +218,19 @@ export async function addWeek() {
 }
 
 // ---------------------------------------------------------------
-// Hafta silme — sırayla: yoklamalar → videolar → ders tarihi
+// Hafta silme — course_dates kaydını sil; attendance ve videos
+// tabloları ON DELETE CASCADE ile veritabanı tarafında otomatik silinir.
 // renderAttendanceView'daki header th click'ten çağırılır
 // ---------------------------------------------------------------
 export async function deleteWeek(courseDateId) {
-    try {
-        const { error: attError } = await supabase.from('attendance').delete().eq('course_date_id', courseDateId);
-        if (attError) throw attError;
-        const { error: vidError } = await supabase.from('videos').delete().eq('course_date_id', courseDateId);
-        if (vidError) throw vidError;
-        const { error: dateError } = await supabase.from('course_dates').delete().eq('id', courseDateId);
-        if (dateError) throw dateError;
-        showToast(t('actions.weekDeleted'), 'success');
-        await loadAttendanceData();
-        renderAttendanceView();
-    } catch (err) {
+    const { error } = await supabase.from('course_dates').delete().eq('id', courseDateId);
+    if (error) {
         showToast(t('actions.weekDeleteFail'), 'error');
+        return;
     }
+    showToast(t('actions.weekDeleted'), 'success');
+    await loadAttendanceData();
+    renderAttendanceView();
 }
 
 // ---------------------------------------------------------------
