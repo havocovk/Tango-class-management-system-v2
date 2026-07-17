@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------
 
 import { supabase }       from './supabaseClient.js';
-import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate, openPromptModal } from './utils.js';
+import { refreshIcons, openConfirmModal, showToast, escapeHtml, formatDate, openPromptModal, openGoogleCalendarEvent } from './utils.js';
 import { navigateTo }     from './router.js';
 import { t }              from './i18n.js';
 import { appState }       from './state.js';
@@ -246,9 +246,12 @@ function renderDetailView(lesson) {
 
     container.innerHTML = `
         <div class="view">
-            <span class="back-link" id="plDetailBackBtn">
-                ${t('privateLessons.backToList')}
-            </span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <span class="back-link" id="plDetailBackBtn" style="margin-bottom:0;">
+                    ${t('privateLessons.backToList')}
+                </span>
+                <button id="plDetailCalendarBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-color:var(--accent);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
+            </div>
 
             <div class="main-title" style="margin-top:10px;">${t('privateLessons.detailTitle')}</div>
             <div style="text-align:center;font-size:15px;font-weight:600;color:var(--text-main);margin-bottom:24px;">
@@ -299,6 +302,30 @@ function renderDetailView(lesson) {
         appState.privateLessonsList = null;
         navigateTo('privateLessons');
     };
+
+    // Google Calendar entegrasyonu - ozel ders detay sayfasi
+    const plDetailCalBtn = document.getElementById('plDetailCalendarBtn');
+    if (plDetailCalBtn) {
+        plDetailCalBtn.addEventListener('click', () => {
+            if (!lesson.lesson_date) {
+                showToast(t('classes.alertNoDate'), 'warning');
+                return;
+            }
+            const startDateISO = lesson.lesson_date;
+            const lessonTime = lesson.lesson_time
+                ? lesson.lesson_time.substring(0, 5)
+                : '19:00';
+            const title = escapeHtml(lesson.student_name || '');
+            showToast(t('calendar.calendarWarning'), 'warning');
+            openGoogleCalendarEvent(
+                title,
+                startDateISO,
+                lessonTime,
+                null,
+                t('calendar.privateLessonDesc')
+            );
+        });
+    }
 
     // Partner ekle / düzenle
     document.getElementById('plPartnerEditBtn').onclick = () => {
