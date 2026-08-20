@@ -137,7 +137,7 @@ function renderSchoolsView() {
     const listDiv = document.getElementById('schoolsList');
     listDiv.innerHTML = '';
     if (appState.currentSchools.length === 0) {
-        listDiv.innerHTML = `<div style="text-align:center; color:var(--text-dim); padding:20px;">${escapeHtml(t('schools.empty'))}</div>`;
+        listDiv.innerHTML = `<div class="empty-state">${escapeHtml(t('schools.empty'))}</div>`;
     } else {
         appState.currentSchools.forEach(school => {
             const card = document.createElement('div');

@@ -60,7 +60,7 @@ function renderClassesView() {
     );
 
     if (visibleClasses.length === 0) {
-        listDiv.innerHTML = `<div style="text-align:center; color:var(--text-dim); padding:20px;">${escapeHtml(t('classes.empty'))}</div>`;
+        listDiv.innerHTML = `<div class="empty-state">${escapeHtml(t('classes.empty'))}</div>`;
     } else {
         visibleClasses.forEach(cls => {
             const card = document.createElement('div');

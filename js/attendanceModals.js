@@ -306,26 +306,14 @@ export async function handleVideo(courseDateId) {
         const modalTitle = modal.querySelector('h3');
         if (modalTitle) {
             modalTitle.innerHTML = `
-                <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
+                <i data-lucide="video" size="20" style="color:var(--primary); display:inline-block; vertical-align:middle;"></i>
                 <span style="vertical-align:middle;">${escapeHtml(t('modals.videoTitle'))}</span>
-                <span style="
-                    display:inline-block;
-                    vertical-align:middle;
-                    margin-left:8px;
-                    padding:2px 8px;
-                    border-radius:12px;
-                    font-size:11px;
-                    font-weight:700;
-                    letter-spacing:0.5px;
-                    background:${platform.color}22;
-                    color:${platform.color};
-                    border:1px solid ${platform.color}55;
-                ">${platform.name}</span>
+                <span class="platform-badge" style="letter-spacing:0.5px;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
             `;
         }
 
         linkDisplay.innerText    = existingUrl;
-        linkDisplay.style.color  = '#2DD4BF';
+        linkDisplay.style.color  = 'var(--primary)';
         modal.style.display      = 'flex';
 
         // ADIM 8.1 — WhatsApp paylaşım butonunu ayarla (alıcıyı WhatsApp'tan seçer)
@@ -383,7 +371,7 @@ export async function handleVideo(courseDateId) {
             const modalTitle = modal.querySelector('h3');
             if (modalTitle) {
                 modalTitle.innerHTML = `
-                    <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i>
+                    <i data-lucide="video" size="20" style="color:var(--primary); display: inline-block; vertical-align: middle;"></i>
                     <span style="vertical-align: middle;">${escapeHtml(t('modals.videoTitle'))}</span>
                 `;
             }
@@ -694,10 +682,10 @@ export function openWeekActionModal(dateId, dateStr, isCancelled) {
     // İptal/geri-al butonunun metnini ve rengini duruma göre ayarla
     if (isCancelled) {
         cancelBtn.innerHTML = `<i data-lucide="check-circle" size="15"></i>${escapeHtml(t('modals.weekCancelToggleUndo'))}`;
-        cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
+        cancelBtn.style.cssText = 'flex:1; background:var(--primary); border:none; color:#000; border-radius:var(--radius-md); padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     } else {
         cancelBtn.innerHTML = `<i data-lucide="ban" size="15"></i>${escapeHtml(t('modals.weekCancelToggleCancel'))}`;
-        cancelBtn.style.cssText = 'flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
+        cancelBtn.style.cssText = 'flex:1; background:var(--primary); border:none; color:#000; border-radius:var(--radius-md); padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;';
     }
 
     // "Haftayı Sil" butonu metnini de seçili dile göre ayarla

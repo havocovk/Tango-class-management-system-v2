@@ -192,13 +192,13 @@ export function handleWorkshopVideo(dateId) {
         const titleEl  = modal.querySelector('h3');
         if (titleEl) {
             titleEl.innerHTML = `
-                <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+                <i data-lucide="video" size="20" style="color:var(--primary);display:inline-block;vertical-align:middle;"></i>
                 <span style="vertical-align:middle;"> ${escapeHtml(t('modals.videoTitle'))}</span>
-                <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
+                <span class="platform-badge" style="background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
             `;
         }
         linkDisp.textContent = existingUrl;
-        linkDisp.style.color = '#2DD4BF';
+        linkDisp.style.color = 'var(--primary)';
         if (waBtn)    waBtn.style.display    = 'none';  // WA gizle
         if (noteDisp) noteDisp.style.display = 'none';  // not gizle
 
@@ -255,7 +255,7 @@ export function handleWorkshopVideo(dateId) {
             appState.wsVideoMap[dateId] = url.trim();
             showToast(t('workshopAtt.videoSaved'), 'success');
             const icon = document.querySelector(`.ws-vid-icon[data-wsdate-id="${dateId}"]`);
-            if (icon) { icon.style.color = '#2DD4BF'; }
+            if (icon) { icon.style.color = 'var(--primary)'; }
         });
     }
 }

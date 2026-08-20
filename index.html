@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Tango Dersleri Yönetim Sistemi</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <!-- ADIM 7.1 — PWA manifest: ana ekrana ekle desteği -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2DD4BF">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -33,7 +33,7 @@
 <!-- ========== GİRİŞ (LOGIN) EKRANI ========== -->
 <div id="loginScreen" style="display:none;">
     <div class="login-card">
-        <img class="login-logo" src="/favicon.png" alt="logo" width="72" height="72">
+        <img class="login-logo" src="favicon.png" alt="logo" width="72" height="72">
         <h2 class="login-title" data-i18n="login.title">Tango Class Management</h2>
         <p class="login-subtitle" data-i18n="login.subtitle">Devam etmek için giriş yapın</p>
         <input type="email" id="loginEmail" placeholder="E-posta" data-i18n-placeholder="login.email" autocomplete="username">
@@ -61,13 +61,13 @@
         <h3 style="margin-top:0;" data-i18n="newClass.title">Yeni Sınıf Oluştur</h3>
         <input type="text" id="newClassName" placeholder="Sınıf adını giriniz" data-i18n-placeholder="newClass.namePlaceholder" autocomplete="off" style="width:100%; margin-bottom:15px;">
         <div style="display:flex; align-items: center; gap: 8px; margin-bottom:20px;">
-            <input type="text" id="newClassDateDisplay" readonly placeholder="Gün/Ay/Yıl" data-i18n-placeholder="newClass.datePlaceholder" style="flex:1; background:#1e293b; color:white;" value="">
+            <input type="text" id="newClassDateDisplay" readonly placeholder="Gün/Ay/Yıl" data-i18n-placeholder="newClass.datePlaceholder" style="flex:1; background:var(--input-bg); color:white;" value="">
             <span id="calendarIconBtn" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
         </div>
         <input type="date" id="hiddenDatePicker" style="display:none;">
-        <input type="text" id="newClassTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:15px;">
+        <input type="text" id="newClassTime" value="19:00" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:15px;">
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="newClassConfirmBtn" data-i18n="newClass.create">Oluştur</button>
             <button class="btn-secondary" id="newClassCancelBtn" data-i18n="common.cancel">İptal</button>
@@ -130,7 +130,7 @@
         <!-- Giriş modu: not boş veya düzenleme -->
         <div id="noteInputMode" style="display:none;">
             <h3 id="noteModalTitle" style="margin-top:0;"></h3>
-            <textarea id="noteTextarea" placeholder="" autocomplete="off" style="width:100%;box-sizing:border-box;min-height:150px;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;line-height:1.6;resize:vertical;font-family:inherit;"></textarea>
+            <textarea id="noteTextarea" placeholder="" autocomplete="off" style="width:100%;box-sizing:border-box;min-height:150px;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;line-height:1.6;resize:vertical;font-family:inherit;"></textarea>
             <div style="display:flex;gap:10px;margin-top:15px;">
                 <button class="btn-success" id="noteSaveBtn" data-i18n="common.ok">Tamam</button>
                 <button class="btn-secondary" id="noteCancelBtn" data-i18n="common.cancel">İptal</button>
@@ -211,7 +211,7 @@
         <input type="text" id="editClassNameInput" placeholder="Sınıf adı" data-i18n-placeholder="editClass.namePlaceholder" autocomplete="off" style="width:100%; margin-bottom:12px;">
         <!-- Yeni tarih seçici (readonly + ikon) -->
         <div style="display:flex; align-items: center; gap: 8px; margin-bottom:12px;">
-            <input type="text" id="editClassNewDateDisplay" readonly placeholder="GG/AA/YYYY" data-i18n-placeholder="editClass.datePlaceholder" style="flex:1; background:#1e293b; color:white;">
+            <input type="text" id="editClassNewDateDisplay" readonly placeholder="GG/AA/YYYY" data-i18n-placeholder="editClass.datePlaceholder" style="flex:1; background:var(--input-bg); color:white;">
             <span id="editClassCalendarIcon" style="cursor:pointer; color:var(--primary); display: inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
@@ -219,10 +219,37 @@
         <!-- Gizli date picker -->
         <input type="date" id="hiddenEditClassDatePicker" style="display:none;">
         <p style="font-size:12px; color:var(--text-dim); margin-bottom:12px;" data-i18n="editClass.info">Yeni tarih girerseniz, bu tarih mevcut ders listesine eklenir ve sonraki haftalar bu tarihe göre eklenir.</p>
-        <input type="text" id="editClassTime" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
+        <input type="text" id="editClassTime" placeholder="SS:DD (örn: 19:00)" maxlength="5" autocomplete="off" style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
         <div style="display:flex; gap:10px;">
             <button class="btn-success" id="editClassSaveBtn" data-i18n="common.save">Kaydet</button>
             <button class="btn-secondary" id="editClassCancelBtn" data-i18n="common.cancel">İptal</button>
+        </div>
+    </div>
+</div>
+
+<!-- Kazanç ayarları modalı -->
+<div id="earningsSettingsModal" class="modal">
+    <div class="modal-content">
+        <h3 data-i18n="earningsSettings.title">Kazanç Ayarları</h3>
+        <select id="earningsModelSelect" style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
+            <option value="" data-i18n="earningsSettings.selectPlaceholder">Seçiniz</option>
+            <option value="commission" data-i18n="earningsSettings.modelCommission">Komisyonlu Eğitmen</option>
+            <option value="freelance" data-i18n="earningsSettings.modelFreelance">Bağımsız (Stüdyo Kiralama)</option>
+            <option value="owner" data-i18n="earningsSettings.modelOwner">Okul Sahibi</option>
+        </select>
+        <div id="earningsCommissionFields" style="display:none;">
+            <input type="number" id="earningsCommissionPercent" placeholder="%" data-i18n-placeholder="earningsSettings.commissionPercentPlaceholder" style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
+        </div>
+        <div id="earningsFreelanceFields" style="display:none;">
+            <input type="number" id="earningsRentalPerLesson" placeholder="Ders başı kira" data-i18n-placeholder="earningsSettings.rentalPlaceholder" style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-size:13px;">
+                <input type="checkbox" id="earningsHasPartner">
+                <span data-i18n="earningsSettings.hasPartnerLabel">Partnerli ders veriyorum</span>
+            </label>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-success" id="earningsSettingsSaveBtn" data-i18n="common.save">Kaydet</button>
+            <button class="btn-secondary" id="earningsSettingsCancelBtn" data-i18n="common.cancel">İptal</button>
         </div>
     </div>
 </div>
@@ -270,7 +297,7 @@
                     <span style="color:var(--primary); display:inline-flex;"><i data-lucide="phone" size="16"></i></span>
                     <span id="profilePhoneDisplay" style="font-size:13px; font-weight:600; color:var(--text-main);"></span>
                 </div>
-                <a id="profileWhatsAppBtn" href="#" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:#128C7E; color:white; text-decoration:none; padding:8px 14px; border-radius:10px; font-size:12px; font-weight:700;" data-i18n="profile.whatsapp">💬 WhatsApp'ta Yaz</a>
+                <a id="profileWhatsAppBtn" href="#" target="_blank" class="whatsapp-pill whatsapp-pill--lg" data-i18n="profile.whatsapp">💬 WhatsApp'ta Yaz</a>
             </div>
         </div>
         <button class="btn-secondary" id="profileCloseBtn" style="width:100%; margin-top:22px;" data-i18n="common.close">Kapat</button>
@@ -283,7 +310,7 @@
         <h3 id="weekActionTitle" style="margin-top:0; color:var(--primary); text-align:center; font-size:18px;"></h3>
         <p style="font-size:13px; color:var(--text-dim); margin:6px 0 20px; text-align:center;" data-i18n="week.question">Bu hafta için ne yapmak istersiniz?</p>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button id="weekActionCancelToggleBtn" style="flex:1; background:#2DD4BF; border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
+            <button id="weekActionCancelToggleBtn" style="flex:1; background:var(--primary); border:none; color:#000; border-radius:var(--radius-md); padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
                 <i data-lucide="ban" size="15"></i>Haftayı İptal Et
             </button>
             <button id="weekActionDeleteBtn" style="flex:1; background:var(--danger); border:none; color:#000; border-radius:12px; padding:12px 8px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer;">
@@ -298,14 +325,14 @@
 <div id="videoModal" class="modal">
     <div class="modal-content" style="max-width: 400px; text-align: center;">
         <h3 style="margin-top:0; text-align: center;">
-            <i data-lucide="video" size="20" style="color:#2DD4BF; display: inline-block; vertical-align: middle;"></i> 
+            <i data-lucide="video" size="20" style="color:var(--primary); display: inline-block; vertical-align: middle;"></i>
             <span style="vertical-align: middle;" data-i18n="video.title">Lesson Recap</span>
         </h3>
         <!-- ADIM 8.2 — Bu haftanın ders notu (varsa video modalında gösterilir) -->
         <p id="videoNoteDisplay" style="display:none; font-size:12px; color:var(--text-dim); background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:8px; margin:0 0 8px; text-align:left; border:1px solid var(--border); line-height:1.5;"></p>
-        <p id="videoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:8px; font-size:13px; margin:20px 0; color: #2DD4BF; border: 1px solid rgba(45,212,191,0.3);"></p>
+        <p id="videoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:var(--radius-sm); font-size:13px; margin:20px 0; color: var(--primary); border: 1px solid rgba(45,212,191,0.3);"></p>
         <div style="display:flex; gap:24px; justify-content: center; margin-top:10px; align-items:center;">
-            <span id="watchVideoBtn" style="cursor:pointer; color: #2DD4BF; transition: transform 0.2s;">
+            <span id="watchVideoBtn" style="cursor:pointer; color: var(--primary); transition: transform var(--duration-fast) var(--ease-standard);">
                 <i data-lucide="play" size="32"></i>
             </span>
             <span id="deleteVideoBtn" style="cursor:pointer; color: var(--danger); transition: transform 0.2s;">
@@ -336,7 +363,7 @@
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <input type="text" id="wsStartDateDisplay" readonly placeholder="Başlangıç tarihi"
-                style="flex:1; background:#1e293b; color:white;">
+                style="flex:1; background:var(--input-bg); color:white;">
             <span id="wsCalendarIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
@@ -349,7 +376,7 @@
 
         <!-- Hafta sayısı -->
         <input type="number" id="wsTotalWeeks" placeholder="Hafta sayısı (4, 6, 8...)" min="1" max="52"
-            style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+            style="width:100%; margin-bottom:12px; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
 
         <!-- Tema -->
         <input type="text" id="wsTheme" placeholder="Tema (opsiyonel, örn: Vals, Tango)" autocomplete="off"
@@ -357,7 +384,7 @@
 
         <!-- Ödeme türü -->
         <select id="wsPaymentType"
-            style="width:100%; margin-bottom:12px; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+            style="width:100%; margin-bottom:12px; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
             <option value="upfront">Baştan Ödeme</option>
             <option value="weekly">Haftalık Ödeme</option>
         </select>
@@ -365,13 +392,13 @@
         <!-- Baştan ödeme fiyatı -->
         <div id="wsUpfrontPriceRow" style="margin-bottom:12px;">
             <input type="number" id="wsTotalPrice" placeholder="Toplam ücret (₺)" min="0"
-                style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+                style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
         </div>
 
         <!-- Haftalık ödeme fiyatı -->
         <div id="wsWeeklyPriceRow" style="margin-bottom:12px; display:none;">
             <input type="number" id="wsWeeklyPrice" placeholder="Haftalık ücret (₺)" min="0"
-                style="width:100%; background:#1e293b; color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
+                style="width:100%; background:var(--input-bg); color:white; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px;">
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -395,7 +422,7 @@
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <input type="text" id="festStartDateDisplay" readonly placeholder="Başlangıç tarihi"
-                style="flex:1; background:#1e293b; color:white;">
+                style="flex:1; background:var(--input-bg); color:white;">
             <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
@@ -405,7 +432,7 @@
         <!-- Bitiş tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
             <input type="text" id="festEndDateDisplay" readonly placeholder="Bitiş tarihi (opsiyonel)"
-                style="flex:1; background:#1e293b; color:white;">
+                style="flex:1; background:var(--input-bg); color:white;">
             <span id="festEndCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
@@ -430,7 +457,7 @@
         <!-- Tarih -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <input type="text" id="fcDateDisplay" readonly placeholder="Ders tarihi"
-                style="flex:1; background:#1e293b; color:white;">
+                style="flex:1; background:var(--input-bg); color:white;">
             <span id="fcCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
             </span>
@@ -452,10 +479,10 @@
 <div id="festVideoModal" class="modal">
     <div class="modal-content" style="max-width:420px; text-align:center;">
         <h3 id="festVideoModalTitle" style="margin-top:0; text-align:center;">
-            <i data-lucide="video" size="20" style="color:#2DD4BF; display:inline-block; vertical-align:middle;"></i>
+            <i data-lucide="video" size="20" style="color:var(--primary); display:inline-block; vertical-align:middle;"></i>
             <span style="vertical-align:middle;"> Ders Videosu</span>
         </h3>
-        <p id="festVideoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:8px; font-size:13px; margin:16px 0; color:#2DD4BF; border:1px solid rgba(45,212,191,0.3);"></p>
+        <p id="festVideoLinkDisplay" style="word-break:break-all; background:rgba(45,212,191,0.1); padding:12px; border-radius:var(--radius-sm); font-size:13px; margin:16px 0; color:var(--primary); border:1px solid rgba(45,212,191,0.3);"></p>
         <!-- Embed oynatıcı (YouTube/Vimeo için) -->
         <div id="festVideoEmbedContainer" style="display:none; margin:0 0 16px; border-radius:10px; overflow:hidden; background:#000;">
             <div style="position:relative; padding-bottom:56.25%; height:0;">
@@ -464,7 +491,7 @@
             </div>
         </div>
         <div style="display:flex; gap:24px; justify-content:center; align-items:center; margin-bottom:16px;">
-            <span id="festVideoPlayBtn" style="cursor:pointer; color:#2DD4BF; transition:transform 0.2s;">
+            <span id="festVideoPlayBtn" style="cursor:pointer; color:var(--primary); transition:transform var(--duration-fast) var(--ease-standard);">
                 <i data-lucide="play" size="32"></i>
             </span>
             <span id="festVideoDeleteBtn" style="cursor:pointer; color:var(--danger); transition:transform 0.2s;">
@@ -489,7 +516,7 @@
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('./sw.js')
                 .then((reg) => {
                     console.log('[SW] Kayıt başarılı:', reg.scope);
 
@@ -508,7 +535,7 @@
 
                     // Her 30 saniyede bir SW güncellemesini zorla kontrol et
                     setInterval(() => {
-                        fetch('/sw.js', { cache: 'no-store' }).then(() => reg.update());
+                        fetch('./sw.js', { cache: 'no-store' }).then(() => reg.update());
                     }, 30000);
                 })
                 .catch((err) => {
@@ -530,12 +557,12 @@
         banner.id = 'swUpdateBanner';
         banner.style.cssText = [
             'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:300000',
-            'background:#1a3a2a', 'border-bottom:2px solid #2DD4BF',
-            'color:#2DD4BF', 'display:flex', 'align-items:center',
+            'background:#1a3a2a', 'border-bottom:2px solid var(--primary)',
+            'color:var(--primary)', 'display:flex', 'align-items:center',
             'justify-content:space-between', 'padding:10px 16px',
             'font-size:13px', 'font-weight:600', 'gap:12px'
         ].join(';');
-        banner.innerHTML = '<span>🔄 Güncelleme hazır</span><button onclick="applyUpdate()" style="flex:none;min-width:auto;width:auto;padding:7px 14px;font-size:12px;font-weight:700;background:#2DD4BF;color:#000;border:none;border-radius:8px;cursor:pointer;">Yenile</button>';
+        banner.innerHTML = '<span>🔄 Güncelleme hazır</span><button onclick="applyUpdate()" style="flex:none;min-width:auto;width:auto;padding:7px 14px;font-size:12px;font-weight:700;background:var(--primary);color:#000;border:none;border-radius:var(--radius-sm);cursor:pointer;">Yenile</button>';
         document.body.prepend(banner);
     }
 

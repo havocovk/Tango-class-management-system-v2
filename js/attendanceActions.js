@@ -140,6 +140,17 @@ export async function updateStudentName(studentId, newName, phone) {
 // sil butonundan çağırır
 // ---------------------------------------------------------------
 export async function deleteStudent(studentId) {
+    const { data: existingPayments, error: checkError } = await supabase
+        .from('payments').select('id').eq('student_id', studentId).limit(1);
+    if (checkError) {
+        showToast(t('actions.studentDeleteFail'), 'error');
+        return false;
+    }
+    if (existingPayments && existingPayments.length > 0) {
+        showToast(t('actions.studentDeleteHasPayments'), 'error');
+        return false;
+    }
+
     const { error } = await supabase.from('students').delete().eq('id', studentId);
     if (error) {
         showToast(t('actions.studentDeleteFail'), 'error');
@@ -271,7 +282,7 @@ export async function importStudentFromClasses() {
     if (!selectEl) {
         selectEl = document.createElement('select');
         selectEl.id = 'attImportSelect';
-        selectEl.style.cssText = 'width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
+        selectEl.style.cssText = 'width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
         inputEl.parentNode.insertBefore(selectEl, inputEl);
     }
     selectEl.style.display = 'block';

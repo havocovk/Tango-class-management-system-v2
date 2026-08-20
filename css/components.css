@@ -13,11 +13,11 @@
 .vid-icon {
     cursor: pointer;
     color: var(--dim-forest);
-    transition: 0.3s;
+    transition: var(--duration-fast) var(--ease-standard);
 }
 .vid-icon.active {
-    color: #2DD4BF;
-    filter: drop-shadow(0 0 5px #2DD4BF);
+    color: var(--primary);
+    filter: drop-shadow(0 0 5px var(--primary));
 }
 
 /* ---------------------------------------------------------------
@@ -45,7 +45,7 @@
     max-width: 340px;
     text-align: center;
     border: 1px solid var(--primary);
-    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalPop var(--duration-slow) var(--ease-emphasis);
 }
 .modal-content input, .modal-content select {
     width: 100%;
@@ -53,7 +53,7 @@
     margin: 10px 0;
     border: 1px solid var(--border);
     border-radius: 8px;
-    background: #1e293b;
+    background: var(--input-bg);
     color: white;
     box-sizing: border-box;
 }
@@ -64,10 +64,10 @@
     padding: 10px;
     flex: 0 1 auto !important;
     min-width: auto !important;
-    transition: transform 0.2s;
+    transition: transform var(--duration-fast) var(--ease-standard);
 }
 .video-action-btn:active { transform: scale(0.9); }
-.icon-watch { color: #2DD4BF; }
+.icon-watch { color: var(--primary); }
 .icon-delete-alt { color: var(--danger); }
 
 /* Modal içindeki success butonları */
@@ -75,7 +75,7 @@
 #doubleInputModal .btn-success,
 #confirmModal .btn-danger,
 #editClassModal .btn-success {
-    background: #2DD4BF !important;
+    background: var(--primary) !important;
     color: #000 !important;
 }
 
@@ -83,7 +83,7 @@
 #calendarIconBtn:hover {
     transform: scale(1.05);
     filter: drop-shadow(0 0 4px var(--primary));
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) var(--ease-standard);
 }
 
 /* Takvim ikonu hover efekti (hem yeni sınıf hem düzenleme modalı için) */
@@ -91,7 +91,7 @@
 #editClassCalendarIcon:hover {
     transform: scale(1.05);
     filter: drop-shadow(0 0 4px var(--primary));
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) var(--ease-standard);
 }
 
 /* ---------------------------------------------------------------
@@ -213,7 +213,7 @@ tfoot th.sticky-col:nth-child(2) {
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     opacity: 0;
     transform: translateY(16px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity var(--duration-base) var(--ease-standard), transform var(--duration-base) var(--ease-standard);
     pointer-events: auto;
 }
 
@@ -301,10 +301,13 @@ tfoot th.sticky-col:nth-child(2) {
 .summary-dates   { border-color: rgba(59,130,246,0.4); }
 .summary-dates   .summary-value { color: var(--info); }
 
+.summary-net     { border-color: rgba(251,146,60,0.4); }
+.summary-net     .summary-value { color: #fb923c; }
+
 .debt-badge {
     display: inline-block;
     padding: 4px 8px;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-size: 11px;
     font-weight: 700;
     white-space: nowrap;
@@ -386,7 +389,7 @@ tfoot th.sticky-col:nth-child(2) {
 
 /* Ana menü sarmalayıcı — tüm içeriği dikey sıralar */
 .main-menu-view {
-    animation: fadeIn 0.4s ease-out forwards;
+    animation: fadeIn var(--duration-slow) var(--ease-standard) forwards;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -406,12 +409,12 @@ tfoot th.sticky-col:nth-child(2) {
 /* Uygulama başlığı (Ana menüde) */
 .main-menu-title {
     text-align: center;
-    font-size: 28px;
-    font-weight: 800;
+    font: var(--font-hero);
+    letter-spacing: -0.01em;
     margin-top: 0;
     margin-bottom: 28px;
     color: var(--primary);
-    text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+    text-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
 }
 
 /* 4 butonluk ızgara */
@@ -437,21 +440,33 @@ tfoot th.sticky-col:nth-child(2) {
     font-weight: 700;
     color: #000;
     min-height: 110px;
-    transition: transform 0.18s, box-shadow 0.18s;
+    transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
     -webkit-user-select: none;
     user-select: none;
     flex: unset;
     min-width: unset;
     width: 100%;
+    opacity: 0;
+    animation: menuBtnIn var(--duration-base) var(--ease-standard) forwards;
 }
 
 .menu-btn:active {
     transform: scale(0.96);
 }
 
+@keyframes menuBtnIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.main-menu-grid .menu-btn:nth-child(1) { animation-delay: 0ms; }
+.main-menu-grid .menu-btn:nth-child(2) { animation-delay: 30ms; }
+.main-menu-grid .menu-btn:nth-child(3) { animation-delay: 60ms; }
+.main-menu-grid .menu-btn:nth-child(4) { animation-delay: 90ms; }
+
 /* Grup Dersleri — teal (birincil renk) */
 .menu-btn-group {
-    background: linear-gradient(135deg, #2DD4BF 0%, #0ea5a0 100%);
+    background: linear-gradient(135deg, var(--group-start) 0%, var(--group-end) 100%);
     box-shadow: 0 4px 18px rgba(45, 212, 191, 0.35);
 }
 .menu-btn-group:hover {
@@ -460,7 +475,7 @@ tfoot th.sticky-col:nth-child(2) {
 
 /* Çalıştaylar — mor */
 .menu-btn-workshop {
-    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--workshop-start) 0%, var(--workshop-end) 100%);
     box-shadow: 0 4px 18px rgba(167, 139, 250, 0.35);
     color: #fff;
 }
@@ -470,7 +485,7 @@ tfoot th.sticky-col:nth-child(2) {
 
 /* Festivaller — amber/turuncu */
 .menu-btn-festival {
-    background: linear-gradient(135deg, #FBBF24 0%, #d97706 100%);
+    background: linear-gradient(135deg, var(--festival-start) 0%, var(--festival-end) 100%);
     box-shadow: 0 4px 18px rgba(251, 191, 36, 0.35);
 }
 .menu-btn-festival:hover {
@@ -479,7 +494,7 @@ tfoot th.sticky-col:nth-child(2) {
 
 /* Özel Dersler — pembe/kırmızı */
 .menu-btn-private {
-    background: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+    background: linear-gradient(135deg, var(--private-start) 0%, var(--private-end) 100%);
     box-shadow: 0 4px 18px rgba(244, 114, 182, 0.35);
     color: #fff;
 }
@@ -504,4 +519,92 @@ tfoot th.sticky-col:nth-child(2) {
     font-weight: 800;
     text-align: center;
     line-height: 1.2;
+}
+
+/* ================================================================
+   PAYLAŞILAN BİLEŞEN SINIFLARI
+   Daha önce dosyadan dosyaya ayrı ayrı inline yazılan tekrarlayan
+   kalıpları tek yerde tanımlar (Faz 1 — sadece tanım, kullanım Faz 2'de)
+   ================================================================ */
+
+/* ---------------------------------------------------------------
+   .btn-ghost — çerçeveli, saydam arkaplanlı küçük buton
+   (CSV indir, takvime ekle, yedekle/geri yükle/çıkış gibi ikincil aksiyonlar)
+--------------------------------------------------------------- */
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    background: transparent;
+    border: 1.5px solid var(--primary);
+    border-radius: var(--radius-sm);
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--duration-fast) var(--ease-standard);
+}
+.btn-ghost:active {
+    background: rgba(45, 212, 191, 0.12);
+}
+.btn-ghost--accent {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.btn-ghost--danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+/* ---------------------------------------------------------------
+   .whatsapp-pill — WhatsApp linki için marka renkli küçük buton
+--------------------------------------------------------------- */
+.whatsapp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #128C7E;
+    color: #fff;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+}
+.whatsapp-pill:active {
+    opacity: 0.8;
+}
+.whatsapp-pill--lg {
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    gap: 6px;
+}
+
+/* ---------------------------------------------------------------
+   .platform-badge — video platform etiketinin statik kutu kuralları
+   (renk hâlâ inline: ${platform.color} dinamik veriden geliyor)
+--------------------------------------------------------------- */
+.platform-badge {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ---------------------------------------------------------------
+   .empty-state — "kayıt yok" mesajlarının ortak kalıbı
+--------------------------------------------------------------- */
+.empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    padding: var(--space-5) var(--space-3);
+    font-size: 13px;
 }

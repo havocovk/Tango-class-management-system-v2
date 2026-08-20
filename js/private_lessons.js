@@ -30,7 +30,7 @@ function currencySelectHtml(selectedCurrency) {
         `<option value="${c}" ${c === sel ? 'selected' : ''}>${escapeHtml(c)}</option>`
     ).join('');
     return `<select id="plModalCurrency"
-        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
+        style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
         ${opts}
     </select>`;
 }
@@ -132,7 +132,7 @@ function renderPrivateLessonsView() {
 
     let listHtml = '';
     if (displayed.length === 0) {
-        listHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">
+        listHtml = `<div class="empty-state">
             ${showArch ? t('privateLessons.emptyArchived') : t('privateLessons.emptyActive')}
         </div>`;
     } else {
@@ -250,7 +250,7 @@ function renderDetailView(lesson) {
                 <span class="back-link" id="plDetailBackBtn" style="margin-bottom:0;">
                     ${t('privateLessons.backToList')}
                 </span>
-                <button id="plDetailCalendarBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-color:var(--accent);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
+                <button id="plDetailCalendarBtn" class="btn-ghost btn-ghost--accent" style="flex:none;min-width:auto;width:auto;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
             </div>
 
             <div class="main-title" style="margin-top:10px;">${t('privateLessons.detailTitle')}</div>
@@ -289,7 +289,7 @@ function renderDetailView(lesson) {
             <!-- DERS NOTU -->
             <div style="font-size:15px;font-weight:700;color:var(--accent);margin-bottom:10px;margin-top:4px;">${t('privateLessons.noteLabel')}</div>
             <textarea id="plDetailNote" rows="5"
-                style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:15px;resize:vertical;margin-bottom:16px;box-sizing:border-box;"
+                style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:15px;resize:vertical;margin-bottom:16px;box-sizing:border-box;"
                 placeholder="${t('privateLessons.notePlaceholder')}">${escapeHtml(lesson.note || '')}</textarea>
 
             <button class="btn-success" id="plDetailSaveBtn" style="width:100%;">
@@ -392,10 +392,9 @@ function openPrivateVideoModal(lesson) {
     if (embedCont) embedCont.style.display = 'none';
 
     titleEl.innerHTML = `
-        <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+        <i data-lucide="video" size="20" style="color:var(--primary);display:inline-block;vertical-align:middle;"></i>
         <span style="vertical-align:middle;"> ${t('privateLessons.videoTitle')}</span>
-        <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;
-            background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${escapeHtml(platform.name)}</span>
+        <span class="platform-badge" style="background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${escapeHtml(platform.name)}</span>
     `;
 
     linkDisp.textContent   = url;
@@ -460,7 +459,7 @@ function openLessonModal(existing) {
         <!-- Tarih -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
             <input type="text" id="plModalDateDisplay" readonly placeholder="${t('privateLessons.datePlaceholder')}"
-                style="flex:1;background:#1e293b;color:white;cursor:pointer;"
+                style="flex:1;background:var(--input-bg);color:white;cursor:pointer;"
                 value="${existing && existing.lesson_date ? formatDate(existing.lesson_date) : ''}">
             <span id="plModalCalIcon" style="cursor:pointer;color:var(--primary);display:inline-flex;align-items:center;min-width:36px;min-height:36px;justify-content:center;">
                 <i data-lucide="calendar" size="22"></i>
@@ -480,7 +479,7 @@ function openLessonModal(existing) {
         <!-- Ücret + Para Birimi yan yana -->
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;width:100%;">
             <input type="number" id="plModalEarned" placeholder="${t('privateLessons.earnedPlaceholder')}"
-                style="width:55%;box-sizing:border-box;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;"
+                style="width:55%;box-sizing:border-box;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;"
                 value="${existing && existing.earned_amount ? existing.earned_amount : ''}">
             <div style="width:45%;box-sizing:border-box;">${currencySelectHtml(existing ? existing.currency || '₺ TRY' : '₺ TRY')}</div>
         </div>

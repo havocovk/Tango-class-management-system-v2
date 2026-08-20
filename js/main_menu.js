@@ -74,41 +74,11 @@ function renderMainMenu() {
 
             <!-- Yedekle / Geri Yükle — ince outline butonlar -->
             <div style="display:flex;gap:10px;margin-top:20px;">
-                <button id="menuBtnBackup" style="
-                    flex:1;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    gap:7px;
-                    padding:10px 8px;
-                    background:transparent;
-                    border:1.5px solid var(--primary);
-                    border-radius:10px;
-                    color:var(--primary);
-                    font-size:13px;
-                    font-weight:600;
-                    cursor:pointer;
-                    min-width:0;
-                ">
+                <button id="menuBtnBackup" class="btn-ghost" style="flex:1;padding:10px 8px;font-size:13px;min-width:0;">
                     <i data-lucide="hard-drive-download" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
                     ${escapeHtml(t('schools.backup'))}
                 </button>
-                <button id="menuBtnRestore" style="
-                    flex:1;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    gap:7px;
-                    padding:10px 8px;
-                    background:transparent;
-                    border:1.5px solid var(--accent);
-                    border-radius:10px;
-                    color:var(--accent);
-                    font-size:13px;
-                    font-weight:600;
-                    cursor:pointer;
-                    min-width:0;
-                ">
+                <button id="menuBtnRestore" class="btn-ghost btn-ghost--accent" style="flex:1;padding:10px 8px;font-size:13px;min-width:0;">
                     <i data-lucide="hard-drive-upload" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
                     ${escapeHtml(t('schools.restore'))}
                 </button>
@@ -116,21 +86,7 @@ function renderMainMenu() {
 
             <!-- Çıkış butonu -->
             <div style="margin-top:10px;">
-                <button id="menuBtnLogout" style="
-                    width:100%;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    gap:7px;
-                    padding:10px 8px;
-                    background:transparent;
-                    border:1.5px solid var(--danger);
-                    border-radius:10px;
-                    color:var(--danger);
-                    font-size:13px;
-                    font-weight:600;
-                    cursor:pointer;
-                ">
+                <button id="menuBtnLogout" class="btn-ghost btn-ghost--danger" style="width:100%;padding:10px 8px;font-size:13px;">
                     <i data-lucide="log-out" size="15" style="width:15px;height:15px;display:block;flex-shrink:0;"></i>
                     ${escapeHtml(t('nav.logout'))}
                 </button>

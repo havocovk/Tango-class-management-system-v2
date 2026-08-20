@@ -94,7 +94,7 @@ function buildWaLink(student, message) {
                   : digits.startsWith('0')  ? '90' + digits.slice(1)
                   : digits.startsWith('5')  ? '90' + digits
                   : digits;
-    return `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(message)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#128C7E;color:white;text-decoration:none;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-top:4px;">💬 WA</a>`;
+    return `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(message)}" target="_blank" class="whatsapp-pill">💬 WA</a>`;
 }
 
 // ---------------------------------------------------------------
@@ -116,10 +116,10 @@ function headerHtml(modeLabel) {
     return `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
             <div class="back-link" id="wsBackToAttendanceBtn" style="margin-bottom:0;">${t('workshopPay.backToAttendance')}</div>
-            <button id="wsPayCsvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('workshopAtt.csvDownload')}</button>
+            <button id="wsPayCsvBtn" class="btn-ghost" style="flex:none;min-width:auto;width:auto;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('workshopAtt.csvDownload')}</button>
         </div>
         <div class="main-title">${t('workshopPay.title')}</div>
-        <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:4px; font-weight:600;">
+        <div style="text-align:center; color:var(--primary); font:var(--font-title); margin-bottom:4px;">
             ${escapeHtml(appState.currentWorkshopName || '')}
         </div>
         <div style="text-align:center; color:var(--text-dim); font-size:12px; margin-bottom:16px;">
@@ -186,7 +186,7 @@ function renderUpfrontPayments() {
     // Satırlar
     let rowsHtml = '';
     if (visible.length === 0) {
-        rowsHtml = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">${t('workshopPay.emptyStudents')}</td></tr>`;
+        rowsHtml = `<tr><td colspan="4" class="empty-state">${t('workshopPay.emptyStudents')}</td></tr>`;
     } else {
         visible.forEach((s, idx) => {
             const pay  = appState.wsPayments.find(p => p.student_id === s.id);
@@ -420,7 +420,7 @@ function renderWeeklyPayments() {
     tbody.innerHTML = '';
 
     if (visible.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${3 + appState.wsDates.length}" style="text-align:center; color:var(--text-dim); padding:20px;">${t('workshopPay.emptyStudents')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${3 + appState.wsDates.length}" class="empty-state">${t('workshopPay.emptyStudents')}</td></tr>`;
     } else {
         visible.forEach((student, idx) => {
             const { remaining } = debtMap[student.id];

@@ -34,7 +34,7 @@
     padding: 36px 26px;
     text-align: center;
     box-shadow: 0 0 40px rgba(45, 212, 191, 0.08);
-    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalPop var(--duration-slow) var(--ease-emphasis);
 }
 
 .login-logo {
@@ -61,7 +61,7 @@
     margin-bottom: 12px;
     border: 1px solid var(--border);
     border-radius: 10px;
-    background: #1e293b;
+    background: var(--input-bg);
     color: white;
     box-sizing: border-box;
     font-size: 15px;
@@ -140,10 +140,10 @@
     background: var(--accent);
     color: #000;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     white-space: nowrap;
-    transition: opacity 0.2s;
+    transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
 #retryBtn:hover {
@@ -270,7 +270,7 @@
     border: 1px solid var(--accent);
     color: var(--accent);
     padding: 9px 14px;
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     font-size: 12px;
     font-weight: 700;
     box-shadow: 0 6px 18px rgba(0,0,0,0.4);

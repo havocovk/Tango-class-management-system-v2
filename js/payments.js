@@ -14,7 +14,7 @@ export async function showPaymentsView(classId, className) {
 async function loadPaymentsData() {
     // ADIM 5.2 — Sınıfın paket fiyatı ve hafta sayısını da çek
     const { data: classData } = await supabase
-        .from('classes').select('id, name, package_price, package_weeks')
+        .from('classes').select('id, name, package_price, package_weeks, earnings_model, commission_percent, freelance_rental_per_lesson, freelance_has_partner')
         .eq('id', appState.currentClassId).single();
     appState.currentClass = classData || null;
 
@@ -106,6 +106,28 @@ function calcStudentDebt(student) {
 }
 
 // ---------------------------------------------------------------
+// Sınıfın kazanç ayarlarına göre eğitmenin net kazancını hesaplar.
+// Ayar yapılmamışsa (veya "owner" modeli, ki henüz desteklenmiyor) null döner.
+// ---------------------------------------------------------------
+function calcNetEarnings(totalCollected, totalDates) {
+    const cls = appState.currentClass;
+    if (!cls || !cls.earnings_model) return null;
+
+    if (cls.earnings_model === 'commission') {
+        if (cls.commission_percent == null) return null;
+        return totalCollected * cls.commission_percent / 100;
+    }
+
+    if (cls.earnings_model === 'freelance') {
+        if (cls.freelance_rental_per_lesson == null) return null;
+        const gross = totalCollected - (cls.freelance_rental_per_lesson * totalDates);
+        return cls.freelance_has_partner ? gross / 2 : gross;
+    }
+
+    return null;
+}
+
+// ---------------------------------------------------------------
 // Kalan ders durumuna göre CSS sınıfı ve rozet metni döndürür
 // ---------------------------------------------------------------
 function getDebtBadge(remaining) {
@@ -155,6 +177,13 @@ function renderPaymentsView() {
         else if (d.remaining <= 2)   warningCount++;
     });
 
+    const netEarnings = calcNetEarnings(totalCollected, totalDates);
+    const netCardHtml = netEarnings !== null ? `
+            <div class="summary-card summary-net">
+                <div class="summary-value">${Math.round(netEarnings).toLocaleString('tr-TR')} ₺</div>
+                <div class="summary-label">${escapeHtml(t('payments.summaryNet'))}</div>
+            </div>` : '';
+
     // ---- Özet kartları HTML ----
     const summaryHtml = `
         <div class="payment-summary">
@@ -173,7 +202,7 @@ function renderPaymentsView() {
             <div class="summary-card summary-dates">
                 <div class="summary-value">${totalDates}</div>
                 <div class="summary-label">${escapeHtml(t('payments.summaryDates'))}</div>
-            </div>
+            </div>${netCardHtml}
         </div>
     `;
     // ---- Tablo HTML ----
@@ -181,17 +210,20 @@ function renderPaymentsView() {
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToAttendanceBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToAttendance'))}</div>
-                <button id="paymentCsvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
+                <div style="display:flex; gap:6px;">
+                    <button id="earningsSettingsBtn" class="btn-ghost" style="flex:none;min-width:auto;width:auto;"><i data-lucide="settings" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i></button>
+                    <button id="paymentCsvBtn" class="btn-ghost" style="flex:none;min-width:auto;width:auto;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
+                </div>
             </div>
             <div class="main-title">${escapeHtml(t('payments.title'))}</div>
-            <div style="text-align:center; color:var(--primary); font-size:14px; margin-bottom:16px; font-weight:600;">
+            <div style="text-align:center; color:var(--primary); font:var(--font-title); margin-bottom:16px;">
                 ${escapeHtml(appState.currentClassName)}
             </div>
 
             ${summaryHtml}
 
             <div style="margin:8px 0 6px;">
-                <input id="paySearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <input id="paySearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg);color:white;font-size:13px;box-sizing:border-box;">
             </div>
             <div class="table-wrapper" style="margin-top:8px;">
                 <table>
@@ -234,7 +266,7 @@ function renderPaymentsView() {
             const waMsg   = remaining < 0
                 ? t('payments.waDebtMsg', { name: student.name, class: appState.currentClassName })
                 : t('payments.waRemainMsg', { name: student.name, class: appState.currentClassName, n: remaining });
-            waButton = `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;background:#128C7E;color:white;text-decoration:none;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:700;margin-top:4px;">💬 WA</a>`;
+            waButton = `<a href="https://wa.me/${waPhone}?text=${encodeURIComponent(waMsg)}" target="_blank" class="whatsapp-pill">💬 WA</a>`;
         }
 
         let row = `<tr style="${rowStyle}">`;
@@ -319,6 +351,7 @@ function renderPaymentsView() {
         });
 
     document.getElementById('paymentCsvBtn').onclick = () => downloadPaymentsCsv();
+    document.getElementById('earningsSettingsBtn').onclick = () => openEarningsSettingsModal();
 
     // ADIM 4.3 — Ödeme tablosu öğrenci arama / filtreleme
     const paySearch = document.getElementById('paySearchInput');
@@ -335,6 +368,98 @@ function renderPaymentsView() {
     }
 
     refreshIcons();
+}
+
+// ---------------------------------------------------------------
+// KAZANÇ AYARLARI MODALI — sınıfın çalışma şeklini ve hesaplama
+// parametrelerini ayarlar (classes.earnings_model ve ilgili sütunlar)
+// ---------------------------------------------------------------
+function openEarningsSettingsModal() {
+    const modal            = document.getElementById('earningsSettingsModal');
+    const modelSelect      = document.getElementById('earningsModelSelect');
+    const commissionFields = document.getElementById('earningsCommissionFields');
+    const freelanceFields  = document.getElementById('earningsFreelanceFields');
+    const percentInput     = document.getElementById('earningsCommissionPercent');
+    const rentalInput      = document.getElementById('earningsRentalPerLesson');
+    const hasPartnerInput  = document.getElementById('earningsHasPartner');
+    const saveBtn          = document.getElementById('earningsSettingsSaveBtn');
+    const cancelBtn        = document.getElementById('earningsSettingsCancelBtn');
+
+    const cls = appState.currentClass || {};
+    const savedModel = cls.earnings_model || '';
+    modelSelect.value = savedModel;
+    percentInput.value = cls.commission_percent != null ? cls.commission_percent : '';
+    rentalInput.value = cls.freelance_rental_per_lesson != null ? cls.freelance_rental_per_lesson : '';
+    hasPartnerInput.checked = !!cls.freelance_has_partner;
+
+    const syncFields = () => {
+        commissionFields.style.display = modelSelect.value === 'commission' ? 'block' : 'none';
+        freelanceFields.style.display  = modelSelect.value === 'freelance'  ? 'block' : 'none';
+    };
+    syncFields();
+    modal.style.display = 'flex';
+
+    const onModelChange = () => {
+        if (modelSelect.value === 'owner') {
+            showToast(t('earningsSettings.ownerComingSoon'), 'warning');
+            modelSelect.value = savedModel;
+        }
+        syncFields();
+    };
+
+    const saveHandler = async () => {
+        const model = modelSelect.value;
+        const updatePayload = {
+            earnings_model: model || null,
+            commission_percent: null,
+            freelance_rental_per_lesson: null,
+            freelance_has_partner: null
+        };
+
+        if (model === 'commission') {
+            const percent = parseFloat(percentInput.value);
+            if (isNaN(percent) || percent < 0 || percent > 100) {
+                showToast(t('earningsSettings.invalidPercent'), 'error');
+                return;
+            }
+            updatePayload.commission_percent = percent;
+        } else if (model === 'freelance') {
+            const rental = parseFloat(rentalInput.value);
+            if (isNaN(rental) || rental < 0) {
+                showToast(t('earningsSettings.invalidRental'), 'error');
+                return;
+            }
+            updatePayload.freelance_rental_per_lesson = rental;
+            updatePayload.freelance_has_partner = hasPartnerInput.checked;
+        }
+
+        const { error } = await supabase
+            .from('classes').update(updatePayload).eq('id', appState.currentClassId);
+        if (error) {
+            showToast(t('earningsSettings.saveFail'), 'error');
+            return;
+        }
+        showToast(t('earningsSettings.saved'), 'success');
+        modal.style.display = 'none';
+        cleanup();
+        await loadPaymentsData();
+        renderPaymentsView();
+    };
+
+    const cancelHandler = () => {
+        modal.style.display = 'none';
+        cleanup();
+    };
+
+    const cleanup = () => {
+        modelSelect.removeEventListener('change', onModelChange);
+        saveBtn.removeEventListener('click', saveHandler);
+        cancelBtn.removeEventListener('click', cancelHandler);
+    };
+
+    modelSelect.addEventListener('change', onModelChange);
+    saveBtn.addEventListener('click', saveHandler);
+    cancelBtn.addEventListener('click', cancelHandler);
 }
 
 // ---------------------------------------------------------------

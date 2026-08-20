@@ -175,7 +175,7 @@ export async function importStudentFromClasses() {
     if (!selectEl) {
         selectEl = document.createElement('select');
         selectEl.id = 'wsImportSelect';
-        selectEl.style.cssText = 'width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
+        selectEl.style.cssText = 'width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-top:10px;';
         inputEl.parentNode.insertBefore(selectEl, inputEl);
     }
     selectEl.style.display = 'block';

@@ -90,7 +90,7 @@ function currencySelectHtml(festivalLocation, savedCurrency) {
     ).join('');
 
     return `<select id="fcCurrencySelect"
-        style="background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;width:42%;box-sizing:border-box;">
+        style="background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;width:42%;box-sizing:border-box;">
         ${opts}
     </select>`;
 }
@@ -145,7 +145,7 @@ function renderFestivalDetailView() {
 
     let classesHtml = '';
     if (classes.length === 0) {
-        classesHtml = `<div style="text-align:center;color:var(--text-dim);padding:20px;">${t('festClasses.emptyLessons')}</div>`;
+        classesHtml = `<div class="empty-state">${t('festClasses.emptyLessons')}</div>`;
     } else {
         classes.forEach(c => {
             const dateStr = c.lesson_date ? formatDate(c.lesson_date) : '';
@@ -180,7 +180,7 @@ function renderFestivalDetailView() {
         <div class="view">
             <div class="back-link" id="backToFestivalsBtn">${t('festClasses.backToFestivals')}</div>
             <div class="main-title">${t('festClasses.title')}</div>
-            <h2 style="text-align:center;font-size:18px;color:var(--primary);margin-bottom:12px;">${escapeHtml(appState.currentFestivalName || '')}</h2>
+            <h2 style="text-align:center;font:var(--font-title);color:var(--primary);margin:0 0 12px;">${escapeHtml(appState.currentFestivalName || '')}</h2>
             ${infoHtml}
             <div class="nav-buttons" style="margin-bottom:16px;">
                 <button class="btn-success" id="addFestClassBtn">
@@ -324,7 +324,7 @@ function openFestClassDetail(cls) {
         <div class="view">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                 <div class="back-link" id="backToFestDetailBtn" style="margin-bottom:0;">${t('festClasses.backToFestDetail')}</div>
-                <button id="fcDetailCalendarBtn" class="btn-secondary" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-color:var(--accent);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
+                <button id="fcDetailCalendarBtn" class="btn-ghost btn-ghost--accent" style="flex:none;min-width:auto;width:auto;"><i data-lucide="calendar-plus" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
             </div>
             <div class="main-title">${escapeHtml(cls.name)}</div>
             ${dt ? `<div style="text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:20px;">${dt}</div>` : ''}
@@ -338,7 +338,7 @@ function openFestClassDetail(cls) {
                     </div>
                     <input type="number" id="fcParticipantInput" value="${cls.participant_count || ''}"
                         placeholder="${t('festClasses.participantPlaceholder')}" min="0"
-                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
+                        style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                 </div>
 
                 <!-- Kazanılan Para + Para Birimi -->
@@ -349,7 +349,7 @@ function openFestClassDetail(cls) {
                     <div style="display:flex;gap:8px;align-items:center;">
                         <input type="number" id="fcEarnedInput" value="${cls.earned_amount || ''}"
                             placeholder="${t('festClasses.earnedPlaceholder')}" min="0"
-                            style="width:55%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
+                            style="width:55%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;box-sizing:border-box;">
                         ${currencySelectHtml(appState.currentFestival ? appState.currentFestival.location : '', cls.currency || '')}
                     </div>
                 </div>
@@ -371,7 +371,7 @@ function openFestClassDetail(cls) {
                     </div>
                     <input type="text" id="fcPartnerInput" value="${escapeHtml(cls.partner_name || '')}"
                         placeholder="${t('festClasses.partnerPlaceholder')}"
-                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
+                        style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;box-sizing:border-box;">
                 </div>
 
                 <!-- Ders Notu -->
@@ -380,7 +380,7 @@ function openFestClassDetail(cls) {
                         <i data-lucide="notebook-pen" size="13" style="display:inline-block;vertical-align:middle;margin-right:4px;"></i>${t('festClasses.noteLabel')}
                     </div>
                     <textarea id="fcNoteInput" rows="4" placeholder="${t('festClasses.notePlaceholder')}"
-                        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;">${escapeHtml(cls.note || '')}</textarea>
+                        style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;">${escapeHtml(cls.note || '')}</textarea>
                 </div>
 
                 <!-- Kaydet -->
@@ -509,9 +509,9 @@ function openFestVideoModal(cls) {
 
     // Başlık — platform rozeti
     titleEl.innerHTML = `
-        <i data-lucide="video" size="20" style="color:#2DD4BF;display:inline-block;vertical-align:middle;"></i>
+        <i data-lucide="video" size="20" style="color:var(--primary);display:inline-block;vertical-align:middle;"></i>
         <span style="vertical-align:middle;"> Ders Videosu</span>
-        <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
+        <span class="platform-badge" style="background:${platform.color}22;color:${platform.color};border:1px solid ${platform.color}55;">${platform.name}</span>
     `;
 
     linkDisp.textContent    = url;

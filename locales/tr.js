@@ -178,6 +178,7 @@ export const tr = {
         studentUpdated: 'Öğrenci bilgileri güncellendi ✓',
         studentUpdateFail: 'Güncelleme başarısız. Bağlantıyı kontrol edin.',
         studentDeleteFail: 'Öğrenci silinemedi. Bağlantıyı kontrol edin.',
+        studentDeleteHasPayments: 'Bu öğrencinin ödeme kaydı var, bu yüzden silinemez. Önce arşivleyin.',
         studentDeleted: 'Öğrenci silindi ✓',
         newStudentTitle: 'Yeni Öğrenci',
         newStudentPlaceholder: 'Adı ve soyadı',
@@ -276,6 +277,7 @@ export const tr = {
         summaryDebtor: 'Borçlu Öğrenci',
         summaryWarning: 'Paketi Bitiyor',
         summaryDates: 'Toplam Ders',
+        summaryNet: 'Net Kazancım',
         monthlyIncome: 'Aylık Gelir',
         badgeDebt: '{n} ders borçlu',
         badgeCurrent: 'Güncel ✓',
@@ -301,6 +303,22 @@ export const tr = {
         csvStatusPaid: 'Ödendi',
         csvStatusPending: 'Beklemede',
         invalidAmount: 'Lütfen geçerli pozitif değerler girin.'
+    },
+
+    earningsSettings: {
+        title: 'Kazanç Ayarları',
+        selectPlaceholder: 'Seçiniz',
+        modelCommission: 'Komisyonlu Eğitmen',
+        modelFreelance: 'Bağımsız (Stüdyo Kiralama)',
+        modelOwner: 'Okul Sahibi',
+        commissionPercentPlaceholder: '%',
+        rentalPlaceholder: 'Ders başı kira',
+        hasPartnerLabel: 'Partnerli ders veriyorum',
+        ownerComingSoon: 'Bu seçenek için geliştirme ileride eklenecek.',
+        saveFail: 'Kaydedilemedi. Bağlantıyı kontrol edin.',
+        saved: 'Kazanç ayarları kaydedildi ✓',
+        invalidPercent: 'Lütfen geçerli bir yüzde girin (0-100).',
+        invalidRental: 'Lütfen geçerli bir kira tutarı girin.'
     },
 
     // --- Ana Menü (main_menu.js) ---

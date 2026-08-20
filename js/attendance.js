@@ -196,7 +196,7 @@ function buildTableHTML() {
         <div class="view">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                 <div class="back-link" id="backToClassesBtn" style="margin-bottom:0;">${escapeHtml(t('nav.backToClasses'))}</div>
-                <button id="csvBtn" style="flex:none;min-width:auto;width:auto;display:inline-flex;align-items:center;gap:5px;padding:7px 10px;background:transparent;border:1.5px solid var(--primary);border-radius:10px;color:var(--primary);font-size:11px;font-weight:600;cursor:pointer;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
+                <button id="csvBtn" class="btn-ghost" style="flex:none;min-width:auto;width:auto;"><i data-lucide="download" size="13" style="width:13px;height:13px;display:block;flex-shrink:0;"></i>${t('attendance.csvDownload')}</button>
             </div>
             <div class="nav-buttons" style="margin-bottom:6px;">
                 <button id="addStudentBtn"><i data-lucide="user-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.addStudent'))}</button>
@@ -208,9 +208,9 @@ function buildTableHTML() {
                 <button id="showArchiveBtn" class="btn-secondary"><i data-lucide="archive" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('attendance.showArchive'))}</button>
                 <button id="calendarBtn" class="btn-secondary" style="border-color:var(--accent);color:var(--accent);"><i data-lucide="calendar-plus" size="15" style="display:inline-block;vertical-align:middle;margin-right:5px;"></i>${escapeHtml(t('calendar.addToCalendar'))}</button>
             </div>
-            <h2 id="currClName" style="text-align:center; font-size:18px; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
+            <h2 id="currClName" style="text-align:center; font:var(--font-title); margin:0; color:var(--primary);">${escapeHtml(appState.currentClassName)}${appState.currentClass && appState.currentClass.lesson_time ? ' <span style="font-size:14px; color:var(--text-dim);">[' + appState.currentClass.lesson_time.substring(0,5) + ']' + '</span>' : ''}</h2>
             <div style="margin:8px 0 6px;">
-                <input id="studentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#1e293b;color:white;font-size:13px;box-sizing:border-box;">
+                <input id="studentSearchInput" type="text" placeholder="${t('attendance.searchPlaceholder')}" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg);color:white;font-size:13px;box-sizing:border-box;">
             </div>
             <div class="table-wrapper">
                 <table>

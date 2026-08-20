@@ -258,7 +258,7 @@ function countrySelectHtml(selectedCountry) {
         `<option value="${escapeHtml(c)}" ${c === selectedCountry ? 'selected' : ''}>${escapeHtml(c)}</option>`
     ).join('');
     return `<select id="festCountry"
-        style="width:100%;background:#1e293b;color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-bottom:12px;">
+        style="width:100%;background:var(--input-bg);color:white;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin-bottom:12px;">
         <option value="">${t('festivals.countryPlaceholder')}</option>
         ${opts}
     </select>`;
@@ -303,7 +303,7 @@ function renderFestivalsView() {
 
     let listHtml = '';
     if (displayed.length === 0) {
-        listHtml = `<div style="text-align:center; color:var(--text-dim); padding:20px;">
+        listHtml = `<div class="empty-state">
             ${showArch ? t('festivals.emptyArchived') : t('festivals.empty')}
         </div>`;
     } else {
@@ -322,13 +322,13 @@ function renderFestivalsView() {
                     </div>
                 </div>
                 <div style="display:flex; gap:15px; align-items:center;">
-                    <div class="fest-btn-edit" data-fest-id="${f.id}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:var(--primary); position:relative; z-index:2;">
+                    <div class="fest-btn-edit" data-fest-id="${f.id}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; color:var(--primary); position:relative; z-index:2;">
                         <i data-lucide="pencil" size="20" style="pointer-events:none;"></i>
                     </div>
-                    <div class="fest-btn-archive" data-fest-id="${f.id}" data-fest-archived="${f.is_archived ? '1' : '0'}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:var(--accent); position:relative; z-index:2;">
+                    <div class="fest-btn-archive" data-fest-id="${f.id}" data-fest-archived="${f.is_archived ? '1' : '0'}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; color:var(--accent); position:relative; z-index:2;">
                         <i data-lucide="${f.is_archived ? 'archive-restore' : 'archive'}" size="20" style="pointer-events:none;"></i>
                     </div>
-                    <div class="fest-btn-delete" data-fest-id="${f.id}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:var(--danger); position:relative; z-index:2;">
+                    <div class="fest-btn-delete" data-fest-id="${f.id}" style="cursor:pointer; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; color:var(--danger); position:relative; z-index:2;">
                         <i data-lucide="trash-2" size="20" style="pointer-events:none;"></i>
                     </div>
                 </div>
@@ -426,7 +426,7 @@ function openFestivalModal(existing) {
         <!-- Başlangıç tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
             <input type="text" id="festStartDateDisplay" readonly placeholder="${t('festivals.startDatePlaceholder')}"
-                style="flex:1; background:#1e293b; color:white;"
+                style="flex:1; background:var(--input-bg); color:white;"
                 value="${existing && existing.start_date ? formatDate(existing.start_date) : ''}">
             <span id="festStartCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>
@@ -438,7 +438,7 @@ function openFestivalModal(existing) {
         <!-- Bitiş tarihi -->
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:20px;">
             <input type="text" id="festEndDateDisplay" readonly placeholder="${t('festivals.endDatePlaceholder')}"
-                style="flex:1; background:#1e293b; color:white;"
+                style="flex:1; background:var(--input-bg); color:white;"
                 value="${existing && existing.end_date ? formatDate(existing.end_date) : ''}">
             <span id="festEndCalIcon" style="cursor:pointer; color:var(--primary); display:inline-flex; align-items:center;">
                 <i data-lucide="calendar" size="22"></i>

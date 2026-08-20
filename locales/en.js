@@ -178,6 +178,7 @@ export const en = {
         studentUpdated: 'Student details updated ✓',
         studentUpdateFail: 'Update failed. Check your connection.',
         studentDeleteFail: "Couldn't delete student. Check your connection.",
+        studentDeleteHasPayments: 'This student has payment records, so they can\'t be deleted. Archive them instead.',
         studentDeleted: 'Student deleted ✓',
         newStudentTitle: 'New Student',
         newStudentPlaceholder: 'First and last name',
@@ -276,6 +277,7 @@ export const en = {
         summaryDebtor: 'Students in Debt',
         summaryWarning: 'Package Ending',
         summaryDates: 'Total Lessons',
+        summaryNet: 'My Net Earnings',
         monthlyIncome: 'Monthly Income',
         badgeDebt: '{n} lessons owed',
         badgeCurrent: 'Up to date ✓',
@@ -301,6 +303,22 @@ export const en = {
         csvStatusPaid: 'Paid',
         csvStatusPending: 'Pending',
         invalidAmount: 'Please enter valid positive values.'
+    },
+
+    earningsSettings: {
+        title: 'Earnings Settings',
+        selectPlaceholder: 'Select',
+        modelCommission: 'Commission-based Instructor',
+        modelFreelance: 'Independent (Studio Rental)',
+        modelOwner: 'School Owner',
+        commissionPercentPlaceholder: '%',
+        rentalPlaceholder: 'Rent per lesson',
+        hasPartnerLabel: 'I teach with a partner',
+        ownerComingSoon: 'This option will be added in a future update.',
+        saveFail: "Couldn't save. Check your connection.",
+        saved: 'Earnings settings saved ✓',
+        invalidPercent: 'Please enter a valid percentage (0-100).',
+        invalidRental: 'Please enter a valid rental amount.'
     },
 
     // --- Main Menu (main_menu.js) ---
